@@ -174,6 +174,13 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
 <p>Planned. Most of these replace a tool you currently download and run by hand.</p>
 
 <section class="plan">
+  <div class="plan-head"><h3>Feature parity with Lunar Magic</h3><span>instead of keeping LM open</span></div>
+  <p>Everything LM edits, edited here — the overworld, title screen and credits it still owns,
+     plus the smaller tools you switch back for. Pipe Dream already reads and writes LM's own
+     structures; parity is where you can stop switching.</p>
+</section>
+
+<section class="plan">
   <div class="plan-head"><h3>Block manager</h3><span>instead of GPS</span></div>
   <p>Install a custom block and get all of it: the code, its Map16 entry, its acts-like
      setting. No folders to fill, no inserter to re-run.</p>
@@ -278,7 +285,7 @@ PipeDream.exe --buildproject ...            # build the output ROM</code></pre>
 <p>Pipe Dream is under active development and hasn't hit a first release. The core loop — open
    a ROM, edit a level, save something the game runs — works. Expect sharp edges, keep backups
    of any ROM you point it at, and file what breaks. Overworld, title screen and credits
-   editing are out of scope for now.</p>
+   editing aren't built yet — they're on the <a href="#roadmap">roadmap</a>.</p>
 <p>It's MIT licensed and the whole thing is on GitHub. Bug reports from people who got stuck
    in the first ten minutes are the most useful kind.</p>
 
