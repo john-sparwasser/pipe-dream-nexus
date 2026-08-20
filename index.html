@@ -53,10 +53,14 @@ header h1{margin:16px 0 10px;font-size:2.6rem;letter-spacing:-.02em}
 .card h3{margin:0 0 4px;font-size:1rem}
 .card p{margin:0;font-size:.9rem}
 
-.road{list-style:none;padding:0;margin-top:18px}
-.road li{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
-  border-radius:8px;padding:14px 18px;margin:10px 0;color:var(--dim);font-size:.94rem}
-.road b{color:var(--fg);display:block;margin-bottom:2px;font-weight:600}
+.plan{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:10px;padding:18px 22px;margin:14px 0}
+.plan-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  flex-wrap:wrap}
+.plan h3{margin:0;font-size:1.06rem}
+.plan-head span{font-size:.74rem;color:var(--dim);border:1px solid var(--line);
+  border-radius:99px;padding:3px 10px;background:var(--bg);white-space:nowrap}
+.plan p{margin:9px 0 0;font-size:.93rem}
 
 #dl{margin:18px 0}
 .dl-btn{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;
@@ -167,40 +171,68 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
 </div>
 
 <h2 id="roadmap">Roadmap</h2>
-<p>This is where "all-in-one" actually gets paid off. Each of these is a tool you currently
-   download, configure and run yourself, with its own folder layout and its own insertion
-   step. The plan is a manager for each, built into the editor, sharing one project and one
-   undo history:</p>
-<table>
-  <tr><th>Manager</th><th>What it folds in</th></tr>
-  <tr><td><strong>Blocks</strong></td>
-      <td>Custom block behaviour and Map16 wiring — the GPS step</td></tr>
-  <tr><td><strong>Sprites</strong></td>
-      <td>Custom sprites, their tables and per-level assignment — the PIXI step</td></tr>
-  <tr><td><strong>UberASM</strong></td>
-      <td>Per-level, per-gamemode and global custom ASM — the UberASMTool step</td></tr>
-  <tr><td><strong>Music</strong></td>
-      <td>Custom songs, sample groups and track slots — the AddmusicK step</td></tr>
-  <tr><td><strong>Backgrounds</strong></td>
-      <td>The ExGFX-and-Map16 shuffle a custom background takes today</td></tr>
-</table>
-<p>Same shape for all five: browse and install from the community, see what your project
-   actually uses, and have it re-applied on build. No hand-editing a list file, no
-   re-inserting anything after you change a level, and no guessing which of six tools has to
-   run before which.</p>
-<ul class="road">
-  <li><b>Updates that install themselves</b>
-      Right now a new version means downloading a build and replacing your copy. Pipe Dream
-      should check for a newer release, fetch it, and swap itself out — no re-downloading an
-      exe, no re-running an install script, and no wondering whether you're three builds
-      behind. Your projects and config are untouched either way.</li>
-  <li><b>Custom base ROMs you can create and share</b>
-      Package a prepared base — patches, ASM, resources, the lot — as something another
-      creator can pull down and build against. Since a <code>.pdp</code> pins its base,
-      sharing the base is what makes sharing the project complete.</li>
-</ul>
-<p>No timelines promised, and the five above land one at a time rather than together. If one
-   of them is what you're waiting on, the
+<p>This is where "all-in-one" gets paid off. Five of these are tools you currently download,
+   configure and run yourself, each with its own folder layout and its own insertion step. The
+   plan is a manager for each, inside the editor, sharing one project and one undo history —
+   browse and install from the community, see what your project actually uses, and have it
+   re-applied on build.</p>
+
+<section class="plan">
+  <div class="plan-head"><h3>Block manager</h3><span>instead of GPS</span></div>
+  <p>Install a custom block and get all of it at once: the behaviour code, its Map16 entry,
+     and the acts-like setting that makes it behave in the editor too. Today that means
+     dropping files in a folder, hand-editing a list, and re-running an inserter after every
+     change. Map16 editing already lives here — the missing half is managing the blocks
+     themselves.</p>
+</section>
+
+<section class="plan">
+  <div class="plan-head"><h3>Sprite manager</h3><span>instead of PIXI</span></div>
+  <p>Custom sprites with their config, table entries and per-level assignment handled in one
+     place, so dropping a custom sprite into a level is the same gesture as dropping in a
+     vanilla one. The editor already reads the sprite tables and per-level graphics slots;
+     what it can't yet do is install and track a sprite's own code.</p>
+</section>
+
+<section class="plan">
+  <div class="plan-head"><h3>UberASM manager</h3><span>instead of UberASMTool</span></div>
+  <p>Per-level, per-gamemode and global custom ASM, attached to the level you're looking at
+     rather than to a line in a text file you maintain separately. Including the part that's
+     currently kept in your head: which levels have code on them at all.</p>
+</section>
+
+<section class="plan">
+  <div class="plan-head"><h3>Music manager</h3><span>instead of AddmusicK</span></div>
+  <p>Custom songs, sample groups and track slots, with a level's music setting picking from
+     what's actually installed instead of a number you have to remember. It's also where
+     running out of room in a sample group becomes something you can see, rather than a build
+     error you decode afterwards.</p>
+</section>
+
+<section class="plan">
+  <div class="plan-head"><h3>Background manager</h3><span>instead of the ExGFX shuffle</span></div>
+  <p>Install a downloaded background and have its ExGFX files, palette and Map16 BG pages set
+     up as one unit. The background picker and ExGFX import already exist — this turns using
+     someone else's background from a checklist into a choice.</p>
+</section>
+
+<section class="plan">
+  <div class="plan-head"><h3>Updates that install themselves</h3><span>instead of re-downloading</span></div>
+  <p>A new version currently means fetching a build and replacing your copy by hand. Pipe
+     Dream should check for a newer release, download it, and swap itself out — no exe to
+     re-download, no install script to re-run, no wondering whether you're three builds
+     behind. Your projects and config stay untouched.</p>
+</section>
+
+<section class="plan">
+  <div class="plan-head"><h3>Shareable custom base ROMs</h3><span>instead of passing ROMs around</span></div>
+  <p>Package a prepared base — patches, ASM, resources, the lot — as something another creator
+     can pull down and build against. A <code>.pdp</code> already pins its base, so being able
+     to share that base is what makes sharing a project complete.</p>
+</section>
+
+<p>No timelines promised, and these land one at a time rather than together. If one of them is
+   what you're waiting on, the
    <a href="https://github.com/john-sparwasser/pipe-dream/issues">issue tracker</a> is the
    place to say so.</p>
 
