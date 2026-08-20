@@ -187,9 +187,24 @@ cd pipe-dream
    <code>.pdp</code> so double-clicking a project opens it. Re-run any time to upgrade in
    place. <code>.\install\uninstall.ps1</code> removes all three and leaves your config and
    projects alone.</p>
-<p>Linux and macOS run from the same source today — <code>dotnet publish -r linux-x64</code>
-   (or <code>osx-arm64</code>) — but the one-click packaging for them isn't finished yet.</p>
 <p>You supply your own copy of Super Mario World. Pipe Dream ships no game data.</p>
+
+<h3>Prebuilt Windows &amp; Linux builds</h3>
+<p>Every commit that passes CI leaves a runnable build behind — no toolchain, no compiling.
+   The build runs on a Windows and a Linux runner in parallel, runs the full test suite on
+   both, then publishes a self-contained package for each:</p>
+<table>
+  <tr><th>Platform</th><th>Build</th><th>Download</th></tr>
+  <tr><td>Windows x64</td><td><code>PipeDream-win-x64</code></td>
+      <td><a href="https://github.com/john-sparwasser/pipe-dream/actions/workflows/build.yml">latest run</a></td></tr>
+  <tr><td>Linux x64</td><td><code>PipeDream-linux-x64</code></td>
+      <td><a href="https://github.com/john-sparwasser/pipe-dream/actions/workflows/build.yml">latest run</a></td></tr>
+</table>
+<p>Pick the newest green run and grab the artifact for your platform. Each one is
+   self-contained — it carries its own .NET runtime, so unzip and run. Two caveats while
+   there's no tagged release yet: GitHub needs you signed in to download artifacts, and they
+   expire after 90 days. macOS builds from the same source
+   (<code>dotnet publish -r osx-arm64</code>) but isn't in the build matrix yet.</p>
 
 <h2>The command line</h2>
 <p>One executable does both halves. <code>PipeDream.exe</code> opens the editor; with
