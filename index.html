@@ -97,7 +97,7 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
     <span>Lunar Magic compatible</span>
   </div>
   <div class="cta">
-    <a class="primary" href="#install">Get it</a>
+    <a class="primary" href="#install">Download</a>
     <a class="ghost" href="https://github.com/john-sparwasser/pipe-dream">Source on GitHub</a>
   </div>
   <p class="note"><span class="pill">In development</span></p>
@@ -246,20 +246,23 @@ cd pipe-dream
    projects alone.</p>
 <p>You supply your own copy of Super Mario World. Pipe Dream ships no game data.</p>
 
-<h3>Prebuilt Windows &amp; Linux builds</h3>
-<p>Every commit that passes CI leaves a working build behind — no toolchain, no compiling. Both
-   runners run the full test suite first, then Windows produces a per-user installer (CI proves
-   it works by installing it, running a self-check from the installed binary, and uninstalling
-   again) and Linux produces a single self-contained executable. Either way it carries its own
-   .NET runtime, so there's nothing to install alongside it.</p>
+<h3>Download a build</h3>
+<p>No toolchain, no compiling. Windows gets a per-user installer — no admin rights, and CI
+   proves it works by installing it, running a self-check from the installed binary and
+   uninstalling again. Linux gets a single self-contained executable: <code>chmod +x</code> and
+   run. Either way it carries its own .NET runtime, so there's nothing to install alongside it,
+   and the editor can update itself from then on.</p>
 <div id="dl">
-  <p>Grab the newest green run and take the artifact for your platform —
-     <code>PipeDream-Setup</code> for Windows, <code>PipeDream-linux-x64</code> for Linux —
-     from <a href="https://github.com/john-sparwasser/pipe-dream/actions/workflows/build.yml">the
-     build workflow</a>.</p>
+  <p>Take the file for your platform from
+     <a href="https://github.com/john-sparwasser/pipe-dream/releases/latest">the latest
+     release</a> — the <code>PipeDream-Setup</code> installer for Windows, or
+     <code>PipeDream-linux-x64</code> for Linux.</p>
 </div>
-<p class="dl-note">Two caveats while there's no tagged release yet: GitHub needs you signed in
-   to download a workflow artifact, and artifacts expire after 90 days.</p>
+<p class="dl-note">Every commit also gets built and tested on both platforms, so if you want
+   something newer than the last release, the
+   <a href="https://github.com/john-sparwasser/pipe-dream/actions/workflows/build.yml">build
+   workflow</a> has one — those artifacts need a GitHub login and expire after 90 days, which
+   is why the release above is the better link.</p>
 
 <h3>macOS — in progress</h3>
 <p>Nothing in the editor is Windows-only, and it already builds and runs on a Mac from source
