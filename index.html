@@ -58,6 +58,12 @@ header h1{margin:16px 0 10px;font-size:2.6rem;letter-spacing:-.02em}
   border-radius:8px;padding:14px 18px;margin:10px 0;color:var(--dim);font-size:.94rem}
 .road b{color:var(--fg);display:block;margin-bottom:2px;font-weight:600}
 
+#dl{margin:18px 0}
+.dl-btn{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;
+  font-weight:600;padding:12px 24px;border-radius:8px}
+.dl-meta,.dl-mac{color:var(--dim);font-size:.88rem;margin:10px 0 0}
+.dl-note{font-size:.88rem}
+
 table{width:100%;border-collapse:collapse;margin-top:16px;font-size:.9rem}
 th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 th{color:var(--dim);font-weight:600}
@@ -192,18 +198,16 @@ cd pipe-dream
 <h3>Prebuilt Windows &amp; Linux builds</h3>
 <p>Every commit that passes CI leaves a runnable build behind — no toolchain, no compiling.
    The build runs on a Windows and a Linux runner in parallel, runs the full test suite on
-   both, then publishes a self-contained package for each:</p>
-<table>
-  <tr><th>Platform</th><th>Build</th><th>Download</th></tr>
-  <tr><td>Windows x64</td><td><code>PipeDream-win-x64</code></td>
-      <td><a href="https://github.com/john-sparwasser/pipe-dream/actions/workflows/build.yml">latest run</a></td></tr>
-  <tr><td>Linux x64</td><td><code>PipeDream-linux-x64</code></td>
-      <td><a href="https://github.com/john-sparwasser/pipe-dream/actions/workflows/build.yml">latest run</a></td></tr>
-</table>
-<p>Pick the newest green run and grab the artifact for your platform. Each one is
-   self-contained — it carries its own .NET runtime, so unzip and run. Two caveats while
-   there's no tagged release yet: GitHub needs you signed in to download artifacts, and they
-   expire after 90 days.</p>
+   both, then publishes a self-contained package for each. Unzip and run; it carries its own
+   .NET runtime.</p>
+<div id="dl">
+  <p>Grab the newest green run and take the artifact for your platform —
+     <code>PipeDream-win-x64</code> or <code>PipeDream-linux-x64</code> — from
+     <a href="https://github.com/john-sparwasser/pipe-dream/actions/workflows/build.yml">the
+     build workflow</a>.</p>
+</div>
+<p class="dl-note">Two caveats while there's no tagged release yet: GitHub needs you signed in
+   to download a workflow artifact, and artifacts expire after 90 days.</p>
 
 <h3>macOS — in progress</h3>
 <p>Nothing in the editor is Windows-only, and it already builds and runs on a Mac from source
@@ -248,5 +252,6 @@ PipeDream.exe --buildproject ...            # build the output ROM</code></pre>
 </footer>
 
 </main>
+<script src="/downloads.js" defer></script>
 </body>
 </html>
