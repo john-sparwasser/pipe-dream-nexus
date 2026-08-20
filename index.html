@@ -46,6 +46,9 @@ header h1{margin:16px 0 10px;font-size:2.6rem;letter-spacing:-.02em}
 .cta .primary{background:var(--accent);color:#fff}
 .cta .ghost{border:1px solid var(--line);color:var(--fg)}
 .note{text-align:center;color:var(--dim);font-size:.85rem;margin-top:20px}
+/* width/height are on the tag too, so the page does not reflow when it loads. */
+.shot{display:block;width:100%;height:auto;margin-top:28px;border-radius:5px;
+  border:1px solid var(--line)}
 
 .lead{font-size:1.05rem}
 .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:20px}
@@ -98,6 +101,10 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
     <a class="ghost" href="https://github.com/john-sparwasser/pipe-dream">Source on GitHub</a>
   </div>
   <p class="note"><span class="pill">In development</span></p>
+  <img class="shot" src="/editor.png" width="1916" height="1131"
+       alt="The Pipe Dream editor: level $105 open on the canvas with a green pipe and rolling
+            hills, the Map16 tile palette down the left side, and mode tabs for Level, Map16
+            and GFX across the top.">
 </header>
 
 <h2>One tool instead of six</h2>
