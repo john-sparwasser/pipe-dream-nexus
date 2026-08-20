@@ -8,6 +8,10 @@
 
 var REPO = 'john-sparwasser/pipe-dream';
 
+/// Artifact name per platform, which is NOT the RID: the Windows job uploads an installer.
+/// If build.yml renames an upload, this is the line to change.
+var ARTIFACT = { 'win-x64': 'PipeDream-Setup', 'linux-x64': 'PipeDream-linux-x64' };
+
 /// Which build this visitor wants: a RID, 'osx' (supported, not packaged yet), or null for
 /// anything that cannot run a desktop app. Android's UA contains "Linux", so it goes first.
 function ridFor(ua, platformHint) {
@@ -55,13 +59,14 @@ if (typeof document !== 'undefined') {
     fetch('https://api.github.com/repos/' + REPO + '/actions/artifacts?per_page=100')
       .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
       .then(function (d) {
-        var mine = pickArtifact(d.artifacts, 'PipeDream-' + rid);
+        var mine = pickArtifact(d.artifacts, ARTIFACT[rid]);
         if (!mine) return;                                  // nothing fresh: keep the fallback
         var other = rid === 'win-x64' ? 'linux-x64' : 'win-x64';
-        var theirs = pickArtifact(d.artifacts, 'PipeDream-' + other);
+        var theirs = pickArtifact(d.artifacts, ARTIFACT[other]);
 
         box.innerHTML =
-          '<a class="dl-btn" href="' + artifactUrl(mine) + '">Download for ' + LABEL[rid] + '</a>'
+          '<a class="dl-btn" href="' + artifactUrl(mine) + '">'
+          + (rid === 'win-x64' ? 'Download the Windows installer' : 'Download for Linux') + '</a>'
           + '<p class="dl-meta">' + Math.round(mine.size_in_bytes / 1048576) + '&nbsp;MB · '
           + 'self-contained · built ' + new Date(mine.created_at).toLocaleDateString(undefined,
               { year: 'numeric', month: 'short', day: 'numeric' })
@@ -72,4 +77,4 @@ if (typeof document !== 'undefined') {
   }
 }
 
-if (typeof module !== 'undefined') module.exports = { ridFor: ridFor, pickArtifact: pickArtifact };
+if (typeof module !== 'undefined') module.exports = { ridFor: ridFor, pickArtifact: pickArtifact, ARTIFACT: ARTIFACT };

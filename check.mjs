@@ -2,7 +2,7 @@
 // silently wrong. No DOM here, so the wiring at the bottom of that file skips itself.
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-const { ridFor, pickArtifact } = createRequire(import.meta.url)('./downloads.js');
+const { ridFor, pickArtifact, ARTIFACT } = createRequire(import.meta.url)('./downloads.js');
 
 // Real user-agent strings, because that is where this goes wrong.
 const UA = {
@@ -39,4 +39,10 @@ assert.equal(pickArtifact(undefined, 'PipeDream-win-x64'), null);
 assert.equal(pickArtifact(all.filter(a => a.expired), 'PipeDream-win-x64'), null,
              'an expired artifact is a dead link, never the download');
 
+
+
+// The Windows job uploads an installer, so the artifact name is not the RID. Both names must
+// match what build.yml actually uploads, or the page silently falls back to the static links.
+assert.equal(ARTIFACT['win-x64'], 'PipeDream-Setup');
+assert.equal(ARTIFACT['linux-x64'], 'PipeDream-linux-x64');
 console.log('ok');

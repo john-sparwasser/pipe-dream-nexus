@@ -171,70 +171,53 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
 </div>
 
 <h2 id="roadmap">Roadmap</h2>
-<p>This is where "all-in-one" gets paid off. Five of these are tools you currently download,
-   configure and run yourself, each with its own folder layout and its own insertion step. The
-   plan is a manager for each, inside the editor, sharing one project and one undo history —
-   browse and install from the community, see what your project actually uses, and have it
-   re-applied on build.</p>
+<p>Planned. Most of these replace a tool you currently download and run by hand.</p>
 
 <section class="plan">
   <div class="plan-head"><h3>Block manager</h3><span>instead of GPS</span></div>
-  <p>Install a custom block and get all of it at once: the behaviour code, its Map16 entry,
-     and the acts-like setting that makes it behave in the editor too. Today that means
-     dropping files in a folder, hand-editing a list, and re-running an inserter after every
-     change. Map16 editing already lives here — the missing half is managing the blocks
-     themselves.</p>
+  <p>Install a custom block and get all of it: the code, its Map16 entry, its acts-like
+     setting. No folders to fill, no inserter to re-run.</p>
 </section>
 
 <section class="plan">
   <div class="plan-head"><h3>Sprite manager</h3><span>instead of PIXI</span></div>
-  <p>Custom sprites with their config, table entries and per-level assignment handled in one
-     place, so dropping a custom sprite into a level is the same gesture as dropping in a
-     vanilla one. The editor already reads the sprite tables and per-level graphics slots;
-     what it can't yet do is install and track a sprite's own code.</p>
+  <p>Install custom sprites and place them like vanilla ones. Their config, table entries and
+     per-level assignment are handled for you.</p>
 </section>
 
 <section class="plan">
   <div class="plan-head"><h3>UberASM manager</h3><span>instead of UberASMTool</span></div>
-  <p>Per-level, per-gamemode and global custom ASM, attached to the level you're looking at
-     rather than to a line in a text file you maintain separately. Including the part that's
-     currently kept in your head: which levels have code on them at all.</p>
+  <p>Attach custom ASM to a level, a gamemode, or the whole game — from the level you're
+     looking at, not a text file you maintain. Plus a clear view of which levels have code
+     on them.</p>
 </section>
 
 <section class="plan">
   <div class="plan-head"><h3>Music manager</h3><span>instead of AddmusicK</span></div>
-  <p>Custom songs, sample groups and track slots, with a level's music setting picking from
-     what's actually installed instead of a number you have to remember. It's also where
-     running out of room in a sample group becomes something you can see, rather than a build
-     error you decode afterwards.</p>
+  <p>Install songs and pick a level's music by name instead of by number. See sample group
+     space before you run out of it.</p>
 </section>
 
 <section class="plan">
   <div class="plan-head"><h3>Background manager</h3><span>instead of the ExGFX shuffle</span></div>
-  <p>Install a downloaded background and have its ExGFX files, palette and Map16 BG pages set
-     up as one unit. The background picker and ExGFX import already exist — this turns using
-     someone else's background from a checklist into a choice.</p>
+  <p>Install a background and get its ExGFX, palette and Map16 pages set up together. One
+     choice instead of a checklist.</p>
 </section>
 
 <section class="plan">
   <div class="plan-head"><h3>Updates that install themselves</h3><span>instead of re-downloading</span></div>
-  <p>A new version currently means fetching a build and replacing your copy by hand. Pipe
-     Dream should check for a newer release, download it, and swap itself out — no exe to
-     re-download, no install script to re-run, no wondering whether you're three builds
-     behind. Your projects and config stay untouched.</p>
+  <p>Pipe Dream checks for a new release, downloads it, and replaces itself. Your projects and
+     config stay put.</p>
 </section>
 
 <section class="plan">
   <div class="plan-head"><h3>Shareable custom base ROMs</h3><span>instead of passing ROMs around</span></div>
-  <p>Package a prepared base — patches, ASM, resources, the lot — as something another creator
-     can pull down and build against. A <code>.pdp</code> already pins its base, so being able
-     to share that base is what makes sharing a project complete.</p>
+  <p>Package a prepared base — patches, ASM, resources — for someone else to build against. A
+     <code>.pdp</code> already pins its base; this shares it.</p>
 </section>
 
-<p>No timelines promised, and these land one at a time rather than together. If one of them is
-   what you're waiting on, the
-   <a href="https://github.com/john-sparwasser/pipe-dream/issues">issue tracker</a> is the
-   place to say so.</p>
+<p>No timelines, and these land one at a time. If one of them is what you're waiting on, say so
+   on the <a href="https://github.com/john-sparwasser/pipe-dream/issues">issue tracker</a>.</p>
 
 <h2 id="install">Install</h2>
 <p>Windows, per-user — no admin rights, nothing written outside your own profile.</p>
@@ -250,14 +233,15 @@ cd pipe-dream
 <p>You supply your own copy of Super Mario World. Pipe Dream ships no game data.</p>
 
 <h3>Prebuilt Windows &amp; Linux builds</h3>
-<p>Every commit that passes CI leaves a runnable build behind — no toolchain, no compiling.
-   The build runs on a Windows and a Linux runner in parallel, runs the full test suite on
-   both, then publishes a self-contained package for each. Unzip and run; it carries its own
-   .NET runtime.</p>
+<p>Every commit that passes CI leaves a working build behind — no toolchain, no compiling. Both
+   runners run the full test suite first, then Windows produces a per-user installer (CI proves
+   it works by installing it, running a self-check from the installed binary, and uninstalling
+   again) and Linux produces a single self-contained executable. Either way it carries its own
+   .NET runtime, so there's nothing to install alongside it.</p>
 <div id="dl">
   <p>Grab the newest green run and take the artifact for your platform —
-     <code>PipeDream-win-x64</code> or <code>PipeDream-linux-x64</code> — from
-     <a href="https://github.com/john-sparwasser/pipe-dream/actions/workflows/build.yml">the
+     <code>PipeDream-Setup</code> for Windows, <code>PipeDream-linux-x64</code> for Linux —
+     from <a href="https://github.com/john-sparwasser/pipe-dream/actions/workflows/build.yml">the
      build workflow</a>.</p>
 </div>
 <p class="dl-note">Two caveats while there's no tagged release yet: GitHub needs you signed in
