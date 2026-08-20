@@ -203,8 +203,15 @@ cd pipe-dream
 <p>Pick the newest green run and grab the artifact for your platform. Each one is
    self-contained — it carries its own .NET runtime, so unzip and run. Two caveats while
    there's no tagged release yet: GitHub needs you signed in to download artifacts, and they
-   expire after 90 days. macOS builds from the same source
-   (<code>dotnet publish -r osx-arm64</code>) but isn't in the build matrix yet.</p>
+   expire after 90 days.</p>
+
+<h3>macOS — in progress</h3>
+<p>Nothing in the editor is Windows-only, and it already builds and runs on a Mac from source
+   (<code>dotnet publish -r osx-arm64</code>). What's missing is a signed, double-clickable
+   <code>.dmg</code>, and the blocker there is Apple rather than the code: unsigned apps get
+   quarantined by Gatekeeper, and Apple Silicon won't run an unsigned binary at all. A build
+   people can just open needs an Apple Developer ID (~$99/yr) plus notarization on a real Mac.
+   It's on the way — until then, macOS means building it yourself.</p>
 
 <h2>The command line</h2>
 <p>One executable does both halves. <code>PipeDream.exe</code> opens the editor; with
