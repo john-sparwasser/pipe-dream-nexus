@@ -98,9 +98,9 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
 
 <h2>One tool instead of six</h2>
 <p class="lead">Building a SMW hack today means stitching together a level editor, a block
-   inserter, a sprite inserter, a music patcher, a patch assembler, and a build script to keep
-   them in the right order. Every one of them has its own folders, its own config, and its own
-   way to break your ROM at 2am.</p>
+   inserter, a sprite inserter, a music patcher, an ASM runner, an assembler, and a build
+   script to keep them in the right order. Every one of them has its own folders, its own
+   config, and its own way to break your ROM at 2am.</p>
 <p>Pipe Dream's goal is to be the one program that does all of it. The level editor is here
    today and the rest is being built into the same tool — same window, same project, same undo
    history. See the <a href="#roadmap">roadmap</a> for where that's heading.</p>
@@ -167,18 +167,35 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
 </div>
 
 <h2 id="roadmap">Roadmap</h2>
-<p>What "all-in-one" is being built toward:</p>
+<p>This is where "all-in-one" actually gets paid off. Each of these is a tool you currently
+   download, configure and run yourself, with its own folder layout and its own insertion
+   step. The plan is a manager for each, built into the editor, sharing one project and one
+   undo history:</p>
+<table>
+  <tr><th>Manager</th><th>What it folds in</th></tr>
+  <tr><td><strong>Blocks</strong></td>
+      <td>Custom block behaviour and Map16 wiring — the GPS step</td></tr>
+  <tr><td><strong>Sprites</strong></td>
+      <td>Custom sprites, their tables and per-level assignment — the PIXI step</td></tr>
+  <tr><td><strong>UberASM</strong></td>
+      <td>Per-level, per-gamemode and global custom ASM — the UberASMTool step</td></tr>
+  <tr><td><strong>Music</strong></td>
+      <td>Custom songs, sample groups and track slots — the AddmusicK step</td></tr>
+  <tr><td><strong>Backgrounds</strong></td>
+      <td>The ExGFX-and-Map16 shuffle a custom background takes today</td></tr>
+</table>
+<p>Same shape for all five: browse and install from the community, see what your project
+   actually uses, and have it re-applied on build. No hand-editing a list file, no
+   re-inserting anything after you change a level, and no guessing which of six tools has to
+   run before which.</p>
 <ul class="road">
-  <li><b>Custom content, downloaded and managed in-app</b>
-      Browse, install and update custom sprites, blocks, backgrounds and music from inside
-      the editor — no separate inserter tools, no manual folder wrangling, and nothing to
-      re-apply by hand after every change.</li>
   <li><b>Custom base ROMs you can create and share</b>
       Package a prepared base — patches, ASM, resources, the lot — as something another
       creator can pull down and build against. Since a <code>.pdp</code> pins its base,
-      sharing the base makes sharing the project complete.</li>
+      sharing the base is what makes sharing the project complete.</li>
 </ul>
-<p>Timelines aren't promised. If one of these matters to you, the
+<p>No timelines promised, and the five above land one at a time rather than together. If one
+   of them is what you're waiting on, the
    <a href="https://github.com/john-sparwasser/pipe-dream/issues">issue tracker</a> is the
    place to say so.</p>
 
