@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pipe Dream — the all-in-one Super Mario World hacking tool</title>
+<title>Pipe Dream: the all-in-one Super Mario World hacking tool</title>
 <meta name="description" content="Pipe Dream is a free, open-source, cross-platform Super Mario World level editor. Lunar Magic compatible, with shareable .pdp project files and a gentler learning curve.">
 <link rel="icon" href="/favicon.png">
-<meta property="og:title" content="Pipe Dream — the all-in-one Super Mario World hacking tool">
+<meta property="og:title" content="Pipe Dream: the all-in-one Super Mario World hacking tool">
 <meta property="og:description" content="Free, open source, cross-platform. Lunar Magic compatible. Shareable project files instead of passing ROMs around.">
 <meta property="og:url" content="https://pipedream.nexus">
 <meta property="og:type" content="website">
@@ -89,8 +89,8 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
 <header>
   <img src="/favicon.png" alt="">
   <h1>Pipe Dream</h1>
-  <p class="tag">One tool for building Super Mario World hacks —
-     free, open source, and on every desktop you actually use.</p>
+  <p class="tag">One tool for building Super Mario World hacks. Free, open source,
+     and on every desktop you actually use.</p>
   <div class="pills">
     <span>MIT licensed</span>
     <span>Windows · macOS · Linux</span>
@@ -113,13 +113,13 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
    script to keep them in the right order. Every one of them has its own folders, its own
    config, and its own way to break your ROM at 2am.</p>
 <p>Pipe Dream's goal is to be the one program that does all of it. The level editor is here
-   today and the rest is being built into the same tool — same window, same project, same undo
+   today and the rest is being built into the same tool: same window, same project, same undo
    history. See the <a href="#roadmap">roadmap</a> for where that's heading.</p>
 
 <h2>Works with the hacks you already have</h2>
 <p>ROMs already edited in <strong>Lunar Magic</strong> open, edit and save without conversion,
    and without breaking when you go back to LM afterwards. Pipe Dream honours LM's RATS
-   allocation tags, its Direct Map16 ASM, its secondary exits and its ExAnimation structures —
+   allocation tags, its Direct Map16 ASM, its secondary exits and its ExAnimation structures,
    so a hack in progress never has to pick a side. Use both, in either order, on the same ROM.</p>
 <p>It edits the ROM the way the game reads it: real pointer tables, level headers, object
    streams and Map16 pages. Not a wrapper, not a patch format.</p>
@@ -130,13 +130,13 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
 <div class="grid">
   <div class="card"><h3>Actually shareable</h3>
     <p>Hand a collaborator the <code>.pdp</code>. If they have the same base, they open your
-       project and see exactly what you see — no ROM changes hands.</p></div>
+       project and see exactly what you see. No ROM changes hands.</p></div>
   <div class="card"><h3>Fits in git</h3>
     <p>It's text. Commit it, branch it, diff it, review a level change in a pull request like
        any other file.</p></div>
   <div class="card"><h3>Your ROM stays intact</h3>
     <p>The base ROM is read, never written. Builds are outputs, so a bad session costs you a
-       rebuild — not your hack.</p></div>
+       rebuild, not your hack.</p></div>
 </div>
 
 <h2>Gentler on the way in</h2>
@@ -148,7 +148,7 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
   <li><strong>Guided first run.</strong> It walks you through pointing at your base ROM and
       making a project, and recovers on its own when a base goes missing.</li>
   <li><strong>Plain language, not raw bytes.</strong> Level settings, exits and tile
-      properties are named fields — you shouldn't need a hex table to change the music.</li>
+      properties are named fields. You shouldn't need a hex table to change the music.</li>
   <li><strong>Undo everywhere.</strong> Real edit history, so poking at something you don't
       understand yet is how you learn instead of how you lose an afternoon.</li>
   <li><strong>Safe by construction.</strong> Because projects never write your base ROM,
@@ -158,13 +158,13 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
 <h2>What works today</h2>
 <div class="grid">
   <div class="card"><h3>Level editing</h3>
-    <p>Objects and sprites on a live canvas — place, drag, rubber-band select, undo. Rendered
+    <p>Objects and sprites on a live canvas: place, drag, rubber-band select, undo. Rendered
        through the real object engine, so what you see is what loads.</p></div>
   <div class="card"><h3>Map16 &amp; graphics</h3>
     <p>Map16 pages with tile properties (acts-like, palette, priority, flips), ExGFX import,
        a GFX browser, palette grids, background picker.</p></div>
   <div class="card"><h3>Exits &amp; entrances</h3>
-    <p>Main entrance, secondary entrances, vanilla and LM secondary exits — listed and edited
+    <p>Main entrance, secondary entrances, vanilla and LM secondary exits, listed and edited
        instead of hand-poked in hex.</p></div>
   <div class="card"><h3>BPS patches</h3>
     <p>Apply and write BPS, so a finished build ships as a patch the way the community
@@ -173,8 +173,8 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
     <p>One codebase, no platform-specific editor code. Windows and Linux builds come out of
        CI on every commit; macOS builds from the same source.</p></div>
   <div class="card"><h3>Scriptable</h3>
-    <p>The same executable runs headless — render, diff, self-check, create and build
-       projects — for batch jobs and CI.</p></div>
+    <p>The same executable runs headless for batch jobs and CI: render, diff, self-check,
+       and creating or building projects.</p></div>
 </div>
 
 <h2 id="roadmap">Roadmap</h2>
@@ -182,7 +182,7 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
 
 <section class="plan">
   <div class="plan-head"><h3>Feature parity with Lunar Magic</h3><span>instead of keeping LM open</span></div>
-  <p>Everything LM edits, edited here — the overworld, title screen and credits it still owns,
+  <p>Everything LM edits, edited here: the overworld, title screen and credits it still owns,
      plus the smaller tools you switch back for. Pipe Dream already reads and writes LM's own
      structures; parity is where you can stop switching.</p>
 </section>
@@ -201,8 +201,8 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
 
 <section class="plan">
   <div class="plan-head"><h3>UberASM manager</h3><span>instead of UberASMTool</span></div>
-  <p>Attach custom ASM to a level, a gamemode, or the whole game — from the level you're
-     looking at, not a text file you maintain. Plus a clear view of which levels have code
+  <p>Attach custom ASM to a level, a gamemode, or the whole game, from the level you're
+     looking at rather than a text file you maintain. Plus a clear view of which levels have code
      on them.</p>
 </section>
 
@@ -226,7 +226,7 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
 
 <section class="plan">
   <div class="plan-head"><h3>Shareable custom base ROMs</h3><span>instead of passing ROMs around</span></div>
-  <p>Package a prepared base — patches, ASM, resources — for someone else to build against. A
+  <p>Package a prepared base (patches, ASM, resources) for someone else to build against. A
      <code>.pdp</code> already pins its base; this shares it.</p>
 </section>
 
@@ -234,11 +234,11 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
    on the <a href="https://github.com/john-sparwasser/pipe-dream/issues">issue tracker</a>.</p>
 
 <h2 id="install">Install</h2>
-<p>Windows, per-user — no admin rights, nothing written outside your own profile.</p>
+<p>Windows, per-user: no admin rights, nothing written outside your own profile.</p>
 <pre><code>git clone https://github.com/john-sparwasser/pipe-dream
 cd pipe-dream
 .\install\install.ps1</code></pre>
-<p>That publishes a self-contained build (~85&nbsp;MB — it carries its own .NET runtime, so the
+<p>That publishes a self-contained build (~85&nbsp;MB; it carries its own .NET runtime, so the
    machine needs nothing preinstalled), copies it to
    <code>%LOCALAPPDATA%\Programs\PipeDream</code>, adds a Start Menu shortcut, and registers
    <code>.pdp</code> so double-clicking a project opens it. Re-run any time to upgrade in
@@ -247,7 +247,7 @@ cd pipe-dream
 <p>You supply your own copy of Super Mario World. Pipe Dream ships no game data.</p>
 
 <h3>Download a build</h3>
-<p>No toolchain, no compiling. Windows gets a per-user installer — no admin rights, and CI
+<p>No toolchain, no compiling. Windows gets a per-user installer needing no admin rights, and CI
    proves it works by installing it, running a self-check from the installed binary and
    uninstalling again. Linux gets a single self-contained executable: <code>chmod +x</code> and
    run. Either way it carries its own .NET runtime, so there's nothing to install alongside it,
@@ -255,26 +255,27 @@ cd pipe-dream
 <div id="dl">
   <p>Take the file for your platform from
      <a href="https://github.com/john-sparwasser/pipe-dream/releases/latest">the latest
-     release</a> — the <code>PipeDream-Setup</code> installer for Windows, or
+     release</a>: the <code>PipeDream-Setup</code> installer for Windows, or
      <code>PipeDream-linux-x64</code> for Linux.</p>
 </div>
 <p class="dl-note">Every commit also gets built and tested on both platforms, so if you want
    something newer than the last release, the
    <a href="https://github.com/john-sparwasser/pipe-dream/actions/workflows/build.yml">build
-   workflow</a> has one — those artifacts need a GitHub login and expire after 90 days, which
+   workflow</a> has one, though those artifacts need a GitHub login and expire after 90 days,
+   which
    is why the release above is the better link.</p>
 
-<h3>macOS — in progress</h3>
+<h3>macOS support in progress</h3>
 <p>Nothing in the editor is Windows-only, and it already builds and runs on a Mac from source
    (<code>dotnet publish -r osx-arm64</code>). What's missing is a signed, double-clickable
    <code>.dmg</code>, and the blocker there is Apple rather than the code: unsigned apps get
    quarantined by Gatekeeper, and Apple Silicon won't run an unsigned binary at all. A build
    people can just open needs an Apple Developer ID (~$99/yr) plus notarization on a real Mac.
-   It's on the way — until then, macOS means building it yourself.</p>
+   It's on the way. Until then, macOS means building it yourself.</p>
 
 <h2>The command line</h2>
 <p>One executable does both halves. <code>PipeDream.exe</code> opens the editor; with
-   <code>--headless</code> — or any command flag — it runs the ROM tools instead.
+   <code>--headless</code>, or any command flag, it runs the ROM tools instead.
    <code>--headless</code> on its own lists them.</p>
 <pre><code>PipeDream.exe --headless                    # list the ROM commands
 PipeDream.exe --selfcheck  rom.smc          # verify a ROM parses and round-trips
@@ -292,10 +293,11 @@ PipeDream.exe --buildproject ...            # build the output ROM</code></pre>
 </table>
 
 <h2>Status</h2>
-<p>Pipe Dream is under active development and hasn't hit a first release. The core loop — open
-   a ROM, edit a level, save something the game runs — works. Expect sharp edges, keep backups
+<p>Pipe Dream is in very early development. v0.0.2 is the first public release, so treat it
+   accordingly: try it on a copy of a hack rather than the hack. The core loop works:
+   open a ROM, edit a level, save something the game runs. Expect sharp edges, keep backups
    of any ROM you point it at, and file what breaks. Overworld, title screen and credits
-   editing aren't built yet — they're on the <a href="#roadmap">roadmap</a>.</p>
+   editing aren't built yet; they're on the <a href="#roadmap">roadmap</a>.</p>
 <p>It's MIT licensed and the whole thing is on GitHub. Bug reports from people who got stuck
    in the first ten minutes are the most useful kind.</p>
 
