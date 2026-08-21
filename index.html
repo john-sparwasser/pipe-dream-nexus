@@ -234,19 +234,6 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
    on the <a href="https://github.com/john-sparwasser/pipe-dream/issues">issue tracker</a>.</p>
 
 <h2 id="install">Install</h2>
-<p>Windows, per-user: no admin rights, nothing written outside your own profile.</p>
-<pre><code>git clone https://github.com/john-sparwasser/pipe-dream
-cd pipe-dream
-.\install\install.ps1</code></pre>
-<p>That publishes a self-contained build (~85&nbsp;MB; it carries its own .NET runtime, so the
-   machine needs nothing preinstalled), copies it to
-   <code>%LOCALAPPDATA%\Programs\PipeDream</code>, adds a Start Menu shortcut, and registers
-   <code>.pdp</code> so double-clicking a project opens it. Re-run any time to upgrade in
-   place. <code>.\install\uninstall.ps1</code> removes all three and leaves your config and
-   projects alone.</p>
-<p>You supply your own copy of Super Mario World. Pipe Dream ships no game data.</p>
-
-<h3>Download a build</h3>
 <p>No toolchain, no compiling. Windows gets a per-user installer needing no admin rights, and CI
    proves it works by installing it, running a self-check from the installed binary and
    uninstalling again. Linux gets a single self-contained executable: <code>chmod +x</code> and
@@ -264,6 +251,19 @@ cd pipe-dream
    workflow</a> has one, though those artifacts need a GitHub login and expire after 90 days,
    which
    is why the release above is the better link.</p>
+<p>You supply your own copy of Super Mario World. Pipe Dream ships no game data.</p>
+
+<h3>Build it from source</h3>
+<p>Windows, per-user: no admin rights, nothing written outside your own profile.</p>
+<pre><code>git clone https://github.com/john-sparwasser/pipe-dream
+cd pipe-dream
+.\install\install.ps1</code></pre>
+<p>That publishes a self-contained build (~85&nbsp;MB; it carries its own .NET runtime, so the
+   machine needs nothing preinstalled), copies it to
+   <code>%LOCALAPPDATA%\Programs\PipeDream</code>, adds a Start Menu shortcut, and registers
+   <code>.pdp</code> so double-clicking a project opens it. Re-run any time to upgrade in
+   place. <code>.\install\uninstall.ps1</code> removes all three and leaves your config and
+   projects alone.</p>
 
 <h3>macOS support in progress</h3>
 <p>Nothing in the editor is Windows-only, and it already builds and runs on a Mac from source
