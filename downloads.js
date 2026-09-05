@@ -53,31 +53,34 @@ if (typeof document !== 'undefined') {
     box.innerHTML = '<p class="dl-mac">No packaged macOS build yet — '
       + '<a href="https://github.com/' + REPO + '#native-macos-builds--in-progress">'
       + 'here is why, and how to build it yourself</a>.</p>';
-
-  } else if (box && LABEL[platform]) {
-    fetch('https://api.github.com/repos/' + REPO + '/releases/latest')
-      .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
-      .then(function (d) {
-        var mine = pickAsset(d.assets, platform);
-        if (!mine) return;                          // nothing for this platform: keep the link
-        var other = platform === 'win' ? 'linux' : 'win';
-        var theirs = pickAsset(d.assets, other);
-        var version = tagVersion(d.tag_name);
-
-        box.innerHTML =
-          '<a class="dl-btn" href="' + mine.browser_download_url + '">'
-          + (platform === 'win' ? 'Download the Windows installer' : 'Download for Linux')
-          + '</a>'
-          + '<p class="dl-meta">'
-          + (version ? 'Version ' + version + ' · ' : '')
-          + Math.round(mine.size / 1048576) + '&nbsp;MB · self-contained'
-          + (theirs ? ' · <a href="' + theirs.browser_download_url + '">' + LABEL[other]
-                      + ' build</a>' : '')
-          + ' · <a href="https://github.com/' + REPO + '/releases/latest">release notes</a>'
-          + '</p>';
-      })
-      .catch(function () { /* rate limited or offline: the static link is still there */ });
   }
+
+  fetch('https://api.github.com/repos/' + REPO + '/releases/latest')
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function (d) {
+      var version = tagVersion(d.tag_name);
+      var ver = document.getElementById('ver');
+      if (ver && version) ver.textContent = 'v' + version;   // the Status paragraph
+
+      if (!box || !LABEL[platform]) return;
+      var mine = pickAsset(d.assets, platform);
+      if (!mine) return;                          // nothing for this platform: keep the link
+      var other = platform === 'win' ? 'linux' : 'win';
+      var theirs = pickAsset(d.assets, other);
+
+      box.innerHTML =
+        '<a class="dl-btn" href="' + mine.browser_download_url + '">'
+        + (platform === 'win' ? 'Download the Windows installer' : 'Download for Linux')
+        + '</a>'
+        + '<p class="dl-meta">'
+        + (version ? 'Version ' + version + ' · ' : '')
+        + Math.round(mine.size / 1048576) + '&nbsp;MB · self-contained'
+        + (theirs ? ' · <a href="' + theirs.browser_download_url + '">' + LABEL[other]
+                    + ' build</a>' : '')
+        + ' · <a href="https://github.com/' + REPO + '/releases/latest">release notes</a>'
+        + '</p>';
+    })
+    .catch(function () { /* rate limited or offline: the static markup is still there */ });
 }
 
 if (typeof module !== 'undefined')

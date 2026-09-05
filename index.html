@@ -29,9 +29,6 @@ p{color:var(--dim)}
 p strong,li strong{color:var(--fg);font-weight:600}
 code{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:.9em;
   background:#0d1117;border:1px solid var(--line);border-radius:4px;padding:1px 5px}
-pre{background:#0d1117;border:1px solid var(--line);border-radius:8px;
-  padding:16px;overflow-x:auto}
-pre code{background:none;border:0;padding:0;font-size:.86rem;line-height:1.6}
 
 header{padding:80px 0 8px;text-align:center}
 header img{width:64px;height:64px;image-rendering:pixelated}
@@ -84,10 +81,6 @@ header h1{margin:16px 0 10px;font-size:2.6rem;letter-spacing:-.02em}
 .dl-meta,.dl-mac{color:var(--dim);font-size:.88rem;margin:10px 0 0}
 .dl-note{font-size:.88rem}
 
-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:.9rem}
-th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
-th{color:var(--dim);font-weight:600}
-td code{white-space:nowrap}
 ul{color:var(--dim);padding-left:20px}
 li{margin:6px 0}
 footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
@@ -280,48 +273,10 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
    is why the release above is the better link.</p>
 <p>You supply your own copy of Super Mario World. Pipe Dream ships no game data.</p>
 
-<h3>Build it from source</h3>
-<p>Windows, per-user: no admin rights, nothing written outside your own profile.</p>
-<pre><code>git clone https://github.com/john-sparwasser/pipe-dream
-cd pipe-dream
-.\install\install.ps1</code></pre>
-<p>That publishes a self-contained build (~85&nbsp;MB; it carries its own .NET runtime, so the
-   machine needs nothing preinstalled), copies it to
-   <code>%LOCALAPPDATA%\Programs\PipeDream</code>, adds a Start Menu shortcut, and registers
-   <code>.pdp</code> so double-clicking a project opens it. Re-run any time to upgrade in
-   place. <code>.\install\uninstall.ps1</code> removes all three and leaves your config and
-   projects alone.</p>
-
-<h3>macOS support in progress</h3>
-<p>Nothing in the editor is Windows-only, and it already builds and runs on a Mac from source
-   (<code>dotnet publish -r osx-arm64</code>). What's missing is a signed, double-clickable
-   <code>.dmg</code>, and the blocker there is Apple rather than the code: unsigned apps get
-   quarantined by Gatekeeper, and Apple Silicon won't run an unsigned binary at all. A build
-   people can just open needs an Apple Developer ID (~$99/yr) plus notarization on a real Mac.
-   It's on the way. Until then, macOS means building it yourself.</p>
-
-<h2>The command line</h2>
-<p>One executable does both halves. <code>PipeDream.exe</code> opens the editor; with
-   <code>--headless</code>, or any command flag, it runs the ROM tools instead.
-   <code>--headless</code> on its own lists them.</p>
-<pre><code>PipeDream.exe --headless                    # list the ROM commands
-PipeDream.exe --selfcheck  rom.smc          # verify a ROM parses and round-trips
-PipeDream.exe --render     rom.smc 105 out.png
-PipeDream.exe --diff       a.smc b.smc      # changed runs + new RATS blocks
-PipeDream.exe --newproject ...              # create a .pdp
-PipeDream.exe --buildproject ...            # build the output ROM</code></pre>
-<table>
-  <tr><th>Area</th><th>Commands</th></tr>
-  <tr><td>Projects</td><td><code>--newproject</code> <code>--buildproject</code> <code>--bps</code></td></tr>
-  <tr><td>Inspection</td><td><code>--selfcheck</code> <code>--diff</code> <code>--markers</code> <code>--disasm</code> <code>--dumpcell</code></td></tr>
-  <tr><td>Levels</td><td><code>--render</code> <code>--exits</code> <code>--entrances</code> <code>--mainentrance</code> <code>--sprites</code></td></tr>
-  <tr><td>Graphics</td><td><code>--gfxsheet</code> <code>--blobsheet</code> <code>--tilepng</code> <code>--map16def</code> <code>--writedm16</code></td></tr>
-  <tr><td>Animation</td><td><code>--exanim</code> <code>--globalexanim</code></td></tr>
-</table>
-
 <h2>Status</h2>
-<p>Pipe Dream is in very early development. v0.0.2 is the first public release, so treat it
-   accordingly: try it on a copy of a hack rather than the hack. The core loop works:
+<p>Pipe Dream is in very early development. The latest release is
+   <span id="ver">v0.4.1</span>, so treat it accordingly: try it on a copy of a hack rather
+   than the hack. The core loop works:
    open a ROM, edit a level, save something the game runs. Expect sharp edges, keep backups
    of any ROM you point it at, and file what breaks. Overworld, title screen and credits
    editing aren't built yet; they're on the <a href="#roadmap">roadmap</a>.</p>
