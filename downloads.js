@@ -67,6 +67,8 @@ if (typeof document !== 'undefined') {
       if (!mine) return;                          // nothing for this platform: keep the link
       var other = platform === 'win' ? 'linux' : 'win';
       var theirs = pickAsset(d.assets, other);
+      var top = document.getElementById('top-dl');
+      if (top) top.href = mine.browser_download_url;   // header button: straight to the file
 
       box.innerHTML =
         '<a class="dl-btn" href="' + mine.browser_download_url + '">'
