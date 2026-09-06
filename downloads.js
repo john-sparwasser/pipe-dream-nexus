@@ -52,9 +52,9 @@ if (typeof document !== 'undefined') {
   // Header Download button: a modal with both builds. The <a> still goes to the release page
   // if this script never ran.
   var modal = document.getElementById('dl-modal');
-  var top = document.getElementById('top-dl');
-  if (modal && top) {
-    top.onclick = function (e) { e.preventDefault(); modal.showModal(); };
+  var dlBtn = document.getElementById('top-dl');   // not "top": that is window.top, read-only
+  if (modal && dlBtn) {
+    dlBtn.onclick = function (e) { e.preventDefault(); modal.showModal(); };
     modal.onclick = function (e) {
       if (e.target === modal || e.target.className === 'close') modal.close();
     };
