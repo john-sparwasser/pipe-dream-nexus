@@ -49,6 +49,17 @@ if (typeof document !== 'undefined') {
   var platform = ridFor(navigator.userAgent,
                         (navigator.userAgentData || {}).platform || navigator.platform);
 
+  // Header Download button: a modal with both builds. The <a> still goes to the release page
+  // if this script never ran.
+  var modal = document.getElementById('dl-modal');
+  var top = document.getElementById('top-dl');
+  if (modal && top) {
+    top.onclick = function (e) { e.preventDefault(); modal.showModal(); };
+    modal.onclick = function (e) {
+      if (e.target === modal || e.target.className === 'close') modal.close();
+    };
+  }
+
   if (box && platform === 'osx') {
     box.innerHTML = '<p class="dl-mac">No packaged macOS build yet — '
       + '<a href="https://github.com/' + REPO + '#native-macos-builds--in-progress">'
@@ -62,13 +73,20 @@ if (typeof document !== 'undefined') {
       var ver = document.getElementById('ver');
       if (ver && version) ver.textContent = 'v' + version;   // the Status paragraph
 
+      ['win', 'linux'].forEach(function (p) {              // modal links: straight to the file
+        var a = pickAsset(d.assets, p), el = document.getElementById('dl-' + p);
+        if (a && el) {
+          el.href = a.browser_download_url;
+          el.innerHTML += '<small>' + (version ? 'v' + version + ' · ' : '')
+                        + Math.round(a.size / 1048576) + '&nbsp;MB</small>';
+        }
+      });
+
       if (!box || !LABEL[platform]) return;
       var mine = pickAsset(d.assets, platform);
       if (!mine) return;                          // nothing for this platform: keep the link
       var other = platform === 'win' ? 'linux' : 'win';
       var theirs = pickAsset(d.assets, other);
-      var top = document.getElementById('top-dl');
-      if (top) top.href = mine.browser_download_url;   // header button: straight to the file
 
       box.innerHTML =
         '<a class="dl-btn" href="' + mine.browser_download_url + '">'
