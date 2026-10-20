@@ -1,0 +1,393 @@
+{
+ "addresses": {
+  "0010": {
+   "name": "Frame-ready flag",
+   "kind": "flag byte",
+   "desc": [
+    "Handshake between the main loop and the NMI. The main loop clears it with STZ and spins until it is non-zero;",
+    "the NMI handler increments it when it finishes the frame's PPU work (also on the lag/Mode 7 tail path).",
+    "Reset code does INC once at boot so the first pass skips the wait.",
+    "Values: 0 = waiting for the next frame; non-zero = frame handled."
+   ]
+  },
+  "0011": {
+   "name": "IRQ split stage",
+   "kind": "state",
+   "desc": [
+    "Which IRQ of the frame's screen split comes next. The NMI tail clears it to 0; the IRQ handler bumps it to 1",
+    "after the first split, so the second IRQ sets up the BG3 scroll/screen mode or the Mode 7 boss-room splits.",
+    "Values: 0 = first IRQ pending; 1 = second IRQ stage."
+   ]
+  },
+  "0012": {
+   "name": "Stripe image number",
+   "kind": "byte (index)",
+   "desc": [
+    "Number of the stripe image queued for upload to VRAM; the upload routine uses it times 3 as an offset into",
+    "ImagePointers. Set by game modes and cutscenes to draw title screen, file select, overworld border, credits",
+    "backgrounds and so on, and consumed by the Upload stripe image routine.",
+    "Values: $03 = title screen; $06 = overworld border; $D2 = credits background; 0 = none queued (probably)."
+   ]
+  },
+  "0013": {
+   "name": "Frame counter",
+   "kind": "counter",
+   "desc": [
+    "Free-running frame counter, incremented every frame by the main loop, including while the game is paused or",
+    "locked. Sprites and animations read low bits to pace things: 'every 32 frames' is [$13] & $1F == 0, Boo/bat",
+    "wobble, firework sparks, overworld water animation. Compare $0014, which stops when the game is frozen.",
+    "Values: wraps 00-FF."
+   ]
+  },
+  "0014": {
+   "name": "Frame counter B",
+   "kind": "counter",
+   "desc": [
+    "Second frame counter used for most sprite and Mario animation timing. It counts every frame the game is",
+    "running; sprite routines mask it (for example & $30) to time Chuck states, Lakitu's cloud, Yoshi's tongue",
+    "and the Boo stream. Level preparation clears bits 0-2 and 5-7 of it (TRB) to keep only bits 3-4.",
+    "Values: wraps 00-FF. See $0013 for the always-running counter."
+   ]
+  },
+  "0015": {
+   "name": "Controller 1 held (byetUDLR)",
+   "kind": "bit flags",
+   "desc": [
+    "Buttons held by the active player this frame: pad byte 1 ($0DA2) with the A and X bits of byte 2 merged into",
+    "bits 7 and 6, so jump (B or A) and run/fire (Y or X) each need one test. Read by Mario physics, swimming, cape",
+    "flight, carrying and menus; game mode 14 clears the Down bit while Mario is busy.",
+    "Bits: 7 = B or A; 6 = Y or X; 5 = Select; 4 = Start; 3 = Up; 2 = Down; 1 = Left; 0 = Right."
+   ]
+  },
+  "0016": {
+   "name": "Controller 1 newly pressed (byetUDLR)",
+   "kind": "bit flags",
+   "desc": [
+    "Buttons that went down this frame (current AND NOT previous) for pad byte 1, with a new X press merged into",
+    "bit 6 (A is not merged, see $0018). Used for one-shot actions: jump start, menu cursor, fireball and spin input.",
+    "Game mode 14 clears bit 6 here and in $0018 while Mario is busy.",
+    "Bits: 7 = B; 6 = Y or X; 5 = Select; 4 = Start; 3 = Up; 2 = Down; 1 = Left; 0 = Right."
+   ]
+  },
+  "0017": {
+   "name": "Controller 1 held (axlr----)",
+   "kind": "bit flags",
+   "desc": [
+    "Second joypad byte for the active player: A, X, L and R held. Written by the Read joypads routine, read by",
+    "Mario animation (spin jump, run), Yoshi poses, L/R scrolling and the title screen/demo code.",
+    "Bits: 7 = A; 6 = X; 5 = L; 4 = R; 3-0 unused."
+   ]
+  },
+  "0018": {
+   "name": "Controller 1 newly pressed (axlr----)",
+   "kind": "bit flags",
+   "desc": [
+    "Edge-detected version of $0017: A, X, L, R pressed this frame. Combined with $0016 (ORA) to catch a new B or A",
+    "press for jumping or swimming up, and used by the menu cursor and file menus (which OR in controller 2).",
+    "Bits: 7 = A; 6 = X; 5 = L; 4 = R."
+   ]
+  },
+  "0019": {
+   "name": "Mario power-up",
+   "kind": "byte",
+   "desc": [
+    "Mario's current power-up state. Written when he is hit, collects a mushroom, flower, feather or star... and",
+    "when a level starts; read by collision, drawing, the cape-flight tables, sprite interactions and platform code.",
+    "Values: 0 = small; 1 = big; 2 = cape; 3 = fire flower."
+   ]
+  },
+  "001A": {
+   "name": "Layer 1 X position (low)",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Horizontal scroll of layer 1 (BG1) in pixels, also called the screen boundary X. $001B is the high byte. The",
+    "NMI copies it to the BG1 H-scroll register. Scroll code sets it from $1462 each frame; sprites, blocks and",
+    "particles subtract it to get on-screen X and delete themselves when off the screen. Cutscenes and the",
+    "overworld write it directly."
+   ]
+  },
+  "001B": {
+   "name": "Layer 1 X position (high)",
+   "kind": "byte (high half of word)",
+   "desc": [
+    "High byte of layer 1's horizontal scroll position ($001A is the low byte). Identifies the 256-pixel screen",
+    "page; sprites compare an object's X high byte against it to see if it is on the current page."
+   ]
+  },
+  "001C": {
+   "name": "Layer 1 Y position (low)",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Vertical scroll of layer 1 (BG1) in pixels; $001D is the high byte. Set by the scroll routine from $1464,",
+    "shifted by the layer-shake and cutscene code, and shipped to the BG1 V-scroll by the NMI. Sprites subtract",
+    "it to get screen Y; the overworld and credits code write it directly."
+   ]
+  },
+  "001D": {
+   "name": "Layer 1 Y position (high)",
+   "kind": "byte (high half of word)",
+   "desc": [
+    "High byte of layer 1's vertical scroll ($001C is the low byte). Saved and restored around code that borrows",
+    "the scroll position (Game mode 14 scroll shake, Directional Coins) and set in cutscenes."
+   ]
+  },
+  "001E": {
+   "name": "Layer 2 X position (low)",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Horizontal scroll of layer 2 (BG2, the background/second layer); $001F is the high byte. Written by the scroll",
+    "routine from $1466, zeroed by layer 2 scroll sprites and the ending scene, and used when generating Map16",
+    "tiles on layer 2. The NMI sends it to the BG2 H-scroll."
+   ]
+  },
+  "0020": {
+   "name": "Layer 2 Y position (low)",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Vertical scroll of layer 2 (BG2); $0021 is the high byte. Written by the scroll routine from $1468 and set at",
+    "level load from a per-level table; read by Map16 generation and the NMI (BG2 V-scroll)."
+   ]
+  },
+  "0021": {
+   "name": "Layer 2 Y position (high)",
+   "kind": "byte (high half of word)",
+   "desc": [
+    "High byte of layer 2's vertical scroll ($0020 is the low byte). Cleared at level load and by cutscenes; the",
+    "NMI writes $0020/$0021 to the BG2 V-scroll register."
+   ]
+  },
+  "0022": {
+   "name": "Layer 3 X position (low)",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Horizontal scroll of layer 3 (BG3: status bar, message boxes, level layer 3 effects); $0023 is the high",
+    "byte. Set at level start to layer 1 X / 2, advanced by Layer 3 scroll handlers, cleared by message boxes and",
+    "the ending. The IRQ writes it to the BG3 H-scroll register."
+   ]
+  },
+  "0023": {
+   "name": "Layer 3 X position (high)",
+   "kind": "byte (high half of word)",
+   "desc": [
+    "High byte of the BG3 horizontal scroll ($0022 is the low byte). Cleared by the message box code and set to 1",
+    "by a Layer 3 scroll handler; the IRQ writes $0022/$0023 to BG3."
+   ]
+  },
+  "0024": {
+   "name": "Layer 3 Y position (low)",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Vertical scroll of layer 3 (BG3); $0025 is the high byte. Set at level setup, copied from layer 1 Y by a",
+    "scroll handler, moved by the credits scroll, and set from the fireball routine. The IRQ writes it to BG3."
+   ]
+  },
+  "0025": {
+   "name": "Layer 3 Y position (high)",
+   "kind": "byte (high half of word)",
+   "desc": [
+    "High byte of the BG3 vertical scroll ($0024 is the low byte). Cleared during layer 3 setup and by the",
+    "message box code; the IRQ writes $0024/$0025 to BG3."
+   ]
+  },
+  "0026": {
+   "name": "Layer 2 offset from layer 1, X (low)",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Layer 2 X position minus layer 1 X position (computed in the scroll routine; with layer 3 interaction it is",
+    "$0022 minus $1462). $0027 is the high byte. Interactions with a moving layer 2 add or subtract it: block-hit",
+    "hitboxes, sprites spawned from blocks, Mario level collision and sprite-block checks."
+   ]
+  },
+  "0027": {
+   "name": "Layer 2 offset from layer 1, X (high)",
+   "kind": "byte (high half of word)",
+   "desc": [
+    "High byte of the layer 2 minus layer 1 X offset ($0026 is the low byte). Added to or borrowed from a sprite's",
+    "or block's X high byte when positions are converted between layers."
+   ]
+  },
+  "0028": {
+   "name": "Layer 2 offset from layer 1, Y (low)",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Layer 2 Y position minus layer 1 Y position; $0029 is the high byte. Same role as $0026 but vertical, used by",
+    "block-hit hitboxes, sprite spawns from blocks, sprite-block interaction and Mario collision."
+   ]
+  },
+  "0029": {
+   "name": "Layer 2 offset from layer 1, Y (high)",
+   "kind": "byte (high half of word)",
+   "desc": [
+    "High byte of the layer 2 minus layer 1 Y offset ($0028 is the low byte). Added to or borrowed from Y high bytes",
+    "when converting positions between layers."
+   ]
+  },
+  "002A": {
+   "name": "Mode 7 center X (low)",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Mode 7 rotation center X; $002B is the high byte. The NMI adds $0080 and writes it to the Mode 7 center",
+    "register $211F. Boss rooms set it to $0080. The Reznor code reuses it as the circle center X of the",
+    "Reznor ring."
+   ]
+  },
+  "002B": {
+   "name": "Mode 7 center X (high)",
+   "kind": "byte (high half of word)",
+   "desc": [
+    "High byte of the Mode 7 / Reznor ring center X ($002A is the low byte). Zeroed along with $002A."
+   ]
+  },
+  "002C": {
+   "name": "Mode 7 center Y (low)",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Mode 7 rotation center Y ($002D is the high byte). Sent to $2120 after adding $0080 by the NMI. Set to $0050",
+    "at Mario Start, $00A0 in boss rooms and $00C8 by the Bowser fight; Reznor code uses it as ring center Y."
+   ]
+  },
+  "002E": {
+   "name": "Mode 7 matrix A",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Mode 7 matrix parameter A, calculated as cos(angle) * scale by the Calculate Mode 7 rotation matrix routine",
+    "from $0036 and $0038. $0034 gets a copy as matrix D. The NMI writes it to $211B."
+   ]
+  },
+  "0030": {
+   "name": "Mode 7 matrix B",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Mode 7 matrix parameter B, sin(angle) * scale from the matrix routine. $0032 (matrix C) is its negation.",
+    "The NMI writes it to $211C."
+   ]
+  },
+  "0036": {
+   "name": "Mode 7 rotation angle",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Angle of the rotating/tilting Mode 7 picture, 9 bits ($0000-$01FF, high byte $0037). Input to the rotation",
+    "matrix routine. Koopaling and Bowser fights change it: the tilting platform, Ludwig's and Koopa Kid's rooms,",
+    "and Bowser's bounce. Mario's platform/ceiling collision reads it as the tilt.",
+    "Values: 0 = not rotated."
+   ]
+  },
+  "0037": {
+   "name": "Mode 7 rotation angle (high)",
+   "kind": "byte (high half of word)",
+   "desc": [
+    "High byte (bit 0 only is used) of the Mode 7 rotation angle ($0036 is the low byte). Non-zero together with",
+    "$0036 means the room is rotated; Koopaling code ORs the two to decide whether to keep turning."
+   ]
+  },
+  "0038": {
+   "name": "Mode 7 scale",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Scale for the Mode 7 picture's matrix A/B ($0039 does C/D). Boss fights change it: Bowser increments it, Ludwig's",
+    "code decrements it as a room parameter. The matrix routine multiplies by it."
+   ]
+  },
+  "0039": {
+   "name": "Mode 7 scale (second)",
+   "kind": "byte (counter in Bowser/Koopa Kid code)",
+   "desc": [
+    "Second Mode 7 scale value, used for matrix parameters C and D; Mario Start sets it to $20. Boss code reuses it",
+    "as a stepping value (Ludwig decrement, Koopa Kid tilt step * 2, Bowser's bounce increment)."
+   ]
+  },
+  "003A": {
+   "name": "Mode 7 scroll X",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Mode 7 scroll X, written to the Mode 7 H-offset ($210D). Boss rooms set it to $0080; Position Mode 7 picture",
+    "writes [$3A+X] as -A + a table value + the layer 1 screen boundary (X = 0: horizontal, X = 2: vertical)."
+   ]
+  },
+  "003E": {
+   "name": "BGMODE mirror",
+   "kind": "byte",
+   "desc": [
+    "Shadow of the BG mode / character size register ($2105), written by the NMI. Normally $09: Mode 1 with BG3",
+    "on top; level end ORs $08 for BG3 priority.",
+    "Values: $09 = Mode 1, BG3 priority."
+   ]
+  },
+  "003F": {
+   "name": "OAM address (priority index)",
+   "kind": "byte (index)",
+   "desc": [
+    "Value written to the OAM address register ($2102) after the OAM DMA, setting which sprite has priority. The",
+    "upload routine clears it to 0; Mario Start sets $C8 and the overworld loader $F0."
+   ]
+  },
+  "0040": {
+   "name": "Color math mirror (CGADSUB)",
+   "kind": "bit flags",
+   "desc": [
+    "Shadow of the color math add/subtract control ($2131). Boss fades, spotlight effects and the Mario Start",
+    "screen set it; the NMI writes it (with bit 2 masked) to $2131.",
+    "Values: $24 = color math on BG3 and backdrop; $34 = also on sprites."
+   ]
+  },
+  "0041": {
+   "name": "Window mask mirror, BG1/BG2",
+   "kind": "bit flags",
+   "desc": [
+    "Shadow of $2123: window masks for BG1 and BG2. Cleared on screen reset; set for the iris-out and keyhole",
+    "effects, Mario Start and the controller detect screen. The NMI writes it to $2123.",
+    "Values: $22 or $33 are used for keyhole/iris windows; 0 = no window."
+   ]
+  },
+  "0042": {
+   "name": "Window mask mirror, BG3/BG4",
+   "kind": "bit flags",
+   "desc": [
+    "Shadow of $2124: window masks for BG3 and BG4. Cleared on screen reset and by the lives exchange; keyhole and",
+    "iris-out effects set it. The NMI writes it to $2124."
+   ]
+  },
+  "0043": {
+   "name": "Window mask mirror, OBJ/color",
+   "kind": "bit flags",
+   "desc": [
+    "Shadow of $2125: window masks for sprites and the color window. Set by Mario Start, the overworld loader,",
+    "keyhole/iris effects and the dark-room spotlight ($20: color window uses window 1); the NMI writes it to $2125."
+   ]
+  },
+  "0044": {
+   "name": "Color math select mirror (CGWSEL)",
+   "kind": "bit flags",
+   "desc": [
+    "Shadow of $2130: color window control and subscreen select. Reset to $02 on screen reset; effects set it",
+    "(spotlight $20 = color math only outside the window). The NMI writes it to $2130."
+   ]
+  },
+  "0045": {
+   "name": "Layer 1 tile column range, left",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Left edge of the range of Map16 columns to update on layer 1, computed as screen X / 16 - 8. Pairs with $0047",
+    "(right edge). Indexed by $0055 in the Layer 2 update table builders, so $0045,X is the left edge for layer",
+    "[X]. Scroll sprites also set [$45+L] = $FFF8."
+   ]
+  },
+  "0047": {
+   "name": "Layer 1 tile column range, right",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Right edge of the Map16 column range to update on layer 1, screen X / 16 + $17 ($0045 is the left edge).",
+    "At level load it starts as a copy of $0045 and is incremented while columns are built. The overworld",
+    "setup uses it for a row counter that starts at $20."
+   ]
+  },
+  "0049": {
+   "name": "Layer 2 tile column range, left",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Left edge of the Map16 column range for layer 2 (partner of $0045 for layer 1), computed in the tile range",
+    "setup and read by the Layer 2 update table and stripe builders, indexed by X."
+   ]
+  }
+ }
+}

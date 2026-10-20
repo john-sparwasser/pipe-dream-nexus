@@ -1,0 +1,378 @@
+{
+ "addresses": {
+  "178B": {
+   "name": "Shooter Y position, low",
+   "kind": "byte table, one per shooter slot (index X, 8 slots)",
+   "desc": [
+    "Low byte of the Y position of each active shooter (Bullet Bill / Torpedo Ted launcher). Set when the level",
+    "loads or scrolls a shooter in (from the adjusted screen boundary). Read by the launchers to place the",
+    "sprite they spawn. High byte is $1793."
+   ]
+  },
+  "1793": {
+   "name": "Shooter Y position, high",
+   "kind": "byte table, one per shooter slot (index X, 8 slots)",
+   "desc": [
+    "High byte (screen/page, bit 0) of each shooter's Y position; $178B is the low byte. Written when the",
+    "shooter is loaded, read when Bullet Bill or Torpedo Ted is spawned so the new sprite starts at the shooter."
+   ]
+  },
+  "179B": {
+   "name": "Shooter X position, low",
+   "kind": "byte table, one per shooter slot (index X, 8 slots)",
+   "desc": [
+    "Low byte of each shooter's X position (taken from the high nibble of the level data). High byte is $17A3.",
+    "Read by the Bullet Bill and Torpedo Ted shooters to place the spawned sprite and by the shooter smoke code."
+   ]
+  },
+  "17A3": {
+   "name": "Shooter X position, high",
+   "kind": "byte table, one per shooter slot (index X, 8 slots)",
+   "desc": [
+    "High byte (bit 0) of each shooter's X position; $179B is the low byte. Written when the shooter is loaded,",
+    "read by the launchers when spawning a sprite and by the smoke helper to compare against the screen."
+   ]
+  },
+  "17AB": {
+   "name": "Shooter timer",
+   "kind": "timer table, one per shooter slot (index X, 8 slots)",
+   "desc": [
+    "Countdown before a shooter fires again. Set to $10 when the shooter is loaded. The shooter loop",
+    "decrements it every other frame; Bullet Bill / Torpedo Ted shooters act when it runs out and reload it.",
+    "Values: 0 = ready to fire."
+   ]
+  },
+  "17BB": {
+   "name": "Level number, low byte (scratch)",
+   "kind": "byte",
+   "desc": [
+    "Stored by the level loader as the low byte of the level number (looked up from $19B8, or from the",
+    "overworld level number minus $24 when it is $25 or more). Its only reader is a small routine at $00:FF07",
+    "that shifts Mario's position by [$17BC]/[$17BB]; it looks unused, so treat the purpose as uncertain."
+   ]
+  },
+  "17BC": {
+   "name": "Layer 1 Y scroll delta",
+   "kind": "byte (signed)",
+   "desc": [
+    "How far layer 1 scrolled vertically this frame (current $1C minus the previous frame's $1464). Written by",
+    "the scroll-follow code at $00:F7D3, and adjusted by the scroll routines in bank 5. $17BD is the X counterpart."
+   ]
+  },
+  "17BD": {
+   "name": "Layer 1 X scroll delta",
+   "kind": "byte (signed)",
+   "desc": [
+    "How far layer 1 scrolled horizontally this frame (current $1A minus the previous frame's $1462).",
+    "Read by anything that must move with the screen: the layer 3 scroll code, Porcu-Puffer, Fishin' Boo,",
+    "clouds, the level-end coin sprite and the layer 3 smash. $17BC is the Y counterpart."
+   ]
+  },
+  "17BE": {
+   "name": "Layer 2 Y scroll delta",
+   "kind": "byte (signed)",
+   "desc": [
+    "How far layer 2 scrolled vertically this frame (previous $20 minus current, so up is positive).",
+    "Written by the scroll-follow and scroll-delta routines; read by Mario's block/slope collision."
+   ]
+  },
+  "17BF": {
+   "name": "Layer 2 X scroll delta",
+   "kind": "byte (signed)",
+   "desc": [
+    "How far layer 2 scrolled horizontally this frame (previous $1E minus current, so left is positive).",
+    "Set to 0 in the scroll routine when $143F is 1. Read by sprite-block interaction to carry sprites on layer 2."
+   ]
+  },
+  "17C0": {
+   "name": "Smoke sprite type",
+   "kind": "byte table, one per smoke slot (index X/Y, 4 slots)",
+   "desc": [
+    "Type of each 4-slot smoke/effect sprite; 0 means the slot is free. Spawners write it, the smoke main",
+    "routine dispatches on it. Timer is $17CC, X position $17C8, Y position $17C4.",
+    "Values: 0 = free; 1 = puff; 2 = contact star/puff; 3 = rising puff; 5 = sparkle spawner; $81 = cape smoke."
+   ]
+  },
+  "17C4": {
+   "name": "Smoke sprite Y position",
+   "kind": "byte table, one per smoke slot (index X/Y, 4 slots)",
+   "desc": [
+    "Y position (low byte) of each smoke sprite. Set by the spawner (sprite Y, Mario Y plus offset, block Y).",
+    "Type 3 smoke decrements it each update so the puff rises. Slot type is $17C0."
+   ]
+  },
+  "17C8": {
+   "name": "Smoke sprite X position",
+   "kind": "byte table, one per smoke slot (index X/Y, 4 slots)",
+   "desc": [
+    "X position (low byte) of each smoke sprite, set by the spawner (sprite X, Mario X, block X).",
+    "Read when the smoke is drawn. Slot type is $17C0."
+   ]
+  },
+  "17CC": {
+   "name": "Smoke sprite timer",
+   "kind": "timer table, one per smoke slot (index X/Y, 4 slots)",
+   "desc": [
+    "Frame countdown for each smoke sprite. Spawners set it ($1B, $13, $10 or 8 depending on the effect);",
+    "the smoke routines count it down and free the slot ($17C0 = 0) at zero. For the sparkle spawner it paces spawns."
+   ]
+  },
+  "17D0": {
+   "name": "Spinning coin slot flag",
+   "kind": "flag byte table, one per coin slot (index X/Y, 4 slots)",
+   "desc": [
+    "Non-zero while a spinning coin from a block occupies the slot. Set when a coin block is hit, tested by",
+    "the spinning coin loop and cleared when the coin finishes. Position/speed live in $17D4, $17D8, $17E0,",
+    "$17E4, $17E8 and $17EC.",
+    "Values: 0 = free; 1 = in use."
+   ]
+  },
+  "17D4": {
+   "name": "Spinning coin Y position, low",
+   "kind": "byte table, one per coin slot (index X/Y, 4 slots)",
+   "desc": [
+    "Low byte of the Y position of each block spinning coin; $17E8 is the high byte. Starts at the block's Y",
+    "minus $10, then moves by the coin's Y speed ($17D8). Also reused by the shooter smoke helper as a position."
+   ]
+  },
+  "17D8": {
+   "name": "Spinning coin Y speed",
+   "kind": "byte table, one per coin slot (index X/Y, 4 slots)",
+   "desc": [
+    "Signed Y speed of each spinning coin. Starts at $D0 (upward) and gains 3 per frame (gravity)."
+   ]
+  },
+  "17E0": {
+   "name": "Spinning coin X position, low",
+   "kind": "byte table, one per coin slot (index X/Y, 4 slots)",
+   "desc": [
+    "Low byte of the coin's X position (copied from the block / bounce sprite). High byte is $17EC."
+   ]
+  },
+  "17E4": {
+   "name": "Spinning coin layer",
+   "kind": "byte table, one per coin slot (index X/Y, 4 slots)",
+   "desc": [
+    "Which layer the coin's block belongs to, copied from the bounce sprite ([$16C9] bit 7). Used when",
+    "converting the coin position to screen coordinates.",
+    "Values: 0 = layer 1; 1 = layer 2."
+   ]
+  },
+  "17E8": {
+   "name": "Spinning coin Y position, high",
+   "kind": "byte table, one per coin slot (index X/Y, 4 slots)",
+   "desc": [
+    "High byte of the coin's Y position; $17D4 is the low byte. Also reused by the shooter smoke helper."
+   ]
+  },
+  "17EC": {
+   "name": "Spinning coin X position, high",
+   "kind": "byte table, one per coin slot (index X/Y, 4 slots)",
+   "desc": [
+    "High byte of the coin's X position; $17E0 is the low byte."
+   ]
+  },
+  "17F0": {
+   "name": "Minor extended sprite number",
+   "kind": "byte table, one per slot (index X/Y, 12 slots)",
+   "desc": [
+    "Type of each minor extended sprite (small effects: brick pieces, splashes, sparkles, floating Z...).",
+    "0 means the slot is free; a sprite deletes itself by clearing it. Free slots are found by scanning, with",
+    "$185D as the round-robin fallback when all 12 are full.",
+    "Values: 1 = brick piece; 2/5 = star sparkle; 3 = spinning tile; 4 = bounce block piece; 6/8/9 = floating Z;",
+    "7 = water splash; $0A = Boo stream tile."
+   ]
+  },
+  "17FC": {
+   "name": "Minor extended sprite Y position, low",
+   "kind": "byte table, one per slot (index X/Y, 12 slots)",
+   "desc": [
+    "Low byte of the Y position of each minor extended sprite; $1814 is the high byte. Updated by Y speed",
+    "($1820) in the motion routines, or by +1/-1 for splashes and floating Z."
+   ]
+  },
+  "1808": {
+   "name": "Minor extended sprite X position, low",
+   "kind": "byte table, one per slot (index X/Y, 12 slots)",
+   "desc": [
+    "Low byte of the X position of each minor extended sprite. Moved by X speed ($182C) each frame.",
+    "There is no matching high byte; the sprites are clipped to the screen."
+   ]
+  },
+  "1814": {
+   "name": "Minor extended sprite Y position, high",
+   "kind": "byte table, one per slot (index X/Y, 12 slots)",
+   "desc": [
+    "High byte of the Y position; $17FC is the low byte. Updated with carry/sign extension from Y speed."
+   ]
+  },
+  "1820": {
+   "name": "Minor extended sprite Y speed",
+   "kind": "byte table, one per slot (index X/Y, 12 slots)",
+   "desc": [
+    "Signed Y speed of each minor extended sprite. Gravity adds 1 per frame (2 for spinning tiles).",
+    "Initial values come from tables (brick pieces, Yoshi egg shards) or are 0 for splashes and sparkles."
+   ]
+  },
+  "182C": {
+   "name": "Minor extended sprite X speed",
+   "kind": "byte table, one per slot (index X/Y, 12 slots)",
+   "desc": [
+    "Signed X speed of each minor extended sprite. Set by the spawner (brick pieces, egg shards, Boo stream",
+    "copies the parent's speed); floating Z decrements it each update."
+   ]
+  },
+  "1850": {
+   "name": "Minor extended sprite timer",
+   "kind": "timer/counter table, one per slot (index X/Y, 12 slots)",
+   "desc": [
+    "Per-slot timer or animation counter, meaning depends on the sprite type. Most types count it down and",
+    "delete themselves at zero (sparkles, spinning tile, Boo stream); water splash and floating Z count up as",
+    "an animation frame. Examples: splash spawner sets $17, sparkle $17."
+   ]
+  },
+  "185C": {
+   "name": "Sprite platform contact marker",
+   "kind": "byte (sprite slot + 1)",
+   "desc": [
+    "Set by the moving ledge sprite to its own slot number plus 1 while Mario is in contact with it.",
+    "When non-zero, Mario's level collision takes an alternate path. Cleared each time the ledge runs.",
+    "Values: 0 = Mario not standing on a ledge."
+   ]
+  },
+  "185D": {
+   "name": "Minor extended sprite round-robin index",
+   "kind": "index (counts 11 to 0)",
+   "desc": [
+    "Used when all 12 minor extended sprite slots are full: it is decremented and wrapped from 0 back to 11",
+    "to choose the slot to overwrite. Shared by block shatter, Yoshi egg, Boo stream, Rip Van Fish and sparkles."
+   ]
+  },
+  "185E": {
+   "name": "Sprite routine scratch",
+   "kind": "scratch byte",
+   "desc": [
+    "General-purpose scratch byte shared by many sprite routines, with no single meaning. Examples: a count",
+    "of platforms Mario stands on (mushroom scales), Yoshi frame / tongue Y offset, the index of the sprite being",
+    "eaten, Chuck clone index, GrowingPipeTiles value, and the layer-check index in sprite-block interaction."
+   ]
+  },
+  "185F": {
+   "name": "Sprite touched tile (vertical check)",
+   "kind": "byte",
+   "desc": [
+    "Acts-like Map16 tile number found at the sprite's position by the vertical block check. Read by Net Koopa,",
+    "Magikoopa magic and Directional Coins to react to the tile touched."
+   ]
+  },
+  "1860": {
+   "name": "Sprite touched tile (horizontal check)",
+   "kind": "byte",
+   "desc": [
+    "Acts-like tile number found by the sprite horizontal block check. Read by kicked shells, Net Koopa",
+    "and Directional Coins. See $185F for the vertical check result."
+   ]
+  },
+  "1861": {
+   "name": "Spawn-from-block slot toggle",
+   "kind": "byte (0 or 1)",
+   "desc": [
+    "Used when no free sprite slot exists for an item dropped or spawned from a block: it alternates between",
+    "0 and 1 each time, choosing sprite slot $0A or $0B to overwrite."
+   ]
+  },
+  "1862": {
+   "name": "Sprite touched tile page",
+   "kind": "byte",
+   "desc": [
+    "High byte (page) of the Map16 tile found by the sprite horizontal block check. Read by Magikoopa magic",
+    "and Directional Coins as an extra block test; Magikoopa use is probably 'blocked by a special tile'."
+   ]
+  },
+  "1863": {
+   "name": "Cape smoke slot index",
+   "kind": "index (counts 3 to 0)",
+   "desc": [
+    "Rotating slot index used when Mario gets a cape and all 4 smoke slots ($17C0) are full: decremented",
+    "and wrapped to 3 to pick which smoke slot to overwrite."
+   ]
+  },
+  "1865": {
+   "name": "Block coin slot index",
+   "kind": "index (counts 3 to 0)",
+   "desc": [
+    "Rotating slot index used when a block spawns a spinning coin and all 4 coin slots ($17D0) are in use:",
+    "decremented and wrapped to 3 to pick the slot to overwrite."
+   ]
+  },
+  "1866": {
+   "name": "Platform angle sign, sine",
+   "kind": "byte",
+   "desc": [
+    "High byte of the platform's rotation angle; bit 0 gives the sign used for the sine term. Written and",
+    "read by the platform geometry helper (for rotating/line platform interaction with Mario)."
+   ]
+  },
+  "1867": {
+   "name": "Platform angle sign, cosine",
+   "kind": "byte",
+   "desc": [
+    "High byte of the platform angle plus $80; bit 0 gives the sign of the cosine term. Same helper as $1866."
+   ]
+  },
+  "186B": {
+   "name": "Multi-coin block timer",
+   "kind": "timer",
+   "desc": [
+    "Countdown for the multiple-coin block. Set when the block is hit and given its first coin, decremented",
+    "by the bounce sprite loop, and cleared when the bounce sprite turns back into the block.",
+    "Values: 0 = timer not running (block is spent after this hit)."
+   ]
+  },
+  "186C": {
+   "name": "Sprite off-screen vertical flags",
+   "kind": "byte table indexed by sprite slot",
+   "desc": [
+    "Non-zero when a sprite is vertically off the screen. Cleared and recomputed by the 'get sprite draw",
+    "info' routines in banks 1, 2 and 3; ORed with the horizontal flags ($15A0) to test 'off screen'.",
+    "Read by Thwomp, Cheep Cheep, Chuck, wings, Lakitu cloud and others to skip logic or drawing.",
+    "Values: 0 = on screen vertically."
+   ]
+  },
+  "1878": {
+   "name": "Climbing net door offset",
+   "kind": "byte (signed)",
+   "desc": [
+    "Signed horizontal offset of Mario from the net door sprite when it starts turning (Mario X minus $10",
+    "minus sprite X). Read by Mario's climbing code to compute Mario's spin position around the door."
+   ]
+  },
+  "187A": {
+   "name": "Riding Yoshi flag",
+   "kind": "flag byte",
+   "desc": [
+    "Non-zero while Mario is riding Yoshi. Set by the Yoshi mount routine, cleared when Mario dismounts or Yoshi",
+    "is lost. Tested in dozens of places: stomp/kick contact, springboards, cape and fireball input, block hits.",
+    "Values: 0 = not on Yoshi; non-zero = on Yoshi."
+   ]
+  },
+  "187B": {
+   "name": "Sprite extra state",
+   "kind": "byte table indexed by sprite slot",
+   "desc": [
+    "General per-sprite extra variable whose meaning depends on the sprite type. Examples: Chuck charge",
+    "flag ($20 = charging), Bowser hits-left counter, Yoshi egg 'waiting for Mario' flag, circle radius for",
+    "Banzai Bill / ball and chain, changing item cycle timer, line-guide fast variant, shell timers."
+   ]
+  },
+  "1884": {
+   "name": "Parallax sprite layout select",
+   "kind": "byte",
+   "desc": [
+    "Chooses between two layouts in the parallax background sprite drawing routine: if it equals 1, a",
+    "different tile and offset set is used. It is never written in the disassembly, so it stays 0 in the",
+    "original game; the use is as a variant switch."
+   ]
+  }
+ }
+}

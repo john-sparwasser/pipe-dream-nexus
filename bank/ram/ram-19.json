@@ -1,0 +1,427 @@
+{
+ "addresses": {
+  "1E2A": {
+   "name": "Cluster sprite Y position high",
+   "kind": "byte table, one per cluster sprite slot (index X)",
+   "desc": [
+    "High byte of each cluster sprite's 16-bit Y position ($1E02 is the low byte). Set when a cluster sprite",
+    "is spawned (Boo ring, Boo/bat ceiling, bonus 1-up, Sumo Bro flames), then updated with carry as the",
+    "sprite moves; compared against the screen boundary when despawning or drawing.",
+    "The Keyhole and Sumo Bro flame code also store through the same table with a Y index."
+   ]
+  },
+  "1E3E": {
+   "name": "Cluster sprite X position high",
+   "kind": "byte table, one per cluster sprite slot (index X)",
+   "desc": [
+    "High byte of each cluster sprite's 16-bit X position ($1E16 is the low byte). Set at spawn (spawn of",
+    "cluster type 8, level load, ring of Boos) as screen X high plus carry, and kept in step as the sprite",
+    "moves. Read by the Sumo Bro flame and bonus 1-up contact code, and by the despawn check."
+   ]
+  },
+  "1E52": {
+   "name": "Cluster sprite Y speed",
+   "kind": "byte table, one per cluster sprite slot (index X), signed",
+   "desc": [
+    "Vertical speed of each cluster sprite. Boo/bat ceiling sprites set it to an aimed speed plus 9 (a",
+    "downward bias); the bonus 1-up cluster sprite adds 3 per frame as gravity, up to $40.",
+    "Added into the Y position ($1E02 with $1E7A as the fraction) by the shared move helper.",
+    "Cluster type 5 spawns store a shifted table value here. Keyhole uses its copy as a timer ($10)."
+   ]
+  },
+  "1E66": {
+   "name": "Cluster sprite X speed",
+   "kind": "byte table, one per cluster sprite slot (index X), signed",
+   "desc": [
+    "Horizontal speed of each cluster sprite. Boo/bat ceiling sprites set it to an aimed speed; the bonus",
+    "1-up cluster sprite negates it to bounce off walls. Cluster type 5 spawns store the high nibble of a",
+    "table value; type 8 spawns and level load clear it.",
+    "Applied to the X position ($1E16 with $1E8E as the fraction) by the cluster move helper."
+   ]
+  },
+  "1E7A": {
+   "name": "Cluster sprite Y fraction",
+   "kind": "byte table, one per cluster sprite slot (index X)",
+   "desc": [
+    "Sub-pixel fraction of a cluster sprite's Y position. Each frame the cluster despawn/move helper adds",
+    "the Y speed ($1E52) times 16 (low nibble) into it and carries into the Y position ($1E02).",
+    "Cluster type 5 spawns initialise it from the low nibble of a table value, shifted up."
+   ]
+  },
+  "1EA2": {
+   "name": "Overworld level flags",
+   "kind": "bit flags table, one per translevel number (index X/Y)",
+   "desc": [
+    "Per-level progress flags, indexed by translevel number ($13BF). It is the live copy of the saved",
+    "level data; save data is copied here on file load and copied back after each level.",
+    "Set when a level is cleared or its midway point is passed, and read by the overworld path code to",
+    "decide which exits are open and whether Mario may leave a level.",
+    "Bits: Bit 7: level beaten (clear = Mario cannot exit it, the game returns).",
+    "Bit 6: midway point reached. Bits 0-3: exit open on that side of the level tile (bits from DATA_04941E)."
+   ]
+  },
+  "1EEB": {
+   "name": "Special Zone cleared flag",
+   "kind": "flag byte",
+   "desc": [
+    "Bit 7 is probably set once the Special Zone is cleared. Tested by the level sprite spawner, Net Koopa",
+    "and bounce sprite code to pick the alternate (post-Special World) palette/graphics, by the GFX upload",
+    "routine to load the post-special graphics file, and by the ending enemy scene.",
+    "Values: bit 7 clear = normal game; bit 7 set = Special World cleared (changed enemy colours)."
+   ]
+  },
+  "1F02": {
+   "name": "Overworld events passed flags",
+   "kind": "bit flags array (one bit per overworld event)",
+   "desc": [
+    "Bit array of overworld events already triggered (path openings, switch palace tile changes). Event",
+    "number / 8 selects the byte, event number AND 7 selects the bit (mask table DATA_04E44B).",
+    "Tested when drawing or applying completed events to the layer 1 and layer 2 maps, and copied into",
+    "the save buffer after a level. An unused routine in bank 5 also tests it as a level-cleared flag."
+   ]
+  },
+  "1F11": {
+   "name": "Player's current submap",
+   "kind": "byte table, one per player (index X/Y: Mario, Luigi)",
+   "desc": [
+    "Which overworld submap each player is on. $1F11 is Mario, $1F12 Luigi; read through the active-player",
+    "index. Written when the overworld loads (0 = main Yoshi's Island map), on submap warps, and by the",
+    "message trigger sprite.",
+    "Read by level loading to pick the level for the OW tile, by the overworld drawing and DMA code to pick",
+    "map pages, and by Monty Mole, Yoshi, Hammer Bro and block code that behave per world.",
+    "Values: 0 = Yoshi's Island map; other values = other submaps (1 = Yoshi's Island in the cutscene list)."
+   ]
+  },
+  "1F13": {
+   "name": "Player overworld animation",
+   "kind": "byte table, one per player (X=0 Mario, 4 Luigi)",
+   "desc": [
+    "Mario's/Luigi's overworld pose/animation: facing and walking direction frame used when drawing the",
+    "map sprite. Written while walking along a path and reset to 0 (standing) when the OW is prepared.",
+    "Read by the 2x2 player draw routine, the Yoshi-riding draw routine and the walk start/enter-level",
+    "code to decide which way the player faces."
+   ]
+  },
+  "1F17": {
+   "name": "Player overworld X position",
+   "kind": "word (little endian), one per player (index 0 Mario, 4 Luigi)",
+   "desc": [
+    "Player's X position on the overworld map in pixels (low byte; $1F18 is the high byte). Set from the",
+    "exit tables when leaving a level, at submap warps and when walking starts.",
+    "Mario's walk code compares it with the destination ($0DC7) to know the signed distance left.",
+    "Also read by the border icon, level-start and the overworld sprite helpers that home in on the player."
+   ]
+  },
+  "1F19": {
+   "name": "Player overworld Y position",
+   "kind": "word (little endian), one per player (index 0 Mario, 4 Luigi)",
+   "desc": [
+    "Player's Y position on the overworld map in pixels (low byte; $1F1A is the high byte). Set from the",
+    "exit tables when leaving a level, at submap warps and when walking starts, and updated as Mario walks.",
+    "Read by the overworld draw, level name, tile exit, and overworld sprite code (switch palace particles,",
+    "chasing sprites). The intro code also writes $8E to it once (purpose unclear)."
+   ]
+  },
+  "1F1A": {
+   "name": "Player overworld Y position high",
+   "kind": "byte (high byte of the word at $1F19)",
+   "desc": [
+    "High byte of Mario's overworld Y position ($1F19 is the low byte). The tile position routine adds $FF",
+    "plus carry each other frame so Mario moves up one pixel every second frame during the intro walk.",
+    "Read by the switch palace ! block particles and the overworld sprite that chases Mario."
+   ]
+  },
+  "1F1F": {
+   "name": "Player overworld tile X",
+   "kind": "byte table, one per player (index X: 0 Mario, 4 Luigi)",
+   "desc": [
+    "Column of the overworld tile (map16 position) the player is standing on. Written when Mario",
+    "finishes a step along the path, when entering a level and when a tile's exit flag is set.",
+    "Read with $1F21 (tile Y) to look up the level number table at $7ED000 and the tile data, and compared",
+    "to find a warp tile."
+   ]
+  },
+  "1F21": {
+   "name": "Player overworld tile Y",
+   "kind": "byte table, one per player (index X: 0 Mario, 4 Luigi)",
+   "desc": [
+    "Row of the overworld tile the player is standing on; partner of $1F1F (tile column). Written when the",
+    "player steps onto a new tile, enters a level, warps submap, or a tile's exit flag is set.",
+    "Used to index the OW tile and level-number tables and to find warp tiles."
+   ]
+  },
+  "1F27": {
+   "name": "Switch palace pressed flags",
+   "kind": "flag byte table, one per colour (index X)",
+   "desc": [
+    "One byte for each colour switch (green, yellow, blue, red); non-zero once that switch has been hit.",
+    "Mario's block collision sets it to 1 when a switch block's ! switch is pressed (and does nothing if it",
+    "is already set). Level object code for the outline/solid switch blocks reads it to decide whether to",
+    "draw the dotted outline (0) or the solid block.",
+    "Values: 0 = not pressed yet; 1 = pressed."
+   ]
+  },
+  "1F2F": {
+   "name": "Five Yoshi coins collected bits",
+   "kind": "bit flags array, one bit per level",
+   "desc": [
+    "Bit array of levels in which all 5 Yoshi coins were collected. Byte = translevel / 8 (index Y), bit =",
+    "translevel AND 7 (mask table DATA_0DA8A6). Set by block interaction when the fifth Yoshi coin is taken;",
+    "tested by the level object code to show the coin as already taken. Cleared at game start (mode 11)."
+   ]
+  },
+  "1F3C": {
+   "name": "Invisible 1-up collected bits",
+   "kind": "bit flags array, one bit per level",
+   "desc": [
+    "Bit array of levels where the hidden 1-up block has been collected. Byte = translevel / 8 (index Y),",
+    "bit = translevel AND 7. Set by block interaction when the 1-up is taken; tested when drawing",
+    "single-tile extended level objects so a collected one does not reappear."
+   ]
+  },
+  "1F49": {
+   "name": "Save data buffer",
+   "kind": "byte array (working copy of the save file)",
+   "desc": [
+    "Start of the working save data: a copy of the overworld/progress state, indexed by offset.",
+    "Loaded from SRAM on file select, initialised for a new file, shown by the Continue/End menu, written",
+    "back after a level, and copied to the live overworld state ($1EA2 onward) when the game starts.",
+    "Each routine just copies the byte at offset X/Y."
+   ]
+  },
+  "1FB8": {
+   "name": "Save copy of player 1 submap",
+   "kind": "byte table (save copy of $1F11-$1F26)",
+   "desc": [
+    "Save buffer copy of the overworld player state starting at $1F11 (submaps, animations, positions).",
+    "Initialised when a new file is created and, after a level, the current player's byte is copied to the",
+    "other player's. Also written by the message trigger sprite (set to 1)."
+   ]
+  },
+  "1FE2": {
+   "name": "Sprite timer 7",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "Extra countdown timer per sprite slot, counted down by the main sprite routine. Meaning depends on the",
+    "sprite type; a non-zero value disables something for a few frames.",
+    "Examples: kicked shell sets 5 (no cape contact), stunned sprites 8; Yoshi mount sets 2 (no-grab);",
+    "Rex half-squash timer ($0C); Sumo Bro lightning $10 (skip ground check); Koopa Kid/Chuck contact or",
+    "sound cooldown. Also tested by sprite-block interaction and the off-screen check. Cleared on spawn.",
+    "Values: 0 = timer expired / not running."
+   ]
+  },
+  "1FEB": {
+   "name": "Fireworks launch delay",
+   "kind": "byte timer",
+   "desc": [
+    "Used by the ending (Peach scene). Rocket spawning sets it to a delay value from a table before the",
+    "next firework can launch, and the controller does nothing while it is non-zero.",
+    "The ending picture routine also sets it to $80 (probably starts the credits)."
+   ]
+  },
+  "1FEE": {
+   "name": "3-up moon collected bits",
+   "kind": "bit flags array, one bit per level",
+   "desc": [
+    "Bit array of levels where the 3-up moon has been collected. Byte = translevel / 8 (index Y), bit =",
+    "translevel AND 7. Set by block interaction when the moon is taken; tested when drawing the moon so it",
+    "does not reappear. Cleared at game start (mode 11)."
+   ]
+  },
+  "1FFB": {
+   "name": "Lightning flash step count",
+   "kind": "counter",
+   "desc": [
+    "Remaining steps of the lightning flash. The Bowser room palette routine reads it as the current step",
+    "(0 = no flash running); the overworld sprite loop sets it from DATA_04F700 to start a flash.",
+    "Part of the lightning flash state with $1FFC (delay) and $1FFD (frames per step)."
+   ]
+  },
+  "1FFC": {
+   "name": "Lightning flash delay",
+   "kind": "timer",
+   "desc": [
+    "Frames until the next lightning flash. Loaded from DATA_04F6F8[X] by the Bowser room palette routine",
+    "and by the overworld sprite loop. See $1FFB (steps) and $1FFD (frames per step)."
+   ]
+  },
+  "1FFD": {
+   "name": "Lightning flash step timer",
+   "kind": "timer",
+   "desc": [
+    "Frames left in the current lightning flash step. Set to 8 for the first step by the Bowser room palette",
+    "routine and the overworld sprite loop; counted down by the same routines.",
+    "See $1FFB (step) and $1FFC (delay to the next flash)."
+   ]
+  },
+  "1FFE": {
+   "name": "Credits palette/background reload request",
+   "kind": "flag byte",
+   "desc": [
+    "During the credits, non-zero asks the NMI handler to reload the palette when switching backgrounds.",
+    "The screen wipe update increments it to request the reload; the NMI tests it (only in the ending",
+    "cutscene), and the credits background DMA routine clears it once the reload is done.",
+    "Values: 0 = nothing requested."
+   ]
+  },
+  "7EB900": {
+   "name": "Overworld sprite X high / particles",
+   "kind": "byte table (index X)",
+   "desc": [
+    "Probably the high byte of the X position of overworld sprites; the switch palace ! block particles",
+    "store the player's overworld X high ($1F18) here. Also written by level load buffer init (cleared).",
+    "Shares memory with the level buffers, so the meaning depends on game mode."
+   ]
+  },
+  "7EB978": {
+   "name": "Overworld sprite X low / particles",
+   "kind": "byte table (index X)",
+   "desc": [
+    "Low byte of an overworld particle's X position. The switch palace ! block particles set it to the",
+    "player's overworld X ($1F17) when they are spawned."
+   ]
+  },
+  "7EB9F0": {
+   "name": "Overworld particle X speed",
+   "kind": "byte table (index X), signed",
+   "desc": [
+    "Horizontal speed of an overworld particle. The switch palace ! block particles set it from",
+    "DATA_04F280[Y] so each particle flies in its own direction."
+   ]
+  },
+  "7EBA40": {
+   "name": "Overworld particle height speed",
+   "kind": "byte table (index X), signed",
+   "desc": [
+    "Vertical (height) speed of an overworld particle. The switch palace ! block particles set it to $D0,",
+    "launching them upward, before gravity pulls them down."
+   ]
+  },
+  "7EC800": {
+   "name": "Overworld layer 1 tile map",
+   "kind": "byte array (tile number per map tile, index X)",
+   "desc": [
+    "Overworld layer 1 map: one byte per 16x16 map tile, written by events and read for drawing and walking.",
+    "Filled at load, edited by overworld events (path reveals, switch palace changes), read for walking.",
+    "In levels the same RAM is the Map16 low byte buffer (written by Map16 setup, bridge breaking and",
+    "boss room tile animation, which stores the empty tile $25)."
+   ]
+  },
+  "7ED000": {
+   "name": "Overworld level number table",
+   "kind": "byte array (index X, one per map tile)",
+   "desc": [
+    "Level (translevel) number for each overworld map tile. Read by the level load, walking and exit code",
+    "at the player's tile position to find which level is entered. Initialised by the Map16 and level",
+    "buffer fill code (also the Map16 high byte buffer in levels)."
+   ]
+  },
+  "7ED800": {
+   "name": "Overworld tile path flags",
+   "kind": "byte array (index X, one per map tile)",
+   "desc": [
+    "Per-tile byte tested bitwise by direction (shifted right by [$08]) when the player starts walking",
+    "from a tile and when setting a level's exit flag. Probably marks which directions are open.",
+    "Initialised by the level buffer fill routine. Written only at setup, read-only otherwise."
+   ]
+  },
+  "7F0000": {
+   "name": "Overworld map attribute buffer",
+   "kind": "byte array (index X)",
+   "desc": [
+    "Attribute (palette/flip) byte for each overworld map tile. Filled by the layer 1 map page drawing",
+    "(literal bytes) and read by the overworld event code when applying edits and fading tiles."
+   ]
+  },
+  "7F4000": {
+   "name": "Layer 2 tilemap buffer",
+   "kind": "byte array (tile data, index X)",
+   "desc": [
+    "Tilemap buffer for overworld layer 2 (and the credits backgrounds). Written by the interleaved map",
+    "decompressor, by completed events on the layer 2 map, and by the credits code (top-left tile word,",
+    "masked by [$65]). Write-only in these routines; DMA uploads it to VRAM."
+   ]
+  },
+  "7F837B": {
+   "name": "Stripe image buffer write index",
+   "kind": "word (little endian), index",
+   "desc": [
+    "Offset of the end of the VRAM stripe image buffer at $7F837D: where the next record will be written.",
+    "Every routine that queues text or tiles for VRAM (level name, message box, lives counter, tallies,",
+    "credits text, events, bridge break, cage block) reads it, writes records at that offset, and saves the",
+    "new end back. Cleared to 0 when the buffer is empty (it is flushed on NMI by the stripe uploader)."
+   ]
+  },
+  "7F837D": {
+   "name": "Stripe image buffer: VRAM address high",
+   "kind": "byte, first byte of the stripe buffer (index X)",
+   "desc": [
+    "Start of the VRAM stripe image buffer at $7F837D. Each record is: VRAM address high, VRAM address",
+    "low, flags/length (word), then tile data; $FF as the first byte ends the buffer.",
+    "Callers write the VRAM address high byte at [$7F837D+X], and $FF after the last record as the end",
+    "marker. $FF at the first byte means the buffer is empty."
+   ]
+  },
+  "7F837E": {
+   "name": "Stripe record VRAM address low",
+   "kind": "byte, stripe record field (index X)",
+   "desc": [
+    "Second byte of a stripe image record: low byte of the VRAM address the tile data is uploaded to.",
+    "The previous byte, $7F837D+X, is the high byte."
+   ]
+  },
+  "7F837F": {
+   "name": "Stripe record flags / length high",
+   "kind": "byte, stripe record field (index X)",
+   "desc": [
+    "Third byte of a stripe record: the high byte of the length word, together with flags (bit 6 = RLE,",
+    "bit 7 = vertical). 0 means horizontal, no RLE.",
+    "Callers also use it as the first data byte of the record ($7F8380 follows with the low length)."
+   ]
+  },
+  "7F8380": {
+   "name": "Stripe record length low",
+   "kind": "byte, stripe record field (index X)",
+   "desc": [
+    "Fourth byte of a stripe record: the low byte of the data length minus 1 (e.g. $03 = 4 bytes, 2 tiles;",
+    "$0B = 12 bytes, 6 tiles). Written with the rest of the record header before the tile data."
+   ]
+  },
+  "7F8381": {
+   "name": "Stripe record tile data",
+   "kind": "byte, first data byte of a stripe record (index X)",
+   "desc": [
+    "First data byte of record 1: the tile number of the first tile ($7F8382 holds its attributes).",
+    "Written by almost every stripe user for the first tile, and for the end marker $FF after the last",
+    "record (level name, tally digits replaced by a blank tile $38FC)."
+   ]
+  },
+  "7F8382": {
+   "name": "Stripe record first tile attributes",
+   "kind": "byte, stripe record data (index X)",
+   "desc": [
+    "Attribute byte (YXPCCCTT) of the first tile of a record, following the tile number at $7F8381.",
+    "Commonly $39: palette 6, high priority, tile page 1 (level name, message box, lives counter,",
+    "file select digits)."
+   ]
+  },
+  "7F8383": {
+   "name": "Stripe record second tile number",
+   "kind": "byte, stripe record data (index X)",
+   "desc": [
+    "Next data byte in a record after the first tile word: tile number of the second tile.",
+    "Written by Map16 tile generation, boss room tile animation, bridge breaking, lives counter, events",
+    "and cutscene code. File select overwrites the rest of the word with an empty tile."
+   ]
+  },
+  "7F8385": {
+   "name": "Stripe record 2 header / data",
+   "kind": "byte, stripe record field (index X)",
+   "desc": [
+    "Byte at offset 8 from the buffer start: start of a second stripe record when two records are queued",
+    "(VRAM address of the second row). Used by the bridge break code (header $0240 = RLE, count 2),",
+    "event tile drawing, and Map16 tile generation."
+   ]
+  }
+ }
+}

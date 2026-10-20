@@ -1,0 +1,389 @@
+{
+ "addresses": {
+  "13E1": {
+   "name": "Cape flight slope value",
+   "kind": "byte",
+   "desc": [
+    "Slope value used by cape flight. Set from the walking-speed code to a per-direction value, copied from X (slope",
+    "angle for Mario's pose) by the block collision code, and cleared by the level collision routine.",
+    "Read by the Mario pose chooser. Meaning is only partly clear from the code."
+   ]
+  },
+  "13E2": {
+   "name": "Cape/fireball input timer",
+   "kind": "counter",
+   "desc": [
+    "Counter bumped by the cape hit point and fireball input routine, which tests it to decide when to shoot fireballs",
+    "and in which direction. Cleared by the scripted walk (castle entry) and set when a ground jump starts."
+   ]
+  },
+  "13E3": {
+   "name": "Wall-run status",
+   "kind": "byte",
+   "desc": [
+    "Mario's wall-running state (cape). 0 = not wall-running.",
+    "Set by the cape ground pound landing code when wall-running starts; read by collision, pose/OAM drawing,",
+    "climbing tables, hurt Mario and the scroll routine.",
+    "Values: 0 = none, 2 = running on a wall to the left, 3 = running on a wall to the right."
+   ]
+  },
+  "13E4": {
+   "name": "P-meter (dash timer)",
+   "kind": "timer",
+   "desc": [
+    "Mario's run-speed meter. Filled while he runs at full speed and counts down otherwise; a full meter allows",
+    "the run jump and cape take-off. Normal Mario handling sets it to $70 (full); the cape flight code stores it.",
+    "Read by the ground X speed routine.",
+    "Values: $70 = full P-meter."
+   ]
+  },
+  "13E5": {
+   "name": "Run animation speed class",
+   "kind": "byte",
+   "desc": [
+    "Upper bits of the index into the player's flashing/animation timing table (written to $1496 by the walk",
+    "animation counter). Set to $68 when Left/Right is held, ORed with X/8 to pick the entry.",
+    "Also set to 3 by the level and block collision code when Mario pushes against a wall (probably a side-contact",
+    "timer); cleared when leaving the water-border check."
+   ]
+  },
+  "13E8": {
+   "name": "Cape interaction flag",
+   "kind": "flag byte",
+   "desc": [
+    "Non-zero while the cape is active as a hitbox against sprites (during a cape spin). Set to 1 by the cape hit",
+    "point routine; cleared when the ground speed code cancels it and when swimming starts.",
+    "Read by the cape/ground-pound sprite interaction loop in bank 02.",
+    "Values: 0 = off, 1 = cape interacts with sprites."
+   ]
+  },
+  "13E9": {
+   "name": "Cape hitbox X, low",
+   "kind": "word (little endian, low byte)",
+   "desc": [
+    "Low byte of the cape's interaction X position: Mario X plus an offset from DATA_00D034 by cape pose. High byte",
+    "is $13EA. Read by the bank 02 cape routines that hit blocks, bounce sprites and extended sprites."
+   ]
+  },
+  "13EA": {
+   "name": "Cape hitbox X, high",
+   "kind": "word (little endian, high byte)",
+   "desc": [
+    "High byte of the cape's interaction X position ([$13E9] is the low byte). The bank 02 routine adds Mario's",
+    "[$27] carry into it. Read by the cape hit routines."
+   ]
+  },
+  "13EB": {
+   "name": "Cape hitbox Y, low",
+   "kind": "word (little endian, low byte)",
+   "desc": [
+    "Low byte of the cape's interaction Y position: Mario Y plus an offset from DATA_00D03C. High byte is $13EC.",
+    "Read by the cape hit routines for blocks, extended sprites and bounce sprites."
+   ]
+  },
+  "13EC": {
+   "name": "Cape hitbox Y, high",
+   "kind": "word (little endian, high byte)",
+   "desc": [
+    "High byte of the cape's interaction Y position ([$13EB] is the low byte). Read by the cape hit routines."
+   ]
+  },
+  "13ED": {
+   "name": "Mario sliding flag / slide timer",
+   "kind": "byte",
+   "desc": [
+    "Non-zero while Mario is sliding down a slope. Set by the block/slope collision code, which reads it as a slide",
+    "timer; cleared whenever sliding ends (ground speed code, swimming, cape flight, scripted walks, power-ups).",
+    "Read by the pose chooser (slide pose) and by sprite contact, which treats a sliding Mario as a kicking hit.",
+    "Bit 7 is cleared by the flower power-up animation.",
+    "Values: 0 = not sliding."
+   ]
+  },
+  "13EE": {
+   "name": "Slope direction",
+   "kind": "byte",
+   "desc": [
+    "Direction of the slope Mario is standing on, written by the block and slope collision code and cleared by the",
+    "level collision routine. Read by the ground X speed routine to adjust acceleration on slopes."
+   ]
+  },
+  "13EF": {
+   "name": "Below-surface counter",
+   "kind": "counter",
+   "desc": [
+    "Counter incremented by the block and slope collision code while Mario is below the surface of a tile (probably",
+    "water or a slope edge), and shifted left once; cleared at the start of the level collision routine each frame."
+   ]
+  },
+  "13F1": {
+   "name": "Vertical scroll enable (air)",
+   "kind": "byte",
+   "desc": [
+    "Vertical scroll helper used by the scroll routine: set from the vertical scroll flag when the air flag is set,",
+    "and cleared to disable vertical scrolling. Also incremented once during level start setup."
+   ]
+  },
+  "13F3": {
+   "name": "Mario balloon pose / P-balloon",
+   "kind": "byte, also indexed by Y as a bit table",
+   "desc": [
+    "Non-zero while Mario is holding a P-balloon; also doubles as a balloon pose value that makes his pose flash.",
+    "Set to 9 by the balloon sprite, cleared when the balloon expires, is dropped, or the level ends.",
+    "Block interaction also ORs bit masks into [$13F3 + Y] (X = previous value) when Mario touches tiles.",
+    "Read by the scroll routine (adds a camera offset) and by Put Mario on Yoshi.",
+    "Values: 0 = no balloon, 9 = balloon mode."
+   ]
+  },
+  "13F9": {
+   "name": "Mario behind scenery flag",
+   "kind": "flag byte",
+   "desc": [
+    "Layer priority of Mario's sprite. Tells the OAM drawing and climbing routines whether he is in front of or",
+    "behind scenery (climbing nets, pipes). Set to 2 in pipe animations, 3 in Mario Start, bosses and the border map.",
+    "Toggled by the climbing net door. Cleared by level collision when he leaves a scenery tile ($8B = 0).",
+    "Read by sprite contact tests, fireballs, bounce blocks and smoke puffs.",
+    "Values: 0 = in front, 1 = behind scenery, 2 and 3 = special priority (pipe, cutscene)."
+   ]
+  },
+  "13FA": {
+   "name": "Water surface flag",
+   "kind": "flag byte",
+   "desc": [
+    "Set to 1 when Mario reaches the surface of water (after the swim speed is clamped); cleared each frame by the",
+    "level collision routine. The swimming code tests it to see whether he can jump out of the water."
+   ]
+  },
+  "13FB": {
+   "name": "Mario frozen / Yoshi busy",
+   "kind": "counter",
+   "desc": [
+    "Non-zero freezes Mario and in-level control. Set by the keyhole routine, bosses, Yoshi (busy while swallowing)",
+    "and cutscenes, cleared by the falling columns, Yoshi and Koopa Kid code. Incremented by the keyhole exit,",
+    "Yoshi mount and Yoshi draw routines. ORed in by Mario's OAM drawing and the boss fireball to test for it.",
+    "Values: 0 = free."
+   ]
+  },
+  "13FC": {
+   "name": "Boss number",
+   "kind": "byte",
+   "desc": [
+    "Identifies which Mode 7 boss room is loaded. Set by the Mode 7 boss graphics setup and read by the NMI, the",
+    "boss room tile animation, frame code and Mario's platform/ceiling collision in the boss room."
+   ]
+  },
+  "13FD": {
+   "name": "L/R scroll freeze flag",
+   "kind": "flag byte",
+   "desc": [
+    "Non-zero while the screen is scrolling because of L/R camera scrolling; sprites are frozen then. Incremented",
+    "by the L/R scroll routine, tested by the scroll code and the Yoshi pose routine.",
+    "Values: 0 = not scrolling."
+   ]
+  },
+  "13FE": {
+   "name": "L/R scroll direction",
+   "kind": "byte",
+   "desc": [
+    "Direction of the current L/R screen scroll, set by the L/R scroll routine and read by the Yoshi pose code."
+   ]
+  },
+  "13FF": {
+   "name": "Mario facing direction (scroll)",
+   "kind": "byte",
+   "desc": [
+    "Mario's facing direction as used by scrolling. The L/R scroll routine uses it times 2 as an index, and the",
+    "scroll routine reads it for the look-ahead offset."
+   ]
+  },
+  "1400": {
+   "name": "Scroll look-ahead memo",
+   "kind": "byte",
+   "desc": [
+    "Remembers the look-ahead adjustment chosen by the scroll routine (stored from Y). Cleared by the L/R scroll",
+    "routine, read by the Yoshi pose routine."
+   ]
+  },
+  "1401": {
+   "name": "L/R scroll hold timer",
+   "kind": "timer",
+   "desc": [
+    "Counts up each frame while L or R is held to scroll the screen; the scroll starts once it reaches a limit.",
+    "Cleared when the scroll stops."
+   ]
+  },
+  "1402": {
+   "name": "Riding bounce block flag",
+   "kind": "flag byte",
+   "desc": [
+    "Set to 1 by the bounce block sprite (purpose unclear, probably that Mario is on a bouncing block). Cleared by",
+    "the per-frame Mario state; read by block collision."
+   ]
+  },
+  "1403": {
+   "name": "Layer 3 effect mode",
+   "kind": "byte",
+   "desc": [
+    "Layer 3 (BG3) motion mode set at level start: 1 or 2. Read by the layer 3 scroll code and by the swimming",
+    "routine (layer 3 tide check).",
+    "Values: 0 = none, 1 and 2 = layer 3 effect."
+   ]
+  },
+  "1404": {
+   "name": "Free vertical scroll flag",
+   "kind": "flag byte",
+   "desc": [
+    "Layer 1 vertical scroll state. Incremented at game mode 11 and by the scroll routine; cleared to wait until",
+    "Mario is on a higher platform before scrolling up.",
+    "Read by the vertical scroll code."
+   ]
+  },
+  "1406": {
+   "name": "Springboard / high-jump flag",
+   "kind": "flag byte",
+   "desc": [
+    "Set to $80 by the portable springboard and the cape ground pound landing; cleared by block collision. The",
+    "scroll routine ORs it in, probably to raise the camera for the higher jump."
+   ]
+  },
+  "1407": {
+   "name": "Cape flight phase",
+   "kind": "byte",
+   "desc": [
+    "Mario's cape flight state. Set by the flower power-up and cleared on swimming and death; read by the pose",
+    "chooser, collision, hurt Mario and Koopa contact.",
+    "Values: 0 = no cape flight; other values are flight phases."
+   ]
+  },
+  "1408": {
+   "name": "Cape pitch input",
+   "kind": "byte",
+   "desc": [
+    "Remembers the pitch input (cape state for the next phase) stored by the cape flight code."
+   ]
+  },
+  "1409": {
+   "name": "Cape upward boost",
+   "kind": "byte",
+   "desc": [
+    "Cleared to 0 by the cape flight code on most frames; the next call sets it when an upward boost is wanted."
+   ]
+  },
+  "140D": {
+   "name": "Spin jump flag",
+   "kind": "flag byte",
+   "desc": [
+    "Non-zero while Mario spin jumps. Set to 1 when a spin jump starts, on springboards and water exits, and when",
+    "hurt out of cape soaring; cleared in animations, swimming, climbing and death. Checked by sprite contact (spin kills),",
+    "block collision and the cape flight code (no flight while spin jumping).",
+    "Values: 0 = no, 1 = spin jumping."
+   ]
+  },
+  "140E": {
+   "name": "Collision tile counter",
+   "kind": "counter",
+   "desc": [
+    "Incremented once by the block and slope collision code and cleared at the start of the level collision routine.",
+    "Read by layer 2 scroll sprite 0E (sink or rise)."
+   ]
+  },
+  "140F": {
+   "name": "Reznor frame counter",
+   "kind": "counter",
+   "desc": [
+    "Counts frames in the Reznor room (incremented by the Reznor main routine). Read by the smoke, extended sprite",
+    "and star palette code to avoid overwriting the platform's OAM in the Reznor fight."
+   ]
+  },
+  "1410": {
+   "name": "Yoshi has wings (B)",
+   "kind": "flag byte",
+   "desc": [
+    "Winged Yoshi flag, set by the Yoshi main routine and read by the Yoshi draw and scroll routines.",
+    "Values: 0 = no wings; non-zero = winged."
+   ]
+  },
+  "1411": {
+   "name": "Layer 1 horizontal scroll flag",
+   "kind": "flag byte",
+   "desc": [
+    "Layer 1 horizontal scrolling enable. Cleared by scripted scenes, boss rooms and scroll sprites to disable",
+    "normal scrolling; set to 1 when a level loads (and by the header). Read by the scroll and collision routines.",
+    "Values: 0 = off, 1 = on."
+   ]
+  },
+  "1412": {
+   "name": "Layer 1 vertical scroll setting",
+   "kind": "byte",
+   "desc": [
+    "Vertical scroll setting from the level header (vertical level flag). Set while loading a level, read by the",
+    "scroll routine to allow vertical scrolling."
+   ]
+  },
+  "1413": {
+   "name": "Layer 2 horizontal scroll mode",
+   "kind": "byte",
+   "desc": [
+    "Horizontal scroll setting for layer 2, loaded from DATA_05D720 at level load; cleared by scroll sprites.",
+    "Read by the scroll routine (0 = scrolls with the screen)."
+   ]
+  },
+  "1414": {
+   "name": "Layer 2 vertical scroll mode",
+   "kind": "byte",
+   "desc": [
+    "Vertical scroll setting for layer 2, loaded from DATA_05D710 at level load; cleared by scroll sprites.",
+    "Read by level start setup and the scroll routine (0 = scrolls with the screen)."
+   ]
+  },
+  "1419": {
+   "name": "Yoshi / pipe entry flag",
+   "kind": "flag byte",
+   "desc": [
+    "Marks Mario entering a pipe while Yoshi is involved. Set to 1 (horizontal) or 2 (vertical) on pipe entry,",
+    "cleared in level start and the pipe animations. Read by the Yoshi routines, carried sprites and kicks.",
+    "Values: 0 = none, 1 = horizontal pipe, 2 = vertical pipe."
+   ]
+  },
+  "141A": {
+   "name": "Level entered via screen exit",
+   "kind": "counter",
+   "desc": [
+    "Non-zero when the level was entered through a screen exit rather than from the overworld. Incremented by the",
+    "forced screen exit and the vertical pipe animation; read by level load, level header parse, Mario Start and the",
+    "music upload (skips it if non-zero)."
+   ]
+  },
+  "141D": {
+   "name": "Level start skip flag",
+   "kind": "flag byte",
+   "desc": [
+    "Non-zero skips the Mario Start text and (with $141A and $0109) the music upload. Incremented by the scripted",
+    "walk animation when it finishes (probably). Read by level setup and level load."
+   ]
+  },
+  "141E": {
+   "name": "Yoshi has wings",
+   "kind": "flag byte",
+   "desc": [
+    "Non-zero when Yoshi has wings. Set to 2 by the tongue and contact code, cleared when wings are lost, the baby",
+    "Yoshi swallows, or the level ends. Read by the pose, cape flight and scroll routines.",
+    "Values: 0 = no wings, 2 = wings."
+   ]
+  },
+  "141F": {
+   "name": "Level start skip flag 2",
+   "kind": "flag byte",
+   "desc": [
+    "Set while loading a level and tested with $141D and $141A in level start setup to skip the Mario Start screen."
+   ]
+  },
+  "1421": {
+   "name": "Tile sequence counter",
+   "kind": "counter",
+   "desc": [
+    "Counts through a run of four consecutive block types ($6F-$72) in block interaction; compared with the touched",
+    "tile to ignore repeats, and wraps when it reaches 4."
+   ]
+  }
+ }
+}

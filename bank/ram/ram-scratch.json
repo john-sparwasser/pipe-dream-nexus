@@ -1,0 +1,180 @@
+{
+ "addresses": {
+  "0000": {
+   "name": "Scratch byte $00",
+   "kind": "scratch byte (direct page)",
+   "desc": [
+    "Direct-page scratch variable with no fixed meaning. Any routine may use it as a temporary for arithmetic, hitbox",
+    "coordinates, loop counters or return values, and its contents do not survive a call to another routine.",
+    "The call sites below show what each routine keeps in it; there is nothing shared between them.",
+    "Adjacent scratch bytes are often paired as a 16-bit value or, with $0000-$0002, as a 24-bit pointer used by",
+    "indirect long addressing (for example the data pointer passed to the SPC700 upload routine)."
+   ]
+  },
+  "0001": {
+   "name": "Scratch byte $01",
+   "kind": "scratch byte (direct page)",
+   "desc": [
+    "Direct-page scratch variable with no fixed meaning. Any routine may use it as a temporary for arithmetic, hitbox",
+    "coordinates, loop counters or return values, and its contents do not survive a call to another routine.",
+    "The call sites below show what each routine keeps in it; there is nothing shared between them.",
+    "Adjacent scratch bytes are often paired as a 16-bit value or, with $0000-$0002, as a 24-bit pointer used by",
+    "indirect long addressing (for example the data pointer passed to the SPC700 upload routine)."
+   ]
+  },
+  "0002": {
+   "name": "Scratch byte $02",
+   "kind": "scratch byte (direct page)",
+   "desc": [
+    "Direct-page scratch variable with no fixed meaning. Any routine may use it as a temporary for arithmetic, hitbox",
+    "coordinates, loop counters or return values, and its contents do not survive a call to another routine.",
+    "The call sites below show what each routine keeps in it; there is nothing shared between them.",
+    "Adjacent scratch bytes are often paired as a 16-bit value or, with $0000-$0002, as a 24-bit pointer used by",
+    "indirect long addressing (for example the data pointer passed to the SPC700 upload routine)."
+   ]
+  },
+  "0003": {
+   "name": "Scratch byte $03",
+   "kind": "scratch byte (direct page)",
+   "desc": [
+    "Direct-page scratch variable with no fixed meaning. Any routine may use it as a temporary for arithmetic, hitbox",
+    "coordinates, loop counters or return values, and its contents do not survive a call to another routine.",
+    "The call sites below show what each routine keeps in it; there is nothing shared between them.",
+    "Adjacent scratch bytes are often paired as a 16-bit value or, with $0000-$0002, as a 24-bit pointer used by",
+    "indirect long addressing (for example the data pointer passed to the SPC700 upload routine)."
+   ]
+  },
+  "0004": {
+   "name": "Scratch byte $04",
+   "kind": "scratch byte (direct page)",
+   "desc": [
+    "Direct-page scratch variable with no fixed meaning. Any routine may use it as a temporary for arithmetic, hitbox",
+    "coordinates, loop counters or return values, and its contents do not survive a call to another routine.",
+    "The call sites below show what each routine keeps in it; there is nothing shared between them.",
+    "Adjacent scratch bytes are often paired as a 16-bit value or, with $0000-$0002, as a 24-bit pointer used by",
+    "indirect long addressing (for example the data pointer passed to the SPC700 upload routine)."
+   ]
+  },
+  "0005": {
+   "name": "Scratch byte $05",
+   "kind": "scratch byte (direct page)",
+   "desc": [
+    "Direct-page scratch variable with no fixed meaning. Any routine may use it as a temporary for arithmetic, hitbox",
+    "coordinates, loop counters or return values, and its contents do not survive a call to another routine.",
+    "The call sites below show what each routine keeps in it; there is nothing shared between them.",
+    "Adjacent scratch bytes are often paired as a 16-bit value or, with $0000-$0002, as a 24-bit pointer used by",
+    "indirect long addressing (for example the data pointer passed to the SPC700 upload routine)."
+   ]
+  },
+  "0006": {
+   "name": "Scratch byte $06",
+   "kind": "scratch byte (direct page)",
+   "desc": [
+    "Direct-page scratch variable with no fixed meaning. Any routine may use it as a temporary for arithmetic, hitbox",
+    "coordinates, loop counters or return values, and its contents do not survive a call to another routine.",
+    "The call sites below show what each routine keeps in it; there is nothing shared between them.",
+    "Adjacent scratch bytes are often paired as a 16-bit value or, with $0000-$0002, as a 24-bit pointer used by",
+    "indirect long addressing (for example the data pointer passed to the SPC700 upload routine)."
+   ]
+  },
+  "0007": {
+   "name": "Scratch byte $07",
+   "kind": "scratch byte (direct page)",
+   "desc": [
+    "Direct-page scratch variable with no fixed meaning. Any routine may use it as a temporary for arithmetic, hitbox",
+    "coordinates, loop counters or return values, and its contents do not survive a call to another routine.",
+    "The call sites below show what each routine keeps in it; there is nothing shared between them.",
+    "Adjacent scratch bytes are often paired as a 16-bit value or, with $0000-$0002, as a 24-bit pointer used by",
+    "indirect long addressing (for example the data pointer passed to the SPC700 upload routine)."
+   ]
+  },
+  "0008": {
+   "name": "Scratch byte $08",
+   "kind": "scratch byte (direct page)",
+   "desc": [
+    "Direct-page scratch variable with no fixed meaning. Any routine may use it as a temporary for arithmetic, hitbox",
+    "coordinates, loop counters or return values, and its contents do not survive a call to another routine.",
+    "The call sites below show what each routine keeps in it; there is nothing shared between them.",
+    "Adjacent scratch bytes are often paired as a 16-bit value or, with $0000-$0002, as a 24-bit pointer used by",
+    "indirect long addressing (for example the data pointer passed to the SPC700 upload routine)."
+   ]
+  },
+  "0009": {
+   "name": "Scratch byte $09",
+   "kind": "scratch byte (direct page)",
+   "desc": [
+    "Direct-page scratch variable with no fixed meaning. Any routine may use it as a temporary for arithmetic, hitbox",
+    "coordinates, loop counters or return values, and its contents do not survive a call to another routine.",
+    "The call sites below show what each routine keeps in it; there is nothing shared between them.",
+    "Adjacent scratch bytes are often paired as a 16-bit value or, with $0000-$0002, as a 24-bit pointer used by",
+    "indirect long addressing (for example the data pointer passed to the SPC700 upload routine)."
+   ]
+  },
+  "000A": {
+   "name": "Scratch byte $0A",
+   "kind": "scratch byte (direct page)",
+   "desc": [
+    "Direct-page scratch variable with no fixed meaning. Any routine may use it as a temporary for arithmetic, hitbox",
+    "coordinates, loop counters or return values, and its contents do not survive a call to another routine.",
+    "The call sites below show what each routine keeps in it; there is nothing shared between them.",
+    "Adjacent scratch bytes are often paired as a 16-bit value or, with $0000-$0002, as a 24-bit pointer used by",
+    "indirect long addressing (for example the data pointer passed to the SPC700 upload routine)."
+   ]
+  },
+  "000B": {
+   "name": "Scratch byte $0B",
+   "kind": "scratch byte (direct page)",
+   "desc": [
+    "Direct-page scratch variable with no fixed meaning. Any routine may use it as a temporary for arithmetic, hitbox",
+    "coordinates, loop counters or return values, and its contents do not survive a call to another routine.",
+    "The call sites below show what each routine keeps in it; there is nothing shared between them.",
+    "Adjacent scratch bytes are often paired as a 16-bit value or, with $0000-$0002, as a 24-bit pointer used by",
+    "indirect long addressing (for example the data pointer passed to the SPC700 upload routine)."
+   ]
+  },
+  "000C": {
+   "name": "Scratch byte $0C",
+   "kind": "scratch byte (direct page)",
+   "desc": [
+    "Direct-page scratch variable with no fixed meaning. Any routine may use it as a temporary for arithmetic, hitbox",
+    "coordinates, loop counters or return values, and its contents do not survive a call to another routine.",
+    "The call sites below show what each routine keeps in it; there is nothing shared between them.",
+    "Adjacent scratch bytes are often paired as a 16-bit value or, with $0000-$0002, as a 24-bit pointer used by",
+    "indirect long addressing (for example the data pointer passed to the SPC700 upload routine)."
+   ]
+  },
+  "000D": {
+   "name": "Scratch byte $0D",
+   "kind": "scratch byte (direct page)",
+   "desc": [
+    "Direct-page scratch variable with no fixed meaning. Any routine may use it as a temporary for arithmetic, hitbox",
+    "coordinates, loop counters or return values, and its contents do not survive a call to another routine.",
+    "The call sites below show what each routine keeps in it; there is nothing shared between them.",
+    "Adjacent scratch bytes are often paired as a 16-bit value or, with $0000-$0002, as a 24-bit pointer used by",
+    "indirect long addressing (for example the data pointer passed to the SPC700 upload routine)."
+   ]
+  },
+  "000E": {
+   "name": "Scratch byte $0E",
+   "kind": "scratch byte (direct page)",
+   "desc": [
+    "Direct-page scratch variable with no fixed meaning. Any routine may use it as a temporary for arithmetic, hitbox",
+    "coordinates, loop counters or return values, and its contents do not survive a call to another routine.",
+    "The call sites below show what each routine keeps in it; there is nothing shared between them.",
+    "Adjacent scratch bytes are often paired as a 16-bit value or, with $0000-$0002, as a 24-bit pointer used by",
+    "indirect long addressing (for example the data pointer passed to the SPC700 upload routine)."
+   ]
+  },
+  "000F": {
+   "name": "Scratch byte $0F",
+   "kind": "scratch byte (direct page)",
+   "desc": [
+    "Direct-page scratch variable with no fixed meaning. Any routine may use it as a temporary for arithmetic, hitbox",
+    "coordinates, loop counters or return values, and its contents do not survive a call to another routine.",
+    "The call sites below show what each routine keeps in it; there is nothing shared between them.",
+    "Adjacent scratch bytes are often paired as a 16-bit value or, with $0000-$0002, as a 24-bit pointer used by",
+    "indirect long addressing (for example the data pointer passed to the SPC700 upload routine)."
+   ]
+  }
+ }
+}

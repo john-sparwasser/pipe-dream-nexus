@@ -1,0 +1,208 @@
+{
+ "addresses": {
+  "0701": {
+   "name": "Backdrop color (CGRAM mirror)",
+   "kind": "word (little endian, low/high pair), palette color 0",
+   "desc": [
+    "Low byte of CGRAM color 0, the backdrop color, in the palette buffer that is DMAed to the PPU each frame.",
+    "$0702 is its high byte. The buffer starts here, so $0701 + 2*n is palette color n (see $0703).",
+    "Set by level, overworld, title and cutscene loaders; the level-end fade, Bowser lightning flash, dark room",
+    "spotlight and fireworks effects rewrite it; the fixed color routine reads it as the BGR555 backdrop.",
+    "Values: BGR555 color, e.g. $0000 = black, $7FFF = white."
+   ]
+  },
+  "0702": {
+   "name": "Backdrop color, high byte",
+   "kind": "byte (high half of $0701)",
+   "desc": [
+    "High byte of the backdrop color word at $0701 (palette buffer color 0). Only written as a single byte by the",
+    "title load, Bowser phase 9 (cleared), the dark room spotlight and the Peach fireworks, which write the",
+    "low and high bytes separately from data tables."
+   ]
+  },
+  "0703": {
+   "name": "Palette buffer, color 1 onward",
+   "kind": "byte table (palette buffer, 2 bytes per color, index X)",
+   "desc": [
+    "The CGRAM mirror continues past the backdrop color: $0703 is the low byte of palette color 1, and the",
+    "buffer runs on for the whole 256-color palette. Level palette loaders store rows of colors with STA,X;",
+    "the level-end dithered fade and the overworld event tile fade read colors back from it. The title and",
+    "overworld iris code also store single bytes here, e.g. $FE."
+   ]
+  },
+  "0783": {
+   "name": "Palette buffer, color 129 onward",
+   "kind": "byte table (palette buffer, index X)",
+   "desc": [
+    "Part of the same palette buffer as $0701/$0703 (offset $82 into it, the sprite-palette half). Read with",
+    "LDA,X as the source color by the dithered fade used when a level ends (to choose the dither pattern) and by",
+    "the overworld event palette fade."
+   ]
+  },
+  "0905": {
+   "name": "Palette upload record header",
+   "kind": "word (size) plus data, DMA upload record",
+   "desc": [
+    "Start of a record in the VRAM/CGRAM upload buffer: a 16-bit size word, then data at $0907 and later.",
+    "The level-end fade stores $01FE here (size $FE bytes of colors starting at color 1); the overworld event",
+    "fade stores $0070. It is also read back and rewritten with ,X as the fade progresses."
+   ]
+  },
+  "0907": {
+   "name": "Palette upload data",
+   "kind": "byte table (upload buffer data, index X)",
+   "desc": [
+    "Data bytes of the upload record whose header is at $0905: the new colors that will be copied to CGRAM.",
+    "Written with STA,X by the level-end pose/fade code and the overworld event fade, one color byte at a time,",
+    "after computing each new color from the palette buffer at $0703/$0783."
+   ]
+  },
+  "0AF6": {
+   "name": "Object gravity / grid buffer",
+   "kind": "byte table (index X or Y)",
+   "desc": [
+    "A multi-use table shared by different modes, so the meaning depends on the caller.",
+    "Credits and ending scenes: per-object gravity added to the Y speed ($0B05) each frame (set to 1).",
+    "Overworld: a buffer of animated tile bytes copied by the water tile animation, which also rotates it with ROL/ROR.",
+    "Mode 7 boss rooms: a copy of the tile layout grid kept at $0AF6+Y, read by the rotated tile check."
+   ]
+  },
+  "0B05": {
+   "name": "Credits object Y speed",
+   "kind": "byte table, one per credits object (index X)",
+   "desc": [
+    "Vertical speed of each credits/ending actor, as a signed value in 4.4 fixed point ($F0 = -1 pixel per frame).",
+    "Set by the cutscene and credits setup (e.g. $F6 = -10 for a bounce, from DATA_0CA3C2), incremented by the",
+    "gravity value in $0AF6 each frame, and added to Y position ($0B41) and subpixel ($0B23) by the movers.",
+    "Slots are $0F apart: $0B06 is slot 1."
+   ]
+  },
+  "0B06": {
+   "name": "Credits object 1 Y speed",
+   "kind": "byte (slot 1 of $0B05)",
+   "desc": [
+    "Y speed of object/actor 1, i.e. slot 1 of the table at $0B05. Set by the cutscene steps (e.g. 8 or $F8 = -8)",
+    "and by the credits scene actor setup ($F0 for the hopping character), and read by the hopping character update."
+   ]
+  },
+  "0B14": {
+   "name": "Credits object X speed",
+   "kind": "byte table, one per credits object (index X)",
+   "desc": [
+    "Horizontal speed of each credits/ending actor, signed (e.g. $F8 = walk left half a pixel per frame).",
+    "Set by cutscene scene steps, eggshell fragment spawning (from DATA_0CA5DA) and falling debris (DATA_0CD396),",
+    "and used by the movers to update X position ($0B50). $0B15 is slot 1."
+   ]
+  },
+  "0B23": {
+   "name": "Credits object Y subpixel",
+   "kind": "byte table, one per credits object (index X)",
+   "desc": [
+    "Fractional part of each object's Y position: the movers add the Y speed's fractional bits to it with ADC",
+    "and carry the overflow into the whole-pixel Y position ($0B41). Cleared (STZ) when objects are initialized."
+   ]
+  },
+  "0B32": {
+   "name": "Credits object X subpixel",
+   "kind": "byte table, one per credits object (index X)",
+   "desc": [
+    "Fractional part of each object's X position, counterpart of $0B23. Only written here, cleared with STZ when",
+    "credits jumping objects, scene actors and cutscene objects are initialized."
+   ]
+  },
+  "0B41": {
+   "name": "Credits object Y position, low",
+   "kind": "byte table, one per credits object (index X or Y)",
+   "desc": [
+    "Low byte of each credits/cutscene object's Y position on screen. Cleared or set when objects are created,",
+    "advanced by the Y speed ($0B05) plus carry from $0B23, and copied from the screen scroll in the castle",
+    "cutscenes. $0B5F is the high byte. Read by the draw routines (eggs, Yoshis, falling debris).",
+    "Slots are $0F apart: $0B42 is slot 1, $0B43 slot 2, $0B44 slot 3."
+   ]
+  },
+  "0B42": {
+   "name": "Credits object 1 Y position, low",
+   "kind": "byte (slot 1 of $0B41)",
+   "desc": [
+    "Y position (low byte) of object/actor 1. Set to $9F for the hopping character, or $77 in cutscene steps,",
+    "and read by the hopping character, landing pose and cutscene draw routines."
+   ]
+  },
+  "0B43": {
+   "name": "Credits object 2 Y position, low",
+   "kind": "byte (slot 2 of $0B41)",
+   "desc": [
+    "Y position (low byte) of object 2. Set to $77 by the cutscene steps, cleared when a rising sprite is inactive,",
+    "and read by the cutscene sprite drawing routines."
+   ]
+  },
+  "0B44": {
+   "name": "Credits object 3 Y position, low",
+   "kind": "byte (slot 3 of $0B41)",
+   "desc": [
+    "Y position (low byte) of object 3. Cleared by the rising and sideways sprite code when inactive, set by",
+    "substate 2 of the ending when the seven actors are released, and read by the eggshell/Yoshi code."
+   ]
+  },
+  "0B50": {
+   "name": "Credits object X position, low",
+   "kind": "byte table, one per credits object (index X or Y)",
+   "desc": [
+    "Low byte of each credits/cutscene object's X position. $0B6E is the high byte. Set at scene setup (e.g. $0100",
+    "for Mario just off the right edge, $5F/$60 for cutscene objects), changed by the X speed ($0B14), and read",
+    "by the egg, Yoshi and falling debris draw routines. Also the start X of the cutscene sprite row.",
+    "Slots are $0F apart: $0B51 is slot 1, $0B52 slot 2, $0B53 slot 3."
+   ]
+  },
+  "0B51": {
+   "name": "Credits object 1 X position, low",
+   "kind": "byte (slot 1 of $0B50)",
+   "desc": [
+    "X position (low byte) of object 1. Set by the cutscene 3 and 7 state code (e.g. $98 start value)",
+    "and read by the object drawing."
+   ]
+  },
+  "0B52": {
+   "name": "Credits object 2 X position, low",
+   "kind": "byte (slot 2 of $0B50)",
+   "desc": [
+    "X position (low byte) of object 2. Set to $80 when the seven ending actors are released, or $90 by the",
+    "cutscene steps, and read by the object drawing."
+   ]
+  },
+  "0B53": {
+   "name": "Credits object 3 X position, low",
+   "kind": "byte (slot 3 of $0B50)",
+   "desc": [
+    "X position (low byte) of object 3. Set by substate 2 of the ending, cleared by the rising and sideways",
+    "sprite code when inactive."
+   ]
+  },
+  "0B5F": {
+   "name": "Credits object Y position, high",
+   "kind": "byte table, one per credits object (index X)",
+   "desc": [
+    "High byte of each object's Y position ($0B41 is the low byte). Copied from the Y scroll high byte in the",
+    "castle cutscenes, cleared at initialization, and updated with the sign extension and carry when the movers",
+    "add the Y speed."
+   ]
+  },
+  "0B6E": {
+   "name": "Credits object X position, high",
+   "kind": "byte table, one per credits object (index X or Y)",
+   "desc": [
+    "High byte of each object's X position ($0B50 is the low byte). Set to 1 for actors starting off the right",
+    "edge, cleared at initialization, and read by the eggshell, Yoshi and scene substate code."
+   ]
+  },
+  "0B8C": {
+   "name": "Falling debris active flag",
+   "kind": "flag byte table, one per debris slot (index X or Y)",
+   "desc": [
+    "Per-slot active flag for the falling debris effect in a cutscene. Set when a slot is spawned, tested while",
+    "moving it, cleared with STZ when it finishes, and read by the draw routine to skip unused slots.",
+    "Values: 0 = slot unused; non-zero = in use."
+   ]
+  }
+ }
+}

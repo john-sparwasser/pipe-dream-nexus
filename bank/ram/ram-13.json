@@ -1,0 +1,443 @@
+{
+ "addresses": {
+  "14B4": {
+   "name": "Scratch X low (platform/Bowser)",
+   "kind": "scratch byte (low byte of a 16-bit word with $14B5)",
+   "desc": [
+    "Shared scratch word, reused by unrelated bosses. In the rotating/tilting platform code it holds the X",
+    "position of a point being tested (sprite X low + 8 for the Iggy/Larry platform, tested by the Mode 7",
+    "rotated tile check; $14B5 is the high byte). In the Mode 7 boss room it is the contact X for Mario.",
+    "In the Bowser fight the same address is used as the Bowser phase counter (probably); set to the phase",
+    "in the Mario/Mecha-Koopa contact code and read by the state/music table."
+   ]
+  },
+  "14B5": {
+   "name": "Scratch X high / Bowser hurt timer",
+   "kind": "scratch byte (high byte with $14B4), timer in Bowser fight",
+   "desc": [
+    "High byte of the 16-bit point X in the platform geometry code ($14B4 is the low byte). Set to X high",
+    "plus carry for the Iggy/Larry tilting platform and by extended sprite hitbox setup.",
+    "In the Bowser fight it is the hurt/hit flash timer: set to $4C when Bowser is hit, read by the hurt",
+    "reaction and the main logic."
+   ]
+  },
+  "14B6": {
+   "name": "Scratch Y low / Bowser ball timer",
+   "kind": "scratch byte (low byte of a 16-bit word with $14B7), timer in Bowser fight",
+   "desc": [
+    "Low byte of the 16-bit point Y in the platform geometry code (sprite Y low + $2F for the Iggy/Larry",
+    "platform; $14B7 is the high byte). Also the contact Y in the Mode 7 boss room Mario test.",
+    "In the Bowser fight it is the ball throw timer: set by the attack scheduler, tested by the Mechakoopa",
+    "drop and ball throw routine, and cleared (STZ) when Bowser is hurt to cancel the throw."
+   ]
+  },
+  "14B7": {
+   "name": "Scratch Y high / falling object X",
+   "kind": "scratch byte (high byte with $14B6)",
+   "desc": [
+    "High byte of the 16-bit point Y used by the platform geometry code ($14B6 is the low byte).",
+    "In Bowser state 1 (retreat off-screen) it holds the X start of the next falling object, a random",
+    "multiple of $10."
+   ]
+  },
+  "14B8": {
+   "name": "Platform X low / Bowser ball count",
+   "kind": "scratch byte (low byte of a word with $14B9), counter in Bowser fight",
+   "desc": [
+    "Low byte of the world X of a tilting/rotating platform: the brown chained platform, the Iggy/Larry",
+    "tilting platform (pivot X plus the rotated X offset) and the Mode 7 boss room contact test.",
+    "Iggy/Larry also keep the kid's X here for drawing the splash and spawning the ball.",
+    "In the Bowser fight it is the ball counter, incremented by the attack scheduler and read by the",
+    "Mechakoopa drop and ball throw routine."
+   ]
+  },
+  "14B9": {
+   "name": "Platform X high",
+   "kind": "scratch byte (high byte with $14B8)",
+   "desc": [
+    "High byte of the world X of the platform being processed ($14B8 is the low byte). Written by the",
+    "brown chained platform main routine from the tile's 16-bit X, read by the Mario interaction helpers."
+   ]
+  },
+  "14BA": {
+   "name": "Platform Y low",
+   "kind": "scratch byte (low byte of a word with $14BB)",
+   "desc": [
+    "Low byte of the world Y of a tilting/rotating platform (pivot Y minus the rotated Y offset), also the",
+    "Iggy/Larry kid's Y position and the contact Y for the Mode 7 boss room Mario test (masked with $F0).",
+    "Read by the brown chained platform, Iggy's ball spawn, the platform Koopaling draw and splash draw."
+   ]
+  },
+  "14BB": {
+   "name": "Platform Y high",
+   "kind": "scratch byte (high byte with $14BA)",
+   "desc": [
+    "High byte of the world Y of the platform being processed ($14BA is the low byte). Written by the",
+    "brown chained platform main routine, read by the Mario interaction helpers."
+   ]
+  },
+  "14BC": {
+   "name": "Rotation radius X",
+   "kind": "scratch byte",
+   "desc": [
+    "X component of the offset from the pivot to a point on the rotating platform. Set to $50 by the",
+    "platform Mario interaction helper, or to point X [$14B4] minus pivot X by the rotated tile check.",
+    "Used with the sine/cosine magnitudes $14C2/$14C5 when rotating the offset by the platform angle."
+   ]
+  },
+  "14BF": {
+   "name": "Rotation radius Y",
+   "kind": "scratch byte",
+   "desc": [
+    "Y component of the offset from the pivot to a point on the rotating platform. Set to 0 by the platform",
+    "Mario interaction helper, or to point Y [$14B6] minus pivot Y by the rotated tile check.",
+    "Companion of $14BC."
+   ]
+  },
+  "14C2": {
+   "name": "Sine magnitude (platform)",
+   "kind": "scratch byte",
+   "desc": [
+    "Sine magnitude of the platform angle, looked up from the circle table (CircleCoords[angle & $FF]).",
+    "Written and read only inside the platform Mario interaction and geometry helpers."
+   ]
+  },
+  "14C5": {
+   "name": "Cosine magnitude (platform)",
+   "kind": "scratch byte",
+   "desc": [
+    "Cosine magnitude of the platform angle, looked up from the same table as $14C2.",
+    "Written and read only inside the platform Mario interaction and geometry helpers."
+   ]
+  },
+  "14C8": {
+   "name": "Sprite status",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "The state of each sprite slot. Everything that spawns, kills or processes a sprite goes through it; the",
+    "main sprite loop dispatches on it each frame. Index Y is also used when one sprite acts on another.",
+    "Values: 0 = empty slot / erased; 1 = initialise; 2 = killed (falls off screen); 3 = smushed;",
+    "4 = spin-jump killed (puff of smoke); 5 = sinking in lava; 8 = normal (run main routine);",
+    "9 = carryable (stunned/shell or item); 0A = kicked; 0B = carried by Mario."
+   ]
+  },
+  "14D4": {
+   "name": "Sprite Y position high",
+   "kind": "byte table, one per sprite slot (index X or Y)",
+   "desc": [
+    "High byte of each sprite's 16-bit Y position; the low byte is $00D8 (RAM_SpriteYLo). Together they give",
+    "the sprite's position in the level. Written when sprites spawn, move or follow platforms and read for",
+    "collision, on-screen tests and drawing. $FE is used to park a sprite far off-screen (Bowser's clown car)."
+   ]
+  },
+  "14E0": {
+   "name": "Sprite X position high",
+   "kind": "byte table, one per sprite slot (index X or Y)",
+   "desc": [
+    "High byte of each sprite's 16-bit X position; the low byte is $00E4 (RAM_SpriteXLo).",
+    "Written when sprites spawn and when they are carried by layers or Yoshi, read by the sprite-to-sprite",
+    "contact, interaction and draw code. New sprites copy the spawner's value."
+   ]
+  },
+  "14EC": {
+   "name": "Sprite Y sub-pixel fraction",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "Fractional part of a sprite's Y position, in 1/16 pixel units. The Y update routines add speed * 16",
+    "to it each frame and carry into the whole-pixel Y position. Cleared when the sprite tables are reset."
+   ]
+  },
+  "1504": {
+   "name": "Chained platform swing speed",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "Angular speed of the brown swinging chained platform. Moves one step toward 0 each update (friction),",
+    "and Mario standing on it adds or subtracts 1 so his weight pumps the swing. Read when advancing the",
+    "angle. Cleared with the other per-sprite tables."
+   ]
+  },
+  "151C": {
+   "name": "Sprite misc table 1",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "General-purpose per-sprite byte whose meaning depends on the sprite type. Examples: main state of the",
+    "Koopa Kids, Ludwig and Bowser; hop counter of the winged Goomba; Yoshi tongue length; burst expansion",
+    "rate of a firework; angle low of the brown chained platform; damping counter of the wall springboard;",
+    "angry flag of the Wiggler."
+   ]
+  },
+  "1528": {
+   "name": "Sprite misc table 2",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "General-purpose per-sprite byte, meaning depends on the sprite type. Examples: phase counter of Dry",
+    "Bones, face state of the Thwomp, hit count of a Chuck, angle high of the brown chained platform (also",
+    "the Mode 7 rotated check), line table pointer high byte for line guides, animation frame of the Urchin.",
+    "For several platforms it holds the X movement since last frame, which carries Mario along."
+   ]
+  },
+  "1534": {
+   "name": "Sprite misc table 3",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "General-purpose per-sprite byte, meaning depends on the sprite type (source label BlinkFallFlag).",
+    "Examples: bubble life timer, line guide step index, phase of the Diggin Chuck, collapsed flag of Dry",
+    "Bones, number of rockets launched in the fireworks, bob direction of clouds and the flying question",
+    "block (INC to reverse), window timer of the wall springboard, time counter of Iggy/Larry."
+   ]
+  },
+  "1540": {
+   "name": "Sprite timer 1",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "General-purpose countdown timer for each sprite slot, the most used of the sprite timers. Sprites set",
+    "it to a frame count and the main routine counts it down by one per frame (when sprites are not locked)",
+    "and acts when it reaches zero.",
+    "Meaning is per sprite type: Dry Bones reassemble time, Bob-omb explosion timer ($40), Chuck charge",
+    "time ($20), Ludwig timer ($30), Mario-contact stun ($FF).",
+    "Values: 0 = timer expired / not running."
+   ]
+  },
+  "154C": {
+   "name": "Sprite interaction disable timer",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "Countdown during which the sprite cannot touch Mario. Set after a stomp, bounce or kick (8 or $10",
+    "frames) so the same contact is not processed twice, after being hit by a bounce block, and by bosses",
+    "(Bowser $20, Iggy/Larry stun $18). Non-zero means skip Mario contact; the sprite routines count it down.",
+    "A few sprites reuse it as a plain wait timer (Bird turn delay, Keyhole, Bonus game flash).",
+    "Values: 0 = interaction enabled."
+   ]
+  },
+  "1558": {
+   "name": "Sprite timer 2",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "General-purpose countdown timer, second of the sprite timers. Meaning is per sprite type: delay",
+    "before a shelless Koopa turns into a Koopa ($20), message box time, Lakitu throw timer, Podoboo wait",
+    "on the ground ($80), Monty Mole hop delay, Yoshi tongue pause (8), Ludwig timer ($60).",
+    "When non-zero in a pair of Koopas a kick or hop into the shell is in progress, so sprite-to-sprite",
+    "contact is skipped. Cleared (STZ) to cancel."
+   ]
+  },
+  "1564": {
+   "name": "Sprite timer 3",
+   "kind": "byte table, one per sprite slot (index X or Y)",
+   "desc": [
+    "General-purpose countdown timer, third of the sprite timers. Often an intangibility or contact cooldown:",
+    "a non-zero value on either sprite stops sprite-to-sprite contact, and kicked sprites get 8 to briefly",
+    "ignore others. Also used as animation timers: Yoshi swallow timer ($1B), Bowser phase 9 animation",
+    "($12), Iggy/Larry shell animation ($7F), Urchin turning (8), firework scene end delay ($70).",
+    "Values: 0 = not running."
+   ]
+  },
+  "1570": {
+   "name": "Sprite misc table 4",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "General-purpose per-sprite counter, meaning depends on the sprite type. Examples: wing flap counter of",
+    "the winged Goomba, walk counter of Dry Bones, Sumo Bro and Iggy/Larry, parachute sway index, hops left",
+    "of the bird, spawn count of the coin game cloud, burst size of a firework, segment length of line guides.",
+    "Usually incremented or decremented each frame by the sprite's main routine."
+   ]
+  },
+  "157C": {
+   "name": "Sprite facing direction",
+   "kind": "byte table, one per sprite slot (index X or Y)",
+   "desc": [
+    "Which way each sprite faces and walks. Set when sprites spawn, turn at walls or face Mario, and read by",
+    "the draw routines to flip the graphics and by the movement code to pick the X speed.",
+    "Yoshi, Koopas, Rex, Wiggler and the Koopa Kids all use it. Briefly modified (XOR) by some draw routines.",
+    "Values: 0 = facing right; 1 = facing left."
+   ]
+  },
+  "1588": {
+   "name": "Sprite blocked-by-object flags",
+   "kind": "bit flags table, one per sprite slot (index X)",
+   "desc": [
+    "Which sides of the sprite touched solid objects this frame, set by the sprite-block interaction and",
+    "map16 lookup routines and cleared (STZ) at the start of each check so it reverts to zero when the",
+    "sprite stops touching. Read by almost every walking or falling sprite to turn at walls, land on",
+    "the ground or hit the ceiling. Goal tape INCs it to flip direction.",
+    "Bits: 0 right wall; 1 left wall; 2 on ground; 3 hit ceiling (higher bits: layer 2 contact, probably)."
+   ]
+  },
+  "1594": {
+   "name": "Sprite misc table 5",
+   "kind": "byte table, one per sprite slot (index X or Y)",
+   "desc": [
+    "General-purpose per-sprite byte, meaning depends on the sprite type. Examples: Yoshi tongue state",
+    "(1 extending, 2 retracting), Mario-nearby flag of the Piranha Plant, slot of the sprite touched or of",
+    "the Hammer Bro on a platform, wall number for Morton/Roy, Chuck head scan step, bob direction of the",
+    "flying question block, hit height of the goal tape."
+   ]
+  },
+  "15A0": {
+   "name": "Sprite off-screen horizontal flag",
+   "kind": "flag byte table, one per sprite slot (index X)",
+   "desc": [
+    "Set by the get-sprite-draw-info routines (banks 1, 2 and 3) when any part of the sprite is outside the",
+    "screen horizontally. Read by the sprite main routines to skip actions and by the OAM drawers to set the",
+    "X high bit. Bosses clear it to make sure they never despawn.",
+    "Values: 0 = on screen horizontally; non-zero = off-screen."
+   ]
+  },
+  "15AC": {
+   "name": "Sprite turn-around timer",
+   "kind": "byte table, one per sprite slot (index X or Y)",
+   "desc": [
+    "Countdown for the turning animation when a sprite changes direction. Set to 8 by the flip-direction",
+    "routine and walking Koopas, to $10 for Yoshi and the Koopa Kids, and to $1F for Boo and Big Boo. The",
+    "draw routines read it to show the turn frame, and a non-zero value delays other behaviour.",
+    "Values: 0 = not turning."
+   ]
+  },
+  "15B8": {
+   "name": "Sprite slope steepness",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "Slope the sprite is standing on, written by the vertical map16 check and cleared when the sprite",
+    "leaves it. Used as a speed offset so sprites speed up going down a slope and slow going up (EOR with",
+    "the X speed to test direction), and by the slope movement and gravity routines.",
+    "Values: 0 = flat ground; non-zero = signed slope speed offset."
+   ]
+  },
+  "15C4": {
+   "name": "Sprite far off-screen flag",
+   "kind": "flag byte table, one per sprite slot (index X)",
+   "desc": [
+    "Set to 1 by the get-sprite-draw-info routines when the sprite is far off screen horizontally. Also set",
+    "for platforms when sprites are locked. When non-zero the OAM finish routine skips Mario interaction",
+    "and the Banzai Bill/platform code skips work.",
+    "Values: 0 = near the screen; 1 = far off-screen."
+   ]
+  },
+  "15D0": {
+   "name": "Sprite being eaten flag",
+   "kind": "flag byte table, one per sprite slot (index X or Y)",
+   "desc": [
+    "Set to 1 while Yoshi's tongue has a sprite and is swallowing it. Contact and interaction routines OR it",
+    "in so the sprite is ignored (bounce blocks, fireballs, sprite-to-sprite loop). Cleared when the sprite is",
+    "spat out. Magikoopa sets it while hidden (probably so Yoshi cannot eat it).",
+    "Values: 0 = not eaten; non-zero = on Yoshi's tongue."
+   ]
+  },
+  "15DC": {
+   "name": "Sprite contact/ledge flag",
+   "kind": "byte table, one per sprite slot (index X or Y)",
+   "desc": [
+    "Little-used per-sprite flag. The Moving ledge (hole) sprite clears it ($0 = no contact) and the",
+    "gravity update routine reads it. Cleared by the per-sprite table reset.",
+    "Exact meaning is probably a contact flag; only seen as set/cleared and tested once."
+   ]
+  },
+  "15E9": {
+   "name": "Current sprite slot",
+   "kind": "byte (index)",
+   "desc": [
+    "Slot number of the sprite whose routine is running. The main sprite loop stores X here before calling",
+    "each sprite, and subroutines reload X from it after they have trashed X (draw routines, extended",
+    "sprite code, the spawn routines). Also compared against other slots to skip a sprite's own slot."
+   ]
+  },
+  "15EA": {
+   "name": "Sprite OAM index",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "Byte offset into the OAM buffer where this sprite's tiles are written. The slot assigner gives each",
+    "sprite its offset and sprite draw routines load Y from it. Some sprites add 4 per tile to move to the",
+    "next OAM slot, or set 0 to take the first OAM slots (draw priority)."
+   ]
+  },
+  "15F6": {
+   "name": "Sprite palette and properties",
+   "kind": "byte table, one per sprite slot (index X or Y); YXPPCCCT",
+   "desc": [
+    "OAM property byte for the sprite: palette, priority and flips. Loaded from the sprite tweaker table when",
+    "the sprite spawns and ORed into the tile properties by the draw routines.",
+    "Bits: 7 Y flip; 6 X flip; 4-5 priority; 1-3 palette; 0 name table. Cheep Cheep and the killed-sprite code",
+    "shift bit 7 out (clears Y flip); the Bob-omb flashes by EORing in ([$1540] * 2) & $0E."
+   ]
+  },
+  "1602": {
+   "name": "Sprite animation frame",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "Current graphics frame of the sprite. The main routine picks it (from a frame table or by counting) and",
+    "the draw routine selects the tiles from it. Examples: Yoshi frame, Chuck frame, Boo face visible (0) or",
+    "hiding (3), springboard frame, walk frame of Ludwig and Iggy/Larry.",
+    "The flying grey turnblocks reuse it as a direction switch timer."
+   ]
+  },
+  "160E": {
+   "name": "Sprite misc table 6",
+   "kind": "byte table, one per sprite slot (index X or Y)",
+   "desc": [
+    "General-purpose per-sprite byte, meaning depends on the sprite type. Examples: for Yoshi, slot of the",
+    "sprite held in his mouth ($FF = none); for a shelless Koopa, slot of the sprite to kick; Mario-on-platform",
+    "flag for Banzai Bill chained platforms; Lakitu slot for the cloud; Chuck jump flag; Morton/Roy right",
+    "walk limit; goal tape hit flag; current line guide segment number."
+   ]
+  },
+  "161A": {
+   "name": "Sprite index in level data",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "Index of this sprite in the level's sprite list, set when the sprite is spawned from the level data so",
+    "it is not respawned while on screen and can be marked as spawned again when erased.",
+    "Values: $FF = never reload this sprite (erased permanently, or a group spawn that should respawn only",
+    "through its leader)."
+   ]
+  },
+  "1626": {
+   "name": "Sprite misc counter",
+   "kind": "byte table, one per sprite slot (index X or Y)",
+   "desc": [
+    "Per-sprite counter. For ordinary sprites it counts consecutive kills made by a kicked shell or stomps",
+    "(kill chain), added into the points given and cleared when Mario lands. Also Ludwig and Koopa Kid hit",
+    "counts. Line-guided platforms use it as a waiting-for-Mario flag (probably). Cleared by the table reset."
+   ]
+  },
+  "1632": {
+   "name": "Sprite behind-scenery flag",
+   "kind": "flag byte table, one per sprite slot (index X or Y)",
+   "desc": [
+    "Which layer the sprite is on: in front of or behind layer 1 scenery. Sprites only interact when both",
+    "have the same value, so it is EORed in contact checks. Net Koopas toggle it when climbing through a net,",
+    "and the pipe Lakitu sets it to go behind scenery. Read by the draw routines for priority.",
+    "Values: 0 = in front; non-zero = behind scenery."
+   ]
+  },
+  "163E": {
+   "name": "Sprite timer 4",
+   "kind": "byte table, one per sprite slot (index X or Y)",
+   "desc": [
+    "General-purpose countdown timer, fourth of the sprite timers. Meaning is per sprite type: Pipe Lakitu",
+    "hold timer, P-switch pressed timer, Iggy/Larry defeat timer ($50), Urchin ($0C), kick animation of a",
+    "shelless Koopa ($20), draw priority timer of the flying question block ($50).",
+    "Values: 0 = not running. Some tests use bit 7 as negative."
+   ]
+  },
+  "164A": {
+   "name": "Sprite in-liquid flags",
+   "kind": "bit flags table, one per sprite slot (index X or Y)",
+   "desc": [
+    "Set by the sprite-block interaction each frame when the sprite is inside water or lava, then cleared",
+    "and recomputed next frame. The gravity routine reads it to use slow-sink physics and sprites inherit it",
+    "when spawned (shelless Koopa from shell). Rip Van Fish sets it in init.",
+    "Bits: 0 water; 7 lava. Morton/Roy, Ludwig and Bowser reuse it as a plain timer or flag."
+   ]
+  },
+  "1656": {
+   "name": "Sprite tweaker byte 1",
+   "kind": "bit flags table, one per sprite slot (index X or Y); sSjJcccc",
+   "desc": [
+    "Per-sprite behaviour flags, copied from the Sprite1656Vals table by sprite number at spawn. Read by the",
+    "stomp, bounce and kill routines.",
+    "Bits: 7 disappear in a puff of smoke when killed; 6 can hop into/kick shells; 5 dies (smushed) when",
+    "jumped on; 4 can be jumped on; 0-3 object clipping index (which hitbox shape is used).",
+    "Bob-omb explosion clears the byte so the sprite cannot be stomped."
+   ]
+  }
+ }
+}

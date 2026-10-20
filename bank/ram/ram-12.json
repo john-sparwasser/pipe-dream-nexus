@@ -1,0 +1,427 @@
+{
+ "addresses": {
+  "1462": {
+   "name": "Layer 1 X position mirror",
+   "kind": "word (little endian, low/high pair); also byte table at $1462+X",
+   "desc": [
+    "Copy of layer 1 (main level) X scroll position kept for the scroll sprites and scroll deltas. Level start copies",
+    "the layer positions $001A-$0021 to $1462-$1469 (previous positions); the scroll code subtracts it to get",
+    "frame deltas ($17BD) and layer 2's position relative to layer 1 ([$26] = [$1466] - [$1462]).",
+    "Scroll sprites index $1462+X as the X position of the layer they move; Mario's left level border check uses it.",
+    "The ending enemy scene and boss rooms set it to 0. High byte is $1463."
+   ]
+  },
+  "1464": {
+   "name": "Layer 1 Y position mirror",
+   "kind": "word (little endian, low/high pair); also byte table at $1464+X",
+   "desc": [
+    "Copy of layer 1 (main level) Y scroll position used by the scroll sprites and scroll-delta code.",
+    "The scroll code subtracts it to get the layer 1 Y delta ($17BC) and layer 2's Y relative to layer 1 ([$28]).",
+    "Scroll sprites index $1464+X as the Y position of the layer they move.",
+    "Set to $FF90 at Mario Start and to 0 for boss room Mode 7 setup. High byte is $1465."
+   ]
+  },
+  "1466": {
+   "name": "Layer 2 X position mirror",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Layer 2 (background) X scroll position as tracked by the layer 2 scroll sprites ($1462 is the layer 1 version).",
+    "Zeroed by scroll sprite init and the ending scene. The ON/OFF switch scroll sprite adds layer 1's X",
+    "movement ($17BD) to it; the scroll code derives the layer 2 X delta ($17BF) and [$26] from it.",
+    "Read by the layer 2 sink/rise and smash scroll sprites. High byte is $1467."
+   ]
+  },
+  "1468": {
+   "name": "Layer 2 Y position mirror",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Layer 2 (background) Y scroll position as tracked by the layer 2 scroll sprites ($1464 is the layer 1 version).",
+    "The smash scroll sprite starts it at $00C1; the sink/rise sprite starts it from a start-height table.",
+    "Read by the scroll code to derive the layer 2 Y delta ($17BE) and by the ON/OFF switch and layer 3 handlers.",
+    "High byte is $1469."
+   ]
+  },
+  "146A": {
+   "name": "Ending scene layer mirror",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Only seen written (set to 0) by the ending enemy scene setup, together with $1462 and $1466.",
+    "It sits in the layer position mirror block $1462-$1469 area, but no reader was found; its purpose is probably",
+    "just clearing a layer 3 position mirror (uncertain)."
+   ]
+  },
+  "1470": {
+   "name": "Carrying sprite this frame",
+   "kind": "flag byte",
+   "desc": [
+    "Set when Mario is carrying a sprite (or picks one up). Set to 1 by the kick/carry pose start and incremented",
+    "when Mario grabs a sprite by bouncing/pressing on it ($01AA6B, which also sets the sprite's status to carried).",
+    "Each frame, before sprites run, it is loaded from $148F (last frame's carry flag).",
+    "Read together with Yoshi riding to stop some pickups (line guide, springboard, Yoshi code).",
+    "Values: 0 = not carrying; non-zero = carrying."
+   ]
+  },
+  "1471": {
+   "name": "Mario standing on sprite",
+   "kind": "state byte",
+   "desc": [
+    "Non-zero when Mario is standing on a sprite platform this frame (platforms, springboards, Lakitu cloud,",
+    "bounce blocks, skull raft, chained platform...). Cleared to 0 at the start of the sprite run each frame; the",
+    "platform's code sets it again when it carries Mario. Read by Mario's ground speed and block/slope collision",
+    "so he is treated as on the ground and not pushed by tiles.",
+    "Values: 0 = not on a sprite; 1 = on a sprite or platform; 2 = on a springboard; 3 = on a moving platform",
+    "(chained platform, Banzai Bill platform, solid sprite)."
+   ]
+  },
+  "1476": {
+   "name": "Spotlight left beam end",
+   "kind": "byte",
+   "desc": [
+    "Dark room spotlight effect: X of the left end of the beam. Set to 0 at the start of the effect and then",
+    "stepped each frame by a table indexed by the sweep direction ($1483), reversing when it hits a limit.",
+    "Used with $1478 (right end) to compute the window edges ($147A, $147C)."
+   ]
+  },
+  "1478": {
+   "name": "Spotlight right beam end",
+   "kind": "byte",
+   "desc": [
+    "Dark room spotlight effect: X of the right end of the beam. Set to $90 at the start of the effect and then",
+    "stepped each frame like $1476 (left end). Used to compute the spotlight window edges."
+   ]
+  },
+  "147A": {
+   "name": "Spotlight left edge",
+   "kind": "byte, working value",
+   "desc": [
+    "Dark room spotlight: the current left window edge while the routine builds the per-scanline HDMA window table.",
+    "Starts at $1472 each frame, then is stepped one pixel per line (a DDA with $147E as the accumulator) and",
+    "stored to the table at $04A0,X."
+   ]
+  },
+  "147C": {
+   "name": "Spotlight right edge",
+   "kind": "byte, working value",
+   "desc": [
+    "Dark room spotlight: the current right window edge while building the per-scanline window table.",
+    "Starts at $1474 each frame, then is stepped per line using $147F as the accumulator."
+   ]
+  },
+  "147E": {
+   "name": "Spotlight left DDA accumulator",
+   "kind": "byte, scratch",
+   "desc": [
+    "Dark room spotlight: line-drawing (DDA) accumulator for the left edge ($147A). Zeroed at the start of each",
+    "frame's table build and updated while the left edge is stepped."
+   ]
+  },
+  "147F": {
+   "name": "Spotlight right DDA accumulator",
+   "kind": "byte, scratch",
+   "desc": [
+    "Dark room spotlight: line-drawing (DDA) accumulator for the right edge ($147C). Zeroed at the start of each",
+    "frame's table build and updated while the right edge is stepped."
+   ]
+  },
+  "1483": {
+   "name": "Spotlight sweep direction",
+   "kind": "index (0 or 1)",
+   "desc": [
+    "Dark room spotlight: which way the beam ends sweep. Zero at the start of the effect; it flips (0/1) when the",
+    "beam end reaches a limit from a table. Used as the index into the step tables for $1476/$1478."
+   ]
+  },
+  "148B": {
+   "name": "Random number state 1",
+   "kind": "byte",
+   "desc": [
+    "First of two seed bytes of the random number generator ($01AD07). Each call does [$148B] = [$148B] * 5 + 1",
+    "(carry included), and it is mixed with $148C (EOR) to produce $148D/$148E. Not meant to be read by game code."
+   ]
+  },
+  "148C": {
+   "name": "Random number state 2",
+   "kind": "byte",
+   "desc": [
+    "Second seed byte of the random number generator. Each call shifts it left and applies a bit-5 feedback tweak",
+    "(incrementing it in some cases). EORed with $148B to give the random outputs $148D and $148E."
+   ]
+  },
+  "148D": {
+   "name": "Random byte 1",
+   "kind": "byte",
+   "desc": [
+    "Random number produced by the generator at $01AD07 (called once per frame and again for a second output).",
+    "Read by sprites that need a random choice: Cheep Cheep, hopping flame, splashes and sparkles, para-enemies,",
+    "Boo/bat ceiling cluster sprite. $148E is the second random byte."
+   ]
+  },
+  "148E": {
+   "name": "Random byte 2",
+   "kind": "byte",
+   "desc": [
+    "Second random number from the generator at $01AD07 ($148D is the first). Read by Cheep Cheep, Magikoopa",
+    "magic, jumping fish and Eerie generators, cluster sprite loading, splashes/sparkles and Peach's scene."
+   ]
+  },
+  "148F": {
+   "name": "Mario carrying flag",
+   "kind": "flag byte",
+   "desc": [
+    "Non-zero while Mario is holding a sprite. Cleared to 0 every frame in the sprite run ($018095) after its",
+    "value is copied to $1470; a carried sprite's code sets it again that frame ($01A128 sets 1).",
+    "Read by Mario's pose selection (carry poses), walking and swimming, collision, pipe entry and the cape,",
+    "which all behave differently when he holds something.",
+    "Values: 0 = nothing carried; non-zero = carrying a sprite."
+   ]
+  },
+  "1490": {
+   "name": "Star power timer",
+   "kind": "timer",
+   "desc": [
+    "Frames of Mario star invincibility remaining. Set to $FF by the Star power-up ($01C582); cleared at level",
+    "start and by the goal tape. Read by Mario's drawing (palette cycle), hurt checks, block interaction, and",
+    "by sprites that need star contact (star kill, Chuck, Wiggler, Sumo Bro flame, Yoshi contact).",
+    "Values: 0 = no star."
+   ]
+  },
+  "1491": {
+   "name": "Sprite movement this frame",
+   "kind": "byte, signed pixels",
+   "desc": [
+    "Amount in pixels the current sprite moved this frame, used to carry Mario with platforms. Set to 0 at the",
+    "start of each sprite's main routine and written by the sprite position update routines (X and Y variants)",
+    "and chained platforms (platform X minus previous X).",
+    "Read by Mario-carrying code: orange and floating platforms, skull raft, Mega Mole, carrot top lift,",
+    "timed lift, scale platforms. Value is a signed 8-bit pixel delta."
+   ]
+  },
+  "1492": {
+   "name": "Level end walk pause timer",
+   "kind": "timer",
+   "desc": [
+    "Set to $40 when the scripted level-end walk starts ($00C99A) and counted down in Mario's physics jump",
+    "routine. When it reaches zero the end music/sequence continues (pause before the end music).",
+    "Values: 0 = not running."
+   ]
+  },
+  "1493": {
+   "name": "End of level timer",
+   "kind": "timer",
+   "desc": [
+    "Counts down once the level has been won: set to $FF by the goal tape, goal sphere, Big Boo, Ludwig and",
+    "Iggy/Larry boss deaths, or to 8 by block collision. While non-zero, level end handling runs (dithered palette",
+    "fade, scripted walk, status bar and IRQ changes) and Mario cannot be hurt.",
+    "Decremented by the scripted walk and boss routines. Game mode 14 skips the level-end work when it and the",
+    "Mario animation are both 0.",
+    "Values: 0 = level not ending."
+   ]
+  },
+  "1495": {
+   "name": "Event or fade step timer",
+   "kind": "byte (also start of the timer table $1495+X)",
+   "desc": [
+    "Dual use. In the level end dithered palette fade it holds the fade step (set to step + 2); the IRQ code",
+    "compares it with $40. In the overworld event routine it is the event timer. Cleared at level start",
+    "and by the scripted walk. Per-frame Mario state also counts the bytes $1496-$14A8 down with",
+    "$1495,X (X=$13..1), so $1495 itself is not decremented there."
+   ]
+  },
+  "1496": {
+   "name": "Mario animation timer",
+   "kind": "timer",
+   "desc": [
+    "Timer for Mario's current animation, counted down by the animation code. Set by the walk animation frame",
+    "counter, power up ($01C567 and cape $18), kill/hurt ($00F61D); death decrements it every 4th frame.",
+    "Power down, mushroom, cape and flower power ups run until it reaches zero. Also read by swimming, climbing,",
+    "overworld border icons and the ending.",
+    "Values: 0 = timer expired. Also counted down by the per-frame loop over $1496-$14A8."
+   ]
+  },
+  "1497": {
+   "name": "Mario invincibility timer",
+   "kind": "timer",
+   "desc": [
+    "Frames Mario is flashing and cannot be hurt. Set to $7F by power down (about 2 seconds), $30 by cape soaring",
+    "ending, Yoshi contact and smoke puffs, and $FF at the start of normal animation 0 in some cases.",
+    "Read by the Mario drawing routine (flash), by Hurt Mario, and by enemy contact routines (Rex,",
+    "Dry Bones, stomp/kick/hurt) to skip damage.",
+    "Values: 0 = vulnerable."
+   ]
+  },
+  "1498": {
+   "name": "Pick-up pose timer",
+   "kind": "timer",
+   "desc": [
+    "Frames Mario shows the pick-up pose. Set to 8 when he grabs a sprite by bouncing/pressing on it",
+    "($01AA70) and set by the splash/Throw Block spawner. Cleared at level start.",
+    "Read by Mario's pose selection and carried-sprite positioning, and by cutscene command $20.",
+    "Values: 0 = not showing the pick-up pose."
+   ]
+  },
+  "1499": {
+   "name": "Face camera timer",
+   "kind": "timer",
+   "desc": [
+    "Frames Mario faces the camera. Set to 8 when he turns while carrying a sprite, and when entering a pipe.",
+    "Counted down (not below 0) in the horizontal pipe animation. Read by the pose chooser and the carried-sprite",
+    "routine, which positions the sprite in front of Mario when he faces the camera.",
+    "Values: 0 = not facing the camera."
+   ]
+  },
+  "149A": {
+   "name": "Kick pose timer",
+   "kind": "timer",
+   "desc": [
+    "Frames Mario shows the kick pose. Set to 12 when he kicks a sprite ($01A0AD) and to $10 by the Cheep Cheep",
+    "routine. Read by the Mario pose chooser. Cleared at level start.",
+    "Values: 0 = not kicking."
+   ]
+  },
+  "149B": {
+   "name": "Flashing palette timer",
+   "kind": "timer",
+   "desc": [
+    "Frames Mario's palette flashes during the flower power up. Set to $20 when he gets fire power ($01C5EE)",
+    "and decremented by the flower animation. Read by the Mario drawing routine to pick the flashing palette.",
+    "Values: 0 = not flashing."
+   ]
+  },
+  "149C": {
+   "name": "Fireball pose timer",
+   "kind": "timer",
+   "desc": [
+    "Frames Mario shows the fireball shoot pose. Set to $0A when he shoots a fireball ($00FEBC).",
+    "Read by the pose chooser and the swimming code.",
+    "Values: 0 = not shooting."
+   ]
+  },
+  "149E": {
+   "name": "Net punch timer",
+   "kind": "timer",
+   "desc": [
+    "Timer for Mario's punch on a climbing net. Read by the climbing code and the climbing net door; the",
+    "per-frame timer loop counts it down. The set code was not seen in the samples (probably set on punch)."
+   ]
+  },
+  "149F": {
+   "name": "Cape takeoff timer",
+   "kind": "timer",
+   "desc": [
+    "Cape flight timer. Set to $70 in normal animation (when the run meter fills) and to $50 when a ground jump",
+    "allows takeoff; incremented in the cape flight code, which checks for >= 2 to leave it alone.",
+    "Also ORed in the screen scroll routine so the screen can scroll vertically while flying.",
+    "Values: 0 = not taking off or flying."
+   ]
+  },
+  "14A2": {
+   "name": "Cape image timer",
+   "kind": "timer",
+   "desc": [
+    "Timer for the cape's animation image. Set by the cape image update (value doubled in water) and read by the",
+    "air cape image code. The horizontal pipe animation decrements it. Also read by the overworld border icon",
+    "and ending sprites.",
+    "Values: 0 = timer expired."
+   ]
+  },
+  "14A3": {
+   "name": "Yoshi tongue timer",
+   "kind": "timer",
+   "desc": [
+    "Timer for Yoshi's tongue animation. Set to $12 when the tongue starts ($01F30B) and cleared when Yoshi eats",
+    "a berry. Read by Yoshi drawing (mouth/tongue state, compared to $10) and by Yoshi's pose code.",
+    "Values: 0 = tongue not out."
+   ]
+  },
+  "14A5": {
+   "name": "Cape float timer",
+   "kind": "timer",
+   "desc": [
+    "Floating timer of the cape: set to $10 when a float (glide) starts in the cape flight code, and while it is",
+    "running the code adjusts Mario's Y speed. Also shifted left once by the layer 3 scroll handler.",
+    "Values: 0 = not floating."
+   ]
+  },
+  "14A6": {
+   "name": "Cape spin timer",
+   "kind": "timer",
+   "desc": [
+    "Frames of Mario's cape spin. Set to $12 when the spin starts ($00D078). The pose chooser ORs it with the",
+    "spin jump flag to show the spin pose; swimming also reads it.",
+    "Values: 0 = not spinning with the cape."
+   ]
+  },
+  "14AB": {
+   "name": "Bonus game end timer",
+   "kind": "timer",
+   "desc": [
+    "Probably a bonus game timer. Set to $58 when there is no match in the bonus game and when the bonus 1-up",
+    "cluster sprite runs out. Game mode 14 treats 0 as the end of the bonus game; Mario state code compares it",
+    "to $44 every 4th frame while bonus mode ($1425) is on.",
+    "Values: 0 = bonus game finished."
+   ]
+  },
+  "14AD": {
+   "name": "Blue P-switch timer",
+   "kind": "timer",
+   "desc": [
+    "Frames left of the active blue P-switch. Set to $B0 (176) when Mario hits a blue switch ($14AD+Y with Y",
+    "selecting blue or silver, see $14AE). Cleared at level start. Read by block interaction, Mario drawing,",
+    "animated tiles, Directional Coins, pipe code and the P-switch tile swaps (which restore tiles at 0).",
+    "Values: 0 = blue switch not active."
+   ]
+  },
+  "14AE": {
+   "name": "Silver P-switch timer",
+   "kind": "timer",
+   "desc": [
+    "Frames left of the active silver P-switch (partner of $14AD). Cleared at level start. Read by the P-switch",
+    "tile swaps, Mario drawing, spawn routines and Directional Coins, which return while a P-switch is active."
+   ]
+  },
+  "14AF": {
+   "name": "ON/OFF switch state",
+   "kind": "flag byte",
+   "desc": [
+    "State of the ON/OFF switch: read by the line guide, bounce blocks (to choose the ON/OFF blocks) and cleared",
+    "by the layer 2 ON/OFF scroll sprite at level start (set to ON).",
+    "Values: 0 = ON; non-zero = OFF."
+   ]
+  },
+  "14B0": {
+   "name": "Pivot X or Bowser phase timer",
+   "kind": "word (little endian, low/high pair) or timer",
+   "desc": [
+    "Shared scratch. For chained platforms and the Mode 7 rotated tile check it is the pivot X (platform X minus",
+    "radius, or Mode 7 center X [$2A]); $14B1 is the high byte. Lakitu's cloud draw stores the cloud screen X here.",
+    "In the Bowser fight it is the phase timer: Bowser states and the attack scheduler wait for it to hit 0.",
+    "Meaning differs by routine."
+   ]
+  },
+  "14B1": {
+   "name": "Pivot X high or Mecha drop timer",
+   "kind": "byte (word high of $14B0) or timer",
+   "desc": [
+    "High byte of the platform pivot X ($14B0). In the Bowser fight it is the Mechakoopa drop timer: set by the",
+    "attack scheduler, read by the drop and throw routine, and cleared ($03A666) when Bowser is hurt."
+   ]
+  },
+  "14B2": {
+   "name": "Pivot Y or Bowser scale stage",
+   "kind": "word (little endian, low/high pair) or index",
+   "desc": [
+    "Shared scratch. For chained platforms and the Mode 7 check it is pivot Y (sprite Y minus radius, or Mode 7",
+    "center Y [$2C]); $14B3 is the high byte. Lakitu's cloud draw stores the cloud screen Y here.",
+    "In the Bowser retreat it is the scale stage (index into a table), cleared to 0 when the retreat starts."
+   ]
+  },
+  "14B3": {
+   "name": "Pivot Y high or Bowser hit timer",
+   "kind": "byte (word high of $14B2) or timer",
+   "desc": [
+    "High byte of the platform pivot Y ($14B2). In the Bowser fight it counts up as the Bowser-hit effect timer",
+    "for the hit stars and puffs, and is reset to 0 when Bowser takes a hit ($03B120)."
+   ]
+  }
+ }
+}

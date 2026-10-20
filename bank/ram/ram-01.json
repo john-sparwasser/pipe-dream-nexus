@@ -1,0 +1,403 @@
+{
+ "addresses": {
+  "004B": {
+   "name": "Layer 2 tile range right edge",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "One of the 16-bit tile-range bounds used while building the level layers. At level load it is set equal to $0049",
+    "(the first edge), and the Map16 pointer setup writes the right edge of the layer 2 tile range into it.",
+    "$0055 selects which of the $0045-$004B words the layer scroll tile loader uses."
+   ]
+  },
+  "004D": {
+   "name": "Last loaded column, layer 1",
+   "kind": "word table (index X: 0 or 2 from the scroll direction)",
+   "desc": [
+    "Remembers the last 16-pixel column or row that was streamed into the layer 1 tilemap, so the scroll tile loader",
+    "only draws when the camera moves into a new one ([$4D,X] is compared with the current position).",
+    "Level load and the overworld setup set it to $FFFF, which probably means nothing has been drawn yet.",
+    "Values: $FFFF = no column cached."
+   ]
+  },
+  "004F": {
+   "name": "Last loaded column, layer 1 (second)",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Second word of the cached-column markers that start at $004D. Only ever written: level load and the",
+    "overworld setup store $FFFF here along with $004D-$0050, probably as 'nothing drawn yet'.",
+    "Values: $FFFF = reset."
+   ]
+  },
+  "0051": {
+   "name": "Last loaded column, layer 2",
+   "kind": "word table (index X: 0 or 2 from the scroll direction)",
+   "desc": [
+    "Layer 2 counterpart of $004D. The scroll tile loader compares the current 16-pixel column against [$51,X] and",
+    "skips drawing if it is the same as last time. Level load resets $004D-$0054 to $FFFF.",
+    "Values: $FFFF = nothing drawn yet."
+   ]
+  },
+  "0055": {
+   "name": "Screen scroll direction (layer 1)",
+   "kind": "byte, 0 or 2 (indexes word tables)",
+   "desc": [
+    "Direction the screen is scrolling, used as a word-table index. The 'Scroll screen to follow Mario' routine",
+    "sets it (together with $0056) from where Mario is in the static camera region.",
+    "The layer scroll tile loader, the layer 2 stripe builders, sprite spawn on scroll and scroll sprites read it.",
+    "Level load and the overworld setup set it to 2 (so the $0047/$004B positions are used).",
+    "Values: 0 = left/up side, 2 = right/down side."
+   ]
+  },
+  "0056": {
+   "name": "Screen scroll direction (layer 2)",
+   "kind": "byte, 0 or 2 (indexes word tables)",
+   "desc": [
+    "Layer 2 copy of the scroll direction $0055. The scroll-follow routine writes it with the same value as $0055;",
+    "scroll sprite 0B (layer 2 on/off switch) sets it to 2 and the layer 3 handler clears it.",
+    "Read by the layer scroll tile loader and layer 2 stripe builders.",
+    "Values: 0 or 2."
+   ]
+  },
+  "0057": {
+   "name": "Object position in Map16 buffer",
+   "kind": "byte (level buffer index)",
+   "desc": [
+    "Position of the level object being drawn, as an index into the current screen of the Map16 buffer",
+    "(low nibble = column, high nibble = row). 'Load one level object' derives it from the object's Y and X bytes;",
+    "every object draw routine then loads it into Y and writes tiles through the $006B pointer.",
+    "Mostly read: this is the start index each routine advances from while drawing slopes, ledges and pipes."
+   ]
+  },
+  "0059": {
+   "name": "Object size/extension byte",
+   "kind": "byte",
+   "desc": [
+    "Third byte of the level object being loaded. The loader copies it here and the object draw routines read it",
+    "as the width, length or variant setting (e.g. how many tiles a ledge, slope or pipe spans).",
+    "Written only while a level object is loaded; read by most of the bank $0D object routines."
+   ]
+  },
+  "005A": {
+   "name": "Level object number",
+   "kind": "byte",
+   "desc": [
+    "Number of the level object being processed, built by the loader from the object's bytes",
+    "([$0B] >> 4 with bits of [$0A]). The tileset object dispatchers use it as the jump table index X.",
+    "Screen exit and jump objects reuse it to hold the destination screen."
+   ]
+  },
+  "005B": {
+   "name": "Level orientation flags",
+   "kind": "bit flags",
+   "desc": [
+    "Set from the level header (via VerticalTable) at load time. Tells scrolling, collision and sprite code",
+    "whether each layer is a horizontal or a vertical level; tested all over (collision, sprites, scrolling).",
+    "Bits: Bit 0: layer 1 is vertical. Bit 1: layer 2 is vertical. Bit 7 is also set by the layer 3 setup.",
+    "Values: 0 = horizontal level."
+   ]
+  },
+  "005D": {
+   "name": "Screens in level",
+   "kind": "byte",
+   "desc": [
+    "Number of screens (pages) in the level, from the level header: (byte 1 & $1F) + 1.",
+    "Collision and tile lookups compare a position's screen number to it and treat anything beyond as no tile.",
+    "Mode 7 boss setup sets it to $FF so the whole range is valid."
+   ]
+  },
+  "005E": {
+   "name": "Horizontal screen count",
+   "kind": "byte",
+   "desc": [
+    "Number of screens in a horizontal level, as parsed from the level header; Mario's scroll limit uses it",
+    "(the camera is stopped at the last screen, $005E - 1). Game mode 11 sets it to $20; mode 7 boss setup clears it."
+   ]
+  },
+  "005F": {
+   "name": "Vertical screen count",
+   "kind": "byte",
+   "desc": [
+    "Number of screens in a vertical level (last screen), from the level header. 'Scroll screen to follow Mario'",
+    "reads it to stop vertical scrolling at the end of the level. Counterpart of $005E."
+   ]
+  },
+  "0064": {
+   "name": "Sprite priority bits",
+   "kind": "byte (OAM property bits, bits 4-5)",
+   "desc": [
+    "OAM priority/property bits ORed into the tiles a sprite or effect draws, so Mario and sprites appear in",
+    "front of or behind the layers. Many routines set it to $10 to draw behind the layers (sprites emerging from",
+    "a block, vines growing, Piranha Plants, Yoshi in a pipe, Monty Mole popping up) and restore it afterwards.",
+    "Values: $10 = draw behind layer 1; other values = normal."
+   ]
+  },
+  "0065": {
+   "name": "Level data pointer (low word)",
+   "kind": "pointer (24-bit with $0067), used with [$65],Y",
+   "desc": [
+    "General 24-bit pointer, $0065-$0067, used as a long pointer into level data. 'Load level' points it at the",
+    "layer 1 object data (and the header bytes) and the object loader reads 3 bytes at a time through it.",
+    "Layer 2 data uses $0068-$006A. 'Generate Map16 tile' loads it from the block pointer table, and the credits",
+    "code reuses it as a VRAM address ($5840) for the text rows.",
+    "Values: low 16 bits of the address."
+   ]
+  },
+  "0066": {
+   "name": "Level data pointer (high byte of word)",
+   "kind": "byte (middle byte of the pointer at $0065)",
+   "desc": [
+    "Middle byte of the 24-bit pointer at $0065 (so $0065-$0066 is the 16-bit offset, $0067 the bank).",
+    "Advanced with carry when an object routine steps through level data. In the credits it is the high byte",
+    "of the text row VRAM address."
+   ]
+  },
+  "0067": {
+   "name": "Level data pointer bank",
+   "kind": "byte (bank of the pointer at $0065)",
+   "desc": [
+    "Bank byte of the pointer at $0065. Set to the bank of the level data, or 0 / $0C for other users",
+    "(Map16 block generation, credits layer data). In the credits text code it counts the next text row instead."
+   ]
+  },
+  "0068": {
+   "name": "Layer 2 data pointer (low word)",
+   "kind": "pointer (24-bit with $006A)",
+   "desc": [
+    "Low word of the 24-bit pointer $0068-$006A to the layer 2 object or background data. 'Load level' fills it,",
+    "'Switch to layer 2 objects' then copies it (plus 5 for the header) into $0065-$0067.",
+    "The credits scene setup loads it from a table; Level load reads it as a source pointer."
+   ]
+  },
+  "0069": {
+   "name": "Layer 2 data pointer (middle byte)",
+   "kind": "byte (middle byte of the pointer at $0068)",
+   "desc": [
+    "High byte of the 16-bit offset of the layer 2 data pointer at $0068. Set by 'Load level' and read when",
+    "switching to layer 2 objects, where the 5-byte layer header is skipped."
+   ]
+  },
+  "006A": {
+   "name": "Layer 2 data pointer bank",
+   "kind": "byte (bank of the pointer at $0068)",
+   "desc": [
+    "Bank of the layer 2 data. Set to $0C for prebuilt backgrounds (all of them live in bank $0C), and for the",
+    "credits compressed data. Read when the loader switches to layer 2 objects."
+   ]
+  },
+  "006B": {
+   "name": "Map16 low-byte pointer",
+   "kind": "pointer (24-bit, $006B-$006D), used with [$6B],Y",
+   "desc": [
+    "Long pointer to the Map16 tile low bytes of the current screen of the level buffer (bank $7E).",
+    "Level object routines store tiles through it (STA [$6B],Y) at the position in $0057, and read it back",
+    "to merge with existing tiles. The matching high-byte (tile page) pointer is $006E.",
+    "Set up by 'Load one level object' and 'Generate Map16 tile'."
+   ]
+  },
+  "006C": {
+   "name": "Map16 low-byte pointer (middle)",
+   "kind": "byte (middle byte of $006B)",
+   "desc": [
+    "Middle byte of the Map16 low-byte pointer at $006B. Object routines add $10 to the low byte to move down one",
+    "row and carry into $006C, or increment it to go to the next screen page. Mirrored in $006F."
+   ]
+  },
+  "006D": {
+   "name": "Map16 low-byte pointer bank",
+   "kind": "byte (bank of $006B)",
+   "desc": [
+    "Bank of the Map16 low-byte pointer; expected to be $7E. Written when a level object address is found, by",
+    "Layer 2 builders and by Generate Map16 tile ($7E), and by the credits background loader."
+   ]
+  },
+  "006E": {
+   "name": "Map16 high-byte pointer",
+   "kind": "pointer (24-bit, $006E-$0070), used with [$6E],Y",
+   "desc": [
+    "Long pointer to the Map16 high-byte (tile page) buffer for the current screen, bank $7F. Parallel to the",
+    "low-byte pointer at $006B; object routines mirror their pointer into it, and a high byte of 1 selects tile",
+    "page $1xx. 'Generate Map16 tile' also reads page tables with it."
+   ]
+  },
+  "006F": {
+   "name": "Map16 high-byte pointer (middle)",
+   "kind": "byte (middle byte of $006E)",
+   "desc": [
+    "Middle byte of the pointer at $006E. Always updated together with $006C when an object routine moves down a",
+    "row or to the next page. Only written, never read directly."
+   ]
+  },
+  "0070": {
+   "name": "Map16 high-byte pointer bank",
+   "kind": "byte (bank of $006E)",
+   "desc": [
+    "Bank of the Map16 high-byte pointer; expected to be $7F (the credits code sets $7E). Set when the object",
+    "address is found; also cleared by one level-start loop that indexes by X."
+   ]
+  },
+  "0071": {
+   "name": "Mario animation state",
+   "kind": "state (animation number)",
+   "desc": [
+    "Selects what Mario is doing instead of normal control: each value dispatches a special per-frame routine",
+    "(power-ups, pipes, hurt, death, door entry, scripted walks). 0 = normal handling. Written by whatever",
+    "starts the event, and cleared back to 0 when it ends.",
+    "Values: 0 normal, 1 shrinking (power down), 2 growing (mushroom), 3 cape power up, 5 horizontal pipe,",
+    "6 vertical pipe, 8 Yoshi wings exit, 9 dying, $0A scripted walk (level end), $0C castle entrance / cutscene,",
+    "$0D entering a door."
+   ]
+  },
+  "0072": {
+   "name": "Mario in-air state",
+   "kind": "state (flag/phase byte)",
+   "desc": [
+    "Nonzero while Mario is off the ground, 0 when he is standing. The value is the phase: swimming and jump code",
+    "set $0B while he rises and $24 while he falls. Climbing a net or vine clears it.",
+    "Read by pose selection, scrolling, water splashes, Yoshi and many sprite routines.",
+    "Values: 0 = on the ground, $0B = rising, $24 = falling."
+   ]
+  },
+  "0073": {
+   "name": "Mario ducking flag",
+   "kind": "flag byte",
+   "desc": [
+    "Nonzero while Mario is ducking. Reset to 0 every frame he is on the ground, swimming or doing cape flight,",
+    "then set when Down is held. Read by collision (hitbox), Yoshi checks and the bubble/smoke spawn routines.",
+    "Values: 0 = not ducking."
+   ]
+  },
+  "0074": {
+   "name": "Mario climbing flag",
+   "kind": "flag byte",
+   "desc": [
+    "Nonzero while Mario is climbing a net or vine. Set by copying $008B when he grabs the climbable tile,",
+    "cleared by block collision. Read by the scrolling and the carried-sprite pose code."
+   ]
+  },
+  "0075": {
+   "name": "Mario swimming flag",
+   "kind": "flag byte",
+   "desc": [
+    "Set to 1 by level collision when Mario is in water, so the physics code uses swimming speeds.",
+    "Read by the climbing tables, cape update and the screen scroll routine.",
+    "Values: 0 = not in water, 1 = swimming."
+   ]
+  },
+  "0076": {
+   "name": "Mario facing direction",
+   "kind": "byte (0 or 1)",
+   "desc": [
+    "Which way Mario faces. Set when he turns on the ground, by cutscenes and by Yoshi code; read for his",
+    "acceleration, drawing and fireball direction. Used as a table index (X = facing).",
+    "Values: 0 = left, 1 = right."
+   ]
+  },
+  "0077": {
+   "name": "Mario blocked status",
+   "kind": "bit flags",
+   "desc": [
+    "Which sides of Mario are against solid tiles or the screen edge, rebuilt each frame by block collision",
+    "(set with TSB) and by sprites that carry him (platforms, rafts). Read by walking, pose and platform code.",
+    "Bits: Bit 0: blocked right. Bit 1: blocked left. Bit 2: blocked below (on ground). Bit 3: blocked above.",
+    "Bit 7: touching the left/right screen edge."
+   ]
+  },
+  "0078": {
+   "name": "Mario tile hide mask",
+   "kind": "byte (bit mask)",
+   "desc": [
+    "Mask applied to Mario's drawn tiles. 0 draws everything. Pipe and power-up animations set it to $7F (or a",
+    "computed value) to hide Mario, and the OAM drawing sets individual bits when it builds his tiles.",
+    "Platform and chain code store $FF in it, probably to cancel a remaining jump/bonk state (unclear)."
+   ]
+  },
+  "007A": {
+   "name": "Mario X speed fraction",
+   "kind": "byte (sub-pixel part of the X speed)",
+   "desc": [
+    "Fractional part of Mario's horizontal speed; with $007B it forms the 16-bit speed used by 'Mario X speed",
+    "on ground' (acceleration is added to the 16-bit value). Cleared to 0 when climbing."
+   ]
+  },
+  "007B": {
+   "name": "Mario X speed",
+   "kind": "byte (signed, pixels per frame in 1/16)",
+   "desc": [
+    "Mario's horizontal speed, signed (negative = left). Written by walking physics, collision (stop at walls),",
+    "pipes, scripted animations, springboards and bosses; added to his X position each frame.",
+    "Also set to the scroll speed when he is carried along with the screen, and by Yoshi kick-off ($10/-$10)."
+   ]
+  },
+  "007D": {
+   "name": "Mario Y speed",
+   "kind": "byte (signed, pixels per frame in 1/16)",
+   "desc": [
+    "Mario's vertical speed, signed (negative = up). Set to jump and bounce values (e.g. $B0/$80 springboard,",
+    "$D0 balloon bounce, $90 at level start), zeroed on landing, in water entry and climbing, and pressed to",
+    "$10 while standing on a sprite. Gravity is added each frame in the Mario Y speed routine."
+   ]
+  },
+  "007E": {
+   "name": "Mario X on screen",
+   "kind": "byte",
+   "desc": [
+    "Mario's X position relative to the screen (his X position minus the layer 1 scroll), computed in the Mario",
+    "drawing routine. Sprites and screen-collision code compare against it (e.g. Peach, Wiggler, Layer 3 smash).",
+    "The high byte-like flag is $007F."
+   ]
+  },
+  "007F": {
+   "name": "Mario off-screen flag (horizontal)",
+   "kind": "byte (nonzero = off screen)",
+   "desc": [
+    "High byte of Mario's X on-screen position ($007E is the low byte); nonzero when he is off the screen",
+    "horizontally. ORed with $0081 by the bubble/smoke spawners, cape and misc sprite handlers to refuse",
+    "spawning effects when Mario is off screen. Read only (written by the Mario OAM drawing code)."
+   ]
+  },
+  "0080": {
+   "name": "Mario Y on screen",
+   "kind": "byte",
+   "desc": [
+    "Mario's Y position relative to the screen, computed in the Mario drawing routine. Read by sprite contact",
+    "checks (standing on a sprite, Wiggler, Layer 3 smash, bonus block) and by the Mode 7 boss platform code.",
+    "Partner of $007E; the high byte is $0081."
+   ]
+  },
+  "0081": {
+   "name": "Mario off-screen flag (vertical)",
+   "kind": "byte (nonzero = off screen)",
+   "desc": [
+    "High byte of Mario's Y on-screen position ($0080 is the low byte); nonzero when he is vertically off screen.",
+    "Tested together with $007F before spawning bubbles and smoke, giving Mario a cape, and similar effects.",
+    "Mostly read; the disassembly shows data-table false hits for this address in sprite pointer tables."
+   ]
+  },
+  "0082": {
+   "name": "Slope shape table pointer",
+   "kind": "pointer (24-bit, $0082-$0084), used with [$82],Y",
+   "desc": [
+    "Long pointer to the Map16 slope-shape table. The Map16 pointer setup stores $E55E in it (bank in $0084 is 0,",
+    "so it points at $00:E55E). The Mario block collision reads [$82],Y to get the slope shape of a tile."
+   ]
+  },
+  "0084": {
+   "name": "Slope shape table pointer bank",
+   "kind": "byte (bank of pointer at $0082)",
+   "desc": [
+    "Bank byte of the pointer at $0082. Set to 0 by the Map16 pointer setup. The 26 'reads' in bank $01 are",
+    "misdecoded pointer table data, not real accesses."
+   ]
+  },
+  "0085": {
+   "name": "Water level flag",
+   "kind": "flag byte",
+   "desc": [
+    "Nonzero when the current level is a water level. Set once at level start; read by the Mario collision",
+    "(which turns on swimming), the physics code (BIT tests it) and sprites that behave differently in water.",
+    "Most of the 104 listed uses are misdecoded pointer-table data, not real reads.",
+    "Values: 0 = not water, 1 = water level."
+   ]
+  }
+ }
+}

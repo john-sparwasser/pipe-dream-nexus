@@ -1,0 +1,247 @@
+{
+ "addresses": {
+  "0DC2": {
+   "name": "Reserve item (item box)",
+   "kind": "byte (item type)",
+   "desc": [
+    "The power-up stored in Mario's item box for the current player: the reserve item that drops when Select is pressed",
+    "or Mario is hit. Copied to and from each player's own slot ($0DBC,X) when the overworld is entered or left.",
+    "Written when a power-up is collected with the box empty, cleared on file select and the Bowser scene; read by the status bar and the item drop.",
+    "Values: 0 = empty; otherwise the power-up number stored by the collect routine (item box contents)."
+   ]
+  },
+  "0DC7": {
+   "name": "Overworld walk target position",
+   "kind": "word table, indexed by axis (X = 0: X, X = 2: Y)",
+   "desc": [
+    "Where the player's overworld sprite is walking to. When a path step starts, the current map position",
+    "([$1F17,X] for X, [$1F19] for Y) plus the step offset is stored here. OW process 4 compares it with",
+    "the current position to find the remaining distance on each axis."
+   ]
+  },
+  "0DCF": {
+   "name": "Overworld walk speed per axis",
+   "kind": "word table, indexed by axis (X = 0: X, X = 2: Y)",
+   "desc": [
+    "Signed speed at which the player's overworld sprite moves along the X axis (X = 0) and Y axis (X = 2) during",
+    "OW process 4 (walking along the path). Written each frame from the distance left, then added to the position.",
+    "Also matches labels CODE_0DCF.. in bank $0D (guide line objects), which are code, not RAM."
+   ]
+  },
+  "0DD3": {
+   "name": "Overworld walking direction",
+   "kind": "byte (even direction code)",
+   "desc": [
+    "Direction the player is currently walking on the overworld map. Set when a walk starts from a level tile and",
+    "read while following the path to pick the movement offsets.",
+    "Values: 0 = up; 2 = down; 4 = left; 6 = right."
+   ]
+  },
+  "0DD5": {
+   "name": "Level exit type / overworld event",
+   "kind": "byte",
+   "desc": [
+    "How the last level was left, so the overworld knows which path to unlock and where to walk. Set by the level",
+    "(goal, Select exit, death) and cleared when a level starts or the overworld finishes handling it.",
+    "Read by the overworld state routines to decide on auto-walk or events; the event routine also stores event values such as $E0 here.",
+    "Values: 0 = none; 1 = normal exit; 2 = secret exit; $80 = left the level with no exit event (death)."
+   ]
+  },
+  "0DD6": {
+   "name": "Current player position slot (player * 4)",
+   "kind": "byte (index)",
+   "desc": [
+    "Index of the current player's entries in the overworld position tables ($1F17, $1F19 etc.): 0 for Mario, 4 for Luigi.",
+    "Used as X or Y in most overworld code; divide by 4 for the player index. Set when a player is selected."
+   ]
+  },
+  "0DD8": {
+   "name": "Overworld input/transition flag",
+   "kind": "flag byte",
+   "desc": [
+    "Overworld flag: while non-zero the overworld input check is skipped (game mode 0E) and path walking",
+    "treats the state as pending. Cleared by the hardcoded path routine; incremented by the level name builder",
+    "(probably counts player switches). Exact purpose is not clear from the code."
+   ]
+  },
+  "0DDA": {
+   "name": "Music state",
+   "kind": "byte (music number plus bit 7 flag)",
+   "desc": [
+    "Mirror of the level music in effect. Game mode 11 stores the intro music number here ($13 for the intro level);",
+    "bit 7 is set by power-up and tape events and cleared by the Mario draw routine (restore level music).",
+    "Set to $FF by Kill Mario, goal tape and some collision code so the level music reloads afterwards.",
+    "Values: 0 = no music request pending; $FF = force the level music to restart; bit 7 = music state flag."
+   ]
+  },
+  "0DDE": {
+   "name": "Current overworld sprite slot",
+   "kind": "byte (index)",
+   "desc": [
+    "Slot number of the overworld sprite being processed. Stored by the process-all-sprites loop and reloaded by each",
+    "sprite routine as X. On the erase file menu (game mode 09) it is reused as a bit mask of files marked for erasing.",
+    "Values: 0 = no file marked (erase menu)."
+   ]
+  },
+  "0DDF": {
+   "name": "Overworld sprite draw list / OAM offset",
+   "kind": "byte table (draw order) / byte",
+   "desc": [
+    "Dual use. Indexed by X it is the sprite-slot list sorted by Y position (positions 1-4 of the 5 entry list that",
+    "starts at $0DE0), used to draw overworld sprites back to front. Read unindexed ($0DDF) it is the next free dynamic OAM offset;",
+    "reset to $30 at the start of each frame and advanced by the sprite tile drawing."
+   ]
+  },
+  "0DE0": {
+   "name": "Overworld sprite sort order",
+   "kind": "byte table, 5 entries",
+   "desc": [
+    "List of overworld sprite slots 0-4 (the foreground sprites), initialised to 0,1,2,3,4 and bubble-sorted each frame by",
+    "Y position ($0E45,$0E75) so they are processed in depth order. Shares storage with the $0DDF list (offset by one)."
+   ]
+  },
+  "0DE5": {
+   "name": "Overworld sprite type",
+   "kind": "byte table, one per overworld sprite slot",
+   "desc": [
+    "Type of each of the 16 overworld sprites; 0 = slot free. It selects the routine from the OW sprite pointer table.",
+    "Written when a sprite is created and cleared when it goes off screen, which frees the slot.",
+    "Values: 0 = unused (free slot); 1-10 = index into the overworld sprite pointer table (e.g. 5 = cloud, 6 = walks in on tiles $49-$4B)."
+   ]
+  },
+  "0DE8": {
+   "name": "Overworld sprite type, slot 3",
+   "kind": "byte (element of the $0DE5 table)",
+   "desc": [
+    "This is slot 3 of the overworld sprite type table at $0DE5, written when overworld sprites are initialised.",
+    "Also matches labels CODE_0DE8.. in bank $0D (tileset object handlers), which are code, not RAM."
+   ]
+  },
+  "0DF5": {
+   "name": "Overworld sprite state / direction",
+   "kind": "byte table, one per overworld sprite slot",
+   "desc": [
+    "General per-slot byte of the overworld sprites; meaning depends on the sprite type. Examples: active flag and",
+    "properties ($12 plus a random X flip, sprites 3-5); state 2 (sprite 6, walk-in); animation phase wrapped at 12",
+    "(sprites 7-8); X-axis direction index (sprites 9-10); random threshold index (sprite 1). Cleared at overworld setup."
+   ]
+  },
+  "0E05": {
+   "name": "Overworld sprite counter / Y direction",
+   "kind": "byte table, one per overworld sprite slot",
+   "desc": [
+    "Per-slot byte: bit 0 is the direction bit flipped by the hovering creature (sprite 1), an animation counter for",
+    "sprite 6 (incremented each frame), and the Y-axis direction index for the drifting sprites 9-10."
+   ]
+  },
+  "0E15": {
+   "name": "Overworld sprite animation counter",
+   "kind": "byte table, one per overworld sprite slot",
+   "desc": [
+    "Animation counter incremented by the drifting sprites (9-10) and read by the hovering creature; cleared when a sprite",
+    "arrives at its home position."
+   ]
+  },
+  "0E25": {
+   "name": "Overworld sprite timer",
+   "kind": "byte table, one per overworld sprite slot",
+   "desc": [
+    "Per-slot countdown. The process-all-sprites loop decrements it each frame while non-zero (for slots below $0D).",
+    "Meaning varies: splash timer set to $0F by sprites 3-5, wait timer for sprite 6, phase counter for sprites 9-10."
+   ]
+  },
+  "0E35": {
+   "name": "Overworld sprite X position, low",
+   "kind": "byte table, one per overworld sprite slot",
+   "desc": [
+    "Low byte of the sprite's X position on the overworld map ([$0E65,X] is the high byte). Set at spawn from per-type",
+    "data tables and used by the draw/move helpers."
+   ]
+  },
+  "0E45": {
+   "name": "Overworld sprite Y position, low",
+   "kind": "byte table, one per overworld sprite slot",
+   "desc": [
+    "Low byte of the sprite's Y position ([$0E75,X] is the high byte). Read as a 16-bit value with $0E75 to sort the",
+    "sprites by depth; sprite 2 copies Mario's Y into it."
+   ]
+  },
+  "0E55": {
+   "name": "Overworld sprite height (Z)",
+   "kind": "byte table, one per overworld sprite slot",
+   "desc": [
+    "Height of the sprite above the ground, used by the draw helper to offset the sprite's Y. Cloud sprites set it from a table at spawn."
+   ]
+  },
+  "0E65": {
+   "name": "Overworld sprite X position, high",
+   "kind": "byte table, one per overworld sprite slot",
+   "desc": [
+    "High byte of the sprite's X position ([$0E35,X] is the low byte)."
+   ]
+  },
+  "0E75": {
+   "name": "Overworld sprite Y position, high",
+   "kind": "byte table, one per overworld sprite slot",
+   "desc": [
+    "High byte of the sprite's Y position ([$0E45,X] is the low byte). Sprite 2 sets it to Mario's Y high byte."
+   ]
+  },
+  "0E95": {
+   "name": "Overworld sprite X speed",
+   "kind": "byte table (signed), one per overworld sprite slot",
+   "desc": [
+    "Signed X speed in 1/16 pixel per frame. Sprite 2 accelerates toward Mario and clamps to +/-$10; sprite 6 uses",
+    "$F0 (walks left), sprites 3-5 use 2 (drift right)."
+   ]
+  },
+  "0EA5": {
+   "name": "Overworld sprite Y speed",
+   "kind": "byte table (signed), one per overworld sprite slot",
+   "desc": [
+    "Signed Y speed in 1/16 pixel per frame. Set to $FF by sprites 3-5 (drifts up slowly), cleared to 0 by the helper when a sprite arrives."
+   ]
+  },
+  "0EB5": {
+   "name": "Overworld sprite Z speed",
+   "kind": "byte table (signed), one per overworld sprite slot",
+   "desc": [
+    "Vertical (height) speed applied to $0E55. Set to $24 when launched upward (sprites 3-5), changed by +1 or -1 for the hovering creature, cleared on arrival."
+   ]
+  },
+  "0EF5": {
+   "name": "Overworld walking sprites spawned",
+   "kind": "bit flags",
+   "desc": [
+    "Which of the three sprite-6 walkers have already appeared. Level exit setup ORs in a bit from a table; sprite 6 reads it",
+    "so it only spawns when its bit is clear.",
+    "Bits: 7, 6 and 5 ($80, $40, $20): one per walker."
+   ]
+  },
+  "0EF7": {
+   "name": "Overworld sprite touching player",
+   "kind": "byte (slot, bit 7 = hit)",
+   "desc": [
+    "Slot number of the overworld sprite the player is touching, or'd with $80 when sprite 6 marks a hit. Cleared to 0 each frame;",
+    "read by the level-exit and hardcoded-path code.",
+    "Values: 0 = nothing touching."
+   ]
+  },
+  "0F15": {
+   "name": "Status bar digit tiles",
+   "kind": "byte table (digit tiles)",
+   "desc": [
+    "Buffer of decimal digit tiles for the number being converted. The hex-to-decimal routines clear each digit and count up by",
+    "subtraction; the status bar update then replaces leading zeros with a blank tile ($FC)."
+   ]
+  },
+  "0F1E": {
+   "name": "Status bar digit tiles (counters)",
+   "kind": "byte table (digit tiles)",
+   "desc": [
+    "Second digit-tile buffer for the status bar counters (such as bonus stars). The status bar update reads it, drops absent tens",
+    "digits and converts 8x8 digit tiles into 8x16 big digits."
+   ]
+  }
+ }
+}

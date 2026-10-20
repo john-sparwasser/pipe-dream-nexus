@@ -1,0 +1,306 @@
+{
+ "addresses": {
+  "0D76": {
+   "name": "Mario tile DMA source",
+   "kind": "word table (little endian, steps of 2)",
+   "desc": [
+    "First entry of a table of 16-bit source addresses for the per-frame Mario graphics DMA. The routine at",
+    "$00:A3DF reads it as the source of a $80 or $40 byte VRAM copy ($0D78, $0D7A ... $0D80 are the next entries).",
+    "Written by the animated tile routine in bank $05 (STA $0D76,X, X counting down by 2)."
+   ]
+  },
+  "0D82": {
+   "name": "Mario palette pointer",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Address (in bank $00) of the 20-byte ($14) palette that MarioGFXDMA copies to CG-RAM colour $86 each frame.",
+    "Set by the Mario draw routine (from DATA_00E2A2 indexed by Y, picks the colour set for the power-up/pose);",
+    "also read by the finish-pose code at $00:B04E."
+   ]
+  },
+  "0D84": {
+   "name": "Mario GFX DMA list size",
+   "kind": "byte",
+   "desc": [
+    "Size of the Mario graphics DMA list: how many tile pieces MarioGFXDMA copies this frame. 0 = skip the palette",
+    "transfer. The routine repeats the last segment while X < [$0D84].",
+    "Set to $0A by the controller-clear/Mario GFX setup code, to 6 in the overworld border icon drawing (probably),",
+    "and cleared by the enemy parade cutscene (game mode 25)."
+   ]
+  },
+  "0D8B": {
+   "name": "Dynamic gfx source, top, slot 3",
+   "kind": "word (little endian), entry of the $0D85 table",
+   "desc": [
+    "Source address of the top row of tiles for a dynamically drawn sprite graphic, copied to VRAM by the Mario/",
+    "dynamic graphics DMA (it is entry +6 of the table starting at $0D85, read at $00:A355).",
+    "Written by the flame/Podoboo draw ($8500 + offset), Yoshi head/wings draw and the Pipe Lakitu / Baby Yoshi",
+    "helpers. Its partner for the bottom row is $0D95 (= $0D8B + $0200)."
+   ]
+  },
+  "0D95": {
+   "name": "Dynamic gfx source, bottom, slot 3",
+   "kind": "word (little endian), entry of the $0D8F table",
+   "desc": [
+    "Source address of the bottom row of tiles for a dynamically drawn sprite graphic (entry +6 of the table",
+    "starting at $0D8F, read at $00:A375). Always set to the top-row address in $0D8B plus $0200, 16 tiles later.",
+    "Written by the same routines as $0D8B: flames/Podoboo, Yoshi, Pipe Lakitu and Baby Yoshi."
+   ]
+  },
+  "0D9B": {
+   "name": "Special level mode",
+   "kind": "bit flags",
+   "desc": [
+    "Selects the special screen mode of the current level or screen. Normal levels use 0. The NMI and IRQ handlers",
+    "test it to pick the normal path or the Mode 7 / battle path, and sprite code uses it to adapt to Mode 7 rooms.",
+    "Loaded per level from SpecialLevTable ($05:85xx); set to 1 by title/credits-style game modes and to 2 by",
+    "game mode 0C setup. Read heavily by the NMI, status bar, Mode 7 boss sprites and OAM routines.",
+    "Bit 7: Mode 7 / battle style screen (BPL tests in NMI and IRQ).",
+    "Bit 6: Mode 7 boss room (tested with BIT, V flag); $C1 is the value checked for boss rooms.",
+    "Values: 0 = normal level, 1 and 2 = special mini-modes used by cutscene/overworld code."
+   ]
+  },
+  "0D9F": {
+   "name": "HDMA enable mirror",
+   "kind": "byte (bit per HDMA channel)",
+   "desc": [
+    "RAM mirror of $420C. The NMI handler copies it to the HDMA channel enable register every frame, so setting a",
+    "bit turns that HDMA channel on from the next frame. Many routines write 0 to disable all HDMA (title screen,",
+    "message box, level end); the window effect setup writes $80 to enable channel 7 only.",
+    "Values: 0 = no HDMA. Bit n = channel n enabled."
+   ]
+  },
+  "0DA2": {
+   "name": "Joypad 1 held, high byte",
+   "kind": "bit flags",
+   "desc": [
+    "Joypad 1 buttons currently held, high byte of $4218, stored each frame by the controller read routine.",
+    "Bits: 7 B, 6 Y, 5 Select, 4 Start, 3 Up, 2 Down, 1 Left, 0 Right.",
+    "Indexed by player ([$0DA2,X]) when the controller routine picks which pad feeds Mario ($0DA0 or $0DB3)."
+   ]
+  },
+  "0DA3": {
+   "name": "Joypad 2 held, high byte",
+   "kind": "bit flags",
+   "desc": [
+    "Joypad 2 buttons currently held, high byte of $421A/$421B read. Same bit layout as $0DA2 (B Y Select Start",
+    "D-pad). Written by the controller read routine; also tested in game mode 14 (in level) for player 2 input.",
+    "Bits: 7 B, 6 Y, 5 Select, 4 Start, 3 Up, 2 Down, 1 Left, 0 Right."
+   ]
+  },
+  "0DA4": {
+   "name": "Joypad 1 held, A/X/L/R",
+   "kind": "bit flags",
+   "desc": [
+    "Joypad 1 buttons currently held, low byte of $4218 masked with $F0. Written by the controller read routine,",
+    "then merged into $15/$17 (Mario's controller bytes). Hits from $0D:A4xx are table bytes, not real reads.",
+    "Bits: 7 A, 6 X, 5 L, 4 R."
+   ]
+  },
+  "0DA5": {
+   "name": "Joypad 2 held, A/X/L/R",
+   "kind": "bit flags",
+   "desc": [
+    "Joypad 2 buttons currently held, low byte masked with $F0. Written once per frame by the controller read",
+    "routine. Almost all the other listed uses are pointer table bytes in bank $0D, not accesses to this byte.",
+    "Bits: 7 A, 6 X, 5 L, 4 R."
+   ]
+  },
+  "0DA6": {
+   "name": "Joypad 1 newly pressed, high byte",
+   "kind": "bit flags",
+   "desc": [
+    "Buttons of joypad 1 (high byte) that went down this frame: (old EOR new) AND new. Used by menus, the lives",
+    "exchange and the overworld, which read it via [$0DA6,X] for the current player. Hits in bank $0D are table bytes.",
+    "Bits: 7 B, 6 Y, 5 Select, 4 Start, 3 Up, 2 Down, 1 Left, 0 Right."
+   ]
+  },
+  "0DA7": {
+   "name": "Joypad 2 newly pressed, high byte",
+   "kind": "bit flags",
+   "desc": [
+    "Buttons of joypad 2 (high byte) newly pressed this frame, computed in the controller read routine. The lives",
+    "exchange tests Start on either pad by ORing this with $0DA6. Bits as $0DA6."
+   ]
+  },
+  "0DA8": {
+   "name": "Joypad 1 newly pressed, A/X/L/R",
+   "kind": "bit flags",
+   "desc": [
+    "Joypad 1 A/X/L/R buttons newly pressed this frame ((old EOR new) AND new). Read by overworld mode 0E and",
+    "similar code; the $0D:A2xx hits are pointer table bytes. The partner for joypad 2 is $0DA9.",
+    "Bits: 7 A, 6 X, 5 L, 4 R."
+   ]
+  },
+  "0DAA": {
+   "name": "Joypad 1 previous high byte",
+   "kind": "bit flags",
+   "desc": [
+    "Joypad 1 high byte as it was last frame. Written at the end of the controller routine (STY) and used next",
+    "frame to find newly pressed buttons for $0DA6. Hits from $0D:Axxx are table bytes."
+   ]
+  },
+  "0DAB": {
+   "name": "Joypad 2 previous high byte",
+   "kind": "bit flags",
+   "desc": [
+    "Joypad 2 high byte remembered from last frame, used next frame to compute the newly pressed bits in $0DA7.",
+    "Hits from $0D:Axxx and $0D:C1xx are pointer table bytes."
+   ]
+  },
+  "0DAC": {
+   "name": "Joypad 1 previous A/X/L/R",
+   "kind": "bit flags",
+   "desc": [
+    "Joypad 1 A/X/L/R held bits remembered from last frame, so the next frame can compute $0DA8."
+   ]
+  },
+  "0DAD": {
+   "name": "Joypad 2 previous A/X/L/R",
+   "kind": "bit flags",
+   "desc": [
+    "Joypad 2 A/X/L/R held bits remembered from last frame, so the next frame can compute $0DA9."
+   ]
+  },
+  "0DAE": {
+   "name": "Screen brightness mirror",
+   "kind": "byte",
+   "desc": [
+    "RAM mirror of the screen brightness register $2100. The NMI copies it to $2100 each frame. Fades add to or",
+    "subtract from it; game modes set it to 0 (black) at start and $0F when showing the screen.",
+    "Values: $00 = black, $0F = full brightness (bit 7 would force blank)."
+   ]
+  },
+  "0DAF": {
+   "name": "Mosaic fade direction",
+   "kind": "byte",
+   "desc": [
+    "Direction of the mosaic fade used by game modes 0F/13 and the overworld level name code.",
+    "Set to 1 when the screen is loaded for Nintendo Presents, cleared when Mario Start begins, XORed with 1",
+    "when the fade finishes so the next fade runs the other way. Used as an index into the fade step tables.",
+    "Values: 0 = fade in, 1 = fade out (probably, as seen from the level name code)."
+   ]
+  },
+  "0DB0": {
+   "name": "Mosaic size",
+   "kind": "byte",
+   "desc": [
+    "Mosaic size for the fade effect, high nibble. Combined as $03 | [$0DB0] and written to $2106 so BG1 and BG2",
+    "are mosaicked. Starts at $F0 when a fade begins and steps by $10 per frame; 0 = no mosaic."
+   ]
+  },
+  "0DB1": {
+   "name": "Fade delay counter",
+   "kind": "timer",
+   "desc": [
+    "Frame countdown shared by the fade routines. KeepModeActive sets it to 1, other code sets it to 2 or 8;",
+    "the fade code decrements it each frame and acts when it goes negative, so the fade runs a step every",
+    "few frames. Also used the same way by the overworld level name text and the overworld save code."
+   ]
+  },
+  "0DB2": {
+   "name": "Two player game flag",
+   "kind": "byte",
+   "desc": [
+    "Number of players minus 1, set on the player select screen. 0 = one player (Mario only), 1 = two players",
+    "(Mario and Luigi). Read by the overworld and lives code to decide whether to swap players.",
+    "Values: 0 = 1 player, 1 = 2 players."
+   ]
+  },
+  "0DB3": {
+   "name": "Current player",
+   "kind": "byte (0 = Mario, 1 = Luigi)",
+   "desc": [
+    "Which player is currently playing. Used as an index into the per-player tables from $0DB4 up (lives, coins,",
+    "power-up, Yoshi color, item) and times 3 as the score offset. Flipped with EOR #$01 when the players swap.",
+    "Values: 0 = Mario, 1 = Luigi."
+   ]
+  },
+  "0DB4": {
+   "name": "Player lives",
+   "kind": "byte table, one per player (index X)",
+   "desc": [
+    "Lives of each player, stored as lives minus 1, so 0 means one life left and $FF (negative) means none left.",
+    "$0DB4 is Mario, $0DB5 is Luigi. A new game sets both to 4 (5 lives shown). Saved from the status bar on",
+    "overworld load, loaded back at Mario Start; the lives exchange screen reads and swaps them."
+   ]
+  },
+  "0DB5": {
+   "name": "Luigi lives",
+   "kind": "byte",
+   "desc": [
+    "Luigi's lives, the second entry of the [$0DB4,X] table (also stored as lives minus 1).",
+    "A new game writes $FF here for a one-player game; the Mario Start code ORs both players' lives to detect",
+    "a double game over. The lives exchange compares it with Mario's lives. $0D:A2xx hits are table bytes."
+   ]
+  },
+  "0DB6": {
+   "name": "Player coins",
+   "kind": "byte table, one per player (index X)",
+   "desc": [
+    "Each player's coin count (word access at start clears both). $0DB6 is Mario, $0DB7 is Luigi.",
+    "Saved from the status bar coins ($0DBF) when the overworld loads and copied back when a level is entered."
+   ]
+  },
+  "0DB8": {
+   "name": "Player power-up",
+   "kind": "byte table, one per player (index X)",
+   "desc": [
+    "Each player's saved power-up state ($0DB8 Mario, $0DB9 Luigi). Cleared to 0 (small) at new game, stored",
+    "from $0019 when the overworld loads and restored when a level is entered.",
+    "Values: 0 = small, 1 = big, 2 = cape, 3 = fire."
+   ]
+  },
+  "0DBA": {
+   "name": "Player Yoshi color",
+   "kind": "byte table, one per player (index X)",
+   "desc": [
+    "Yoshi color each player carries, 0 = no Yoshi. $0DBA is Mario, $0DBB Luigi. Saved on overworld load,",
+    "copied into $0DC1, $13C7 and $187A when a level starts. Also used to pick the Yoshi map sprite color."
+   ]
+  },
+  "0DBC": {
+   "name": "Player reserve item",
+   "kind": "byte table, one per player (index X)",
+   "desc": [
+    "Reserve (item box) item of each player ($0DBC Mario, $0DBD Luigi). Saved when the overworld loads, and",
+    "copied to $0DC2 on entering a level or switching players."
+   ]
+  },
+  "0DBE": {
+   "name": "Status bar lives",
+   "kind": "byte",
+   "desc": [
+    "Lives of the current player as shown on the status bar, stored as lives minus 1 (display adds 1).",
+    "Clamped to $62 (99 shown), decremented when Mario dies, set to 4 for a new game. Copied to and from",
+    "[$0DB4,X] when the player or screen changes. Negative means game over."
+   ]
+  },
+  "0DBF": {
+   "name": "Status bar coins",
+   "kind": "byte",
+   "desc": [
+    "Coin counter of the current player. Incremented per coin by the status bar update; cleared on new game.",
+    "Saved to [$0DB6,X] on overworld load and loaded back from it when a player's level or turn starts."
+   ]
+  },
+  "0DC0": {
+   "name": "Coins to collect",
+   "kind": "byte",
+   "desc": [
+    "Down counter, set to $1E (30) at level start when [$141A] is 0. The coin counter in bank $05 subtracts",
+    "coins collected from it, flooring at 0. Block code tests it for the special ? block: if it is 0 a different",
+    "sprite is spawned. Purpose beyond that is unclear; probably coins left before a reward."
+   ]
+  },
+  "0DC1": {
+   "name": "Overworld Yoshi color",
+   "kind": "byte",
+   "desc": [
+    "Yoshi color for the player on the overworld, 0 = no Yoshi. Copied from [$0DBA,X] when a level starts,",
+    "set by the level-end coin and Yoshi routines when Yoshi stays with Mario, and cleared on death/new game.",
+    "Values: 0 = no Yoshi, nonzero = Yoshi color."
+   ]
+  }
+ }
+}

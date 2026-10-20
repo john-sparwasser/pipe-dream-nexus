@@ -54,3 +54,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const qa = document.getElementById("qa");
   if (qa) qa.addEventListener("keydown", e => { if (e.key === "Enter") searchAll(); });
 });
+
+// ram.html: filter the entries as you type (address, name or any word in the description).
+document.addEventListener("DOMContentLoaded", () => {
+  const rq = document.getElementById("rq");
+  if (!rq) return;
+  const all = [...document.querySelectorAll(".rv")], count = document.getElementById("rcount");
+  const run = () => {
+    const terms = rq.value.toLowerCase().replace(/\$/g, "").split(/\s+/).filter(Boolean);
+    let n = 0;
+    for (const el of all) {
+      const hit = terms.every(t => el.dataset.q.replace(/\$/g, "").includes(t));
+      el.classList.toggle("hide", !hit);
+      n += hit;
+    }
+    count.textContent = terms.length ? n + " of " + all.length + " shown" : "";
+  };
+  rq.addEventListener("input", run);
+  if (location.hash && !document.querySelector(location.hash)) rq.value = location.hash.slice(1);
+  run();
+});

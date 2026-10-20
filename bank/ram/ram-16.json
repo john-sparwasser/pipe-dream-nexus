@@ -1,0 +1,371 @@
+{
+ "addresses": {
+  "1887": {
+   "name": "Ground shake timer",
+   "kind": "timer",
+   "desc": [
+    "Frames left of the screen-shaking effect. Set by Thwomp landings, Bowser and Koopa Kid stomps, falling",
+    "columns, Sumo Bro stomps, Yoshi ground stomp, layer 2/3 smashes. Counted down once per frame in the in-level",
+    "game mode; while nonzero the layer 1 displacement at $1888/$1889 is made to wobble.",
+    "Values: 0 = no shake; typical starts $20 (most bosses), $30 (Sumo Bro, ground pound), $50 (layer 3 smash), 5 (Yoshi)."
+   ]
+  },
+  "1888": {
+   "name": "Layer 1 Y shake displacement, low",
+   "kind": "byte (low byte of a 16-bit pair)",
+   "desc": [
+    "Low byte of the vertical offset added to layer 1's scroll while the ground shakes ($1889 is the high byte).",
+    "Computed each frame in game mode 14 from the shake timer $1887, added to $001C in the NMI scroll setup and",
+    "to the IRQ split position. Sprites that draw relative to the screen (fireballs, falling columns, parallax) add it",
+    "too so they shake with the ground. Cleared to 0 at level start."
+   ]
+  },
+  "1889": {
+   "name": "Layer 1 Y shake displacement, high",
+   "kind": "byte (high byte of a 16-bit pair)",
+   "desc": [
+    "High byte of the layer 1 shake offset ($1888 is the low byte). Zeroed in game mode 14 each frame before the",
+    "offset is recomputed, and added to the BG1 vertical scroll high byte in the NMI scroll setup."
+   ]
+  },
+  "188B": {
+   "name": "Mario Y offset on Yoshi",
+   "kind": "byte",
+   "desc": [
+    "Vertical offset used when drawing Mario while he rides Yoshi. The Yoshi sprite main routine sets it to 6;",
+    "it is cleared when there is no Yoshi, when an item is spawned from Yoshi's mouth, and in Peach's walk states.",
+    "Read by Mario's OAM drawing code."
+   ]
+  },
+  "188D": {
+   "name": "Screen X working copy (parallax)",
+   "kind": "scratch",
+   "desc": [
+    "Temporary storage used by the parallax background sprite drawing: the screen X low byte is stored here and",
+    "shifted with ROR repeatedly to derive scrolled positions. Not meaningful outside that routine."
+   ]
+  },
+  "188F": {
+   "name": "Bonus game blocks hit",
+   "kind": "counter",
+   "desc": [
+    "Bonus game (sprite 82) counter of blocks hit. Cleared by the bonus game init, incremented each time the",
+    "bonus game block routine finishes all nine blocks, which marks the game as finished."
+   ]
+  },
+  "1890": {
+   "name": "Bonus game match counter",
+   "kind": "counter",
+   "desc": [
+    "Counts matching lines in the bonus game: incremented by the match counting routine, decremented by the",
+    "keyhole main routine, cleared by the bonus game init. Used to decide the outcome of the bonus game."
+   ]
+  },
+  "1891": {
+   "name": "P-balloon timer",
+   "kind": "timer",
+   "desc": [
+    "Frames of P-balloon flight left. Set to $FF when Mario takes a P-balloon, decremented in the carried-sprite",
+    "routine; when it reaches zero the balloon deflates. Cleared at level end.",
+    "Values: 0 = no balloon active."
+   ]
+  },
+  "1892": {
+   "name": "Cluster sprite type",
+   "kind": "byte table, one per cluster sprite slot (index X)",
+   "desc": [
+    "Cluster sprite number for each slot; 0 = slot free. Set by the cluster spawners (types 3, 5 and 8 in the samples:",
+    "Boo ceiling/bat groups, ring of Boos, bonus 1-ups) and cleared when the sprite goes away or is collected.",
+    "The cluster loop dispatches on it. Also used as a per-slot timer for Sumo Bro lightning flames (set to 6 to",
+    "activate) and as the extended sprite number table by the keyhole routine (set to 1), indexed by Y."
+   ]
+  },
+  "18A7": {
+   "name": "Tile touched by sprite from side",
+   "kind": "byte",
+   "desc": [
+    "Map16 tile number a sprite hit when its horizontal block check found a solid tile. Written by the sprite",
+    "horizontal block check, read by the kicked shell routine and Chuck physics to react to specific tiles."
+   ]
+  },
+  "18A8": {
+   "name": "Falling column state",
+   "kind": "byte table, one per column slot (index X)",
+   "desc": [
+    "State of each falling column in the Bowser/Koopa Kid castle style falling-column effect. Indexed by X in the",
+    "falling columns routine. $01:CE28 also increments the first entry from the wall Koopa Kid states."
+   ]
+  },
+  "18AA": {
+   "name": "Falling column fall speed",
+   "kind": "byte table, one per column slot (index X)",
+   "desc": [
+    "Y speed of each falling column; the routine adds (value >> 5) + 1 each frame so the column accelerates.",
+    "Cleared by the wall Koopa Kid states."
+   ]
+  },
+  "18AC": {
+   "name": "Yoshi tongue/swallow timer",
+   "kind": "timer",
+   "desc": [
+    "Hold timer for what Yoshi has in his mouth, and the tongue state. Set to $FF when the tongue starts,",
+    "cleared when an item leaves the mouth, when baby Yoshi swallows a caught sprite, and in baby Yoshi stunned logic.",
+    "Read by Yoshi's draw routine to pick the mouth frame.",
+    "Values: 0 = nothing held / tongue idle."
+   ]
+  },
+  "18AD": {
+   "name": "Yoshi walk frame",
+   "kind": "byte",
+   "desc": [
+    "Index of Yoshi's current walk animation frame while Mario is on him. Updated in the Yoshi on-Mario update as",
+    "([$18AD] - 1) mod 3 and used to look up the frame to show."
+   ]
+  },
+  "18AE": {
+   "name": "Yoshi tongue wind-up flag",
+   "kind": "byte",
+   "desc": [
+    "Set to 6 by Yoshi's main routine when the tongue timer $14A3 equals $10 and it is not already set, starting the",
+    "wind-up. Nonzero makes the draw code use tile $0C instead of the normal mouth tile. Cleared by Yoshi contact and smoke puff routines."
+   ]
+  },
+  "18AF": {
+   "name": "Yoshi mount timer",
+   "kind": "timer",
+   "desc": [
+    "Set to $0C when Mario is put on Yoshi (Put Mario on Yoshi), read by the Yoshi on-Mario update to time the mounting animation."
+   ]
+  },
+  "18B3": {
+   "name": "Berry tile Y position, high",
+   "kind": "byte",
+   "desc": [
+    "High byte of the Y position of the tile Yoshi is eating a berry from. Stored in the eat-berry routine and read back",
+    "when the berry is replaced with a tree tile; also used by the berry/silver coin block helper."
+   ]
+  },
+  "18B5": {
+   "name": "Mario in winged cage flag",
+   "kind": "flag byte",
+   "desc": [
+    "Set to 1 by the (unused) winged cage routine when Mario is in the cage. Cleared by Mario's block and slope collision."
+   ]
+  },
+  "18B6": {
+   "name": "Sprite scratch (step/offset)",
+   "kind": "scratch",
+   "desc": [
+    "General-purpose scratch used by several sprite routines: step counter cleared at level load, saved Y",
+    "position for Lakitu's fishing line and cloud, the Boo aiming Y offset ($10, or $20 for Big Boo), and the growing pipe tile.",
+    "Meaning depends on the routine that sets it; do not treat as persistent."
+   ]
+  },
+  "18B8": {
+   "name": "Cluster/special sprites active flag",
+   "kind": "flag byte",
+   "desc": [
+    "Set to 1 when cluster sprites are loaded, by the keyhole routine (bonus game, probably) and while Sumo Bro lightning",
+    "flames burn. Read in the sprite loop setup ($01:80B5), probably to decide whether the extra sprite handlers run."
+   ]
+  },
+  "18B9": {
+   "name": "Generator number",
+   "kind": "byte",
+   "desc": [
+    "Which sprite generator is active, 0 = none. Set from the generator sprite number minus $CA (sprites $CB-$D9) at init,",
+    "or directly (the Whistlin' Chuck sets 9). Dispatched on by the generator routine, e.g. 5/6 = left/right dolphins,",
+    "2/3/4 = para-enemies (goomba, bomb, both). Cleared at level end, by Init Lakitu, and by Turn off generator."
+   ]
+  },
+  "18BA": {
+   "name": "Cluster sprite group counter",
+   "kind": "counter",
+   "desc": [
+    "Counts cluster sprite groups/phases: incremented per group in Load cluster sprites and when a fading Boo phase",
+    "advances, decremented by the Ring of Boos routine. Shared among those cluster routines."
+   ]
+  },
+  "18BC": {
+   "name": "Skull raft speed",
+   "kind": "byte",
+   "desc": [
+    "Speed of the floating skull raft. Set to 0 at init and $0C when Mario steps on it, after which it starts to move."
+   ]
+  },
+  "18BD": {
+   "name": "Mario lock timer",
+   "kind": "timer",
+   "desc": [
+    "Frames Mario is held in place. The Koopa Kid boss sets it to $28 on landing; Mario's per-frame handling decrements it.",
+    "Values: 0 = not locked."
+   ]
+  },
+  "18BE": {
+   "name": "Mario on rope flag",
+   "kind": "flag byte",
+   "desc": [
+    "Set while Mario hangs on a line guide rope; cleared by the line guide engine each frame before riding is rechecked,",
+    "read by Mario's normal animation handling."
+   ]
+  },
+  "18BF": {
+   "name": "Sprite shared state flag",
+   "kind": "byte",
+   "desc": [
+    "Used by several unrelated sprites. Cleared by Init Lakitu and Init Magikoopa, which also tests it as a",
+    "Magikoopa kill flag (probably). Incremented by Stop sprite respawning; read by Lakitu clouds, Fishin' Boo,",
+    "layer 3 smash, and cluster Boos. Purpose unclear."
+   ]
+  },
+  "18C0": {
+   "name": "Sprite respawn timer",
+   "kind": "timer",
+   "desc": [
+    "Time until a sprite is respawned. Set to $FF by Lakitu's cloud logic (with $18C1 = $1E, Lakitu) and by Erase",
+    "sprite off-screen; zeroed to stop respawning. The per-frame misc handler counts it down and respawns the sprite in $18C1.",
+    "Values: 0 = nothing to respawn."
+   ]
+  },
+  "18C1": {
+   "name": "Sprite to respawn",
+   "kind": "byte",
+   "desc": [
+    "Sprite number to respawn when $18C0 expires. Set to $1E (Lakitu) by Lakitu's cloud logic and by Erase sprite",
+    "off-screen; read by the per-frame misc sprite handlers."
+   ]
+  },
+  "18C2": {
+   "name": "Mario riding Lakitu cloud flag",
+   "kind": "flag byte",
+   "desc": [
+    "Incremented by Lakitu's cloud logic (probably meaning Mario is on the cloud). Cleared each frame in the sprite",
+    "loop setup and by the scripted walk. Tested by the screen scroll routine and Mario's pose selection."
+   ]
+  },
+  "18CD": {
+   "name": "Bounce sprite overwrite index",
+   "kind": "index",
+   "desc": [
+    "Index of the bounce sprite slot to overwrite when none is free. Decremented in Find bounce sprite slot",
+    "and read by Set up bounce sprite and spawn item."
+   ]
+  },
+  "18CE": {
+   "name": "Turn block spin timer",
+   "kind": "timer table, indexed by bounce sprite slot",
+   "desc": [
+    "Spin timer of a turn block bounce sprite. Set to $FF when spawned, decremented by bounce sprite 07."
+   ]
+  },
+  "18D2": {
+   "name": "Star kill counter",
+   "kind": "counter",
+   "desc": [
+    "Counts enemies killed in a row by star power or similar, used to pick the score/1-up. Incremented by star kills,",
+    "Wiggler, and Rex deaths; cleared on a normal Mario-sprite contact."
+   ]
+  },
+  "18D4": {
+   "name": "Red berry count",
+   "kind": "counter",
+   "desc": [
+    "Red berries Yoshi has eaten; incremented in the tongue state routine and reset to 0 at 10, at which point Yoshi",
+    "lays a sprite ($74). Pairs with $18D5 and $18D6."
+   ]
+  },
+  "18D5": {
+   "name": "Pink berry count",
+   "kind": "counter",
+   "desc": [
+    "Pink berries eaten; reset to 0 at 2, at which point sprite $6A is created and $18DE is started."
+   ]
+  },
+  "18D6": {
+   "name": "Berry type eaten",
+   "kind": "byte",
+   "desc": [
+    "Type of berry Yoshi is eating: 1 = red, 2 = pink, 3 = green (tile minus $44). Set by the berry helpers,",
+    "consumed (and cleared) by the Yoshi tongue states to update $18D4/$18D5 or add time."
+   ]
+  },
+  "18D9": {
+   "name": "Enter-castle animation timer",
+   "kind": "timer",
+   "desc": [
+    "Animation timer for the enter-castle sequence, set by EnterCastleAni ($B0 or $7F) and read by the animation",
+    "and its drawing routine. Also written in the scripted walk (purpose unclear)."
+   ]
+  },
+  "18DC": {
+   "name": "Yoshi ducking flag",
+   "kind": "flag byte",
+   "desc": [
+    "Set when Yoshi is ducking/looking down; cleared by the spawn item/on-Mario update. Read by Mario's fireball, Put Mario",
+    "on Yoshi, the tongue logic and the eat-berry routine."
+   ]
+  },
+  "18DD": {
+   "name": "Chained score index",
+   "kind": "counter",
+   "desc": [
+    "Index into the score values for chained scoring (e.g. consecutive kills). Read and incremented by power-up behaviour,",
+    "read by the level-end coin sprite, cleared at level end; set to 2 by the berry helpers (silver P-switch, probably)."
+   ]
+  },
+  "18DE": {
+   "name": "Yoshi reward timer",
+   "kind": "timer",
+   "desc": [
+    "Counts down in Yoshi physics. Set to $20 when Yoshi finishes eating enough berries (with the reward sprite in $18DA).",
+    "Read by the Yoshi main routine."
+   ]
+  },
+  "18DF": {
+   "name": "Yoshi slot plus 1",
+   "kind": "byte",
+   "desc": [
+    "Yoshi's sprite slot + 1, set each frame by the Yoshi sprite main routine (and the level-end coin routine), 0 = no Yoshi",
+    "this frame. Cleared at the start of the sprite loop; copied to $18E2 as last frame's value."
+   ]
+  },
+  "18E0": {
+   "name": "Lakitu cloud lifetime",
+   "kind": "timer",
+   "desc": [
+    "Lifetime counter for Lakitu's cloud. Cleared at Init Lakitu, set to $FF when Lakitu is killed, read by the cloud logic."
+   ]
+  },
+  "18E2": {
+   "name": "Yoshi slot plus 1 (last frame)",
+   "kind": "byte",
+   "desc": [
+    "Yoshi's sprite slot + 1 as of the previous frame (copied from $18DF at the sprite loop start), 0 = no Yoshi.",
+    "Tested by sprite-from-block spawning, Yoshi egg and item spawning to see if Yoshi exists. Also reused in the ending scenes."
+   ]
+  },
+  "18E3": {
+   "name": "Coin game cloud coin count",
+   "kind": "counter",
+   "desc": [
+    "Coins collected from the coin game cloud: reset on the first frame and when Mario is hurt, incremented by the smoke puff contact."
+   ]
+  },
+  "18E4": {
+   "name": "Pending 1-Up counter",
+   "kind": "counter",
+   "desc": [
+    "Lives waiting to be awarded. Score sprites add to it, the level end tally and status bar increment it, and the per-frame",
+    "misc handler gives one life at a time, playing the 1-Up sound, waiting $23 frames ($18E5) between each."
+   ]
+  },
+  "18E5": {
+   "name": "1-Up delay timer",
+   "kind": "timer",
+   "desc": [
+    "Delay between awarding queued lives from $18E4: loaded with $23 after each life, counted down by the misc handler.",
+    "Cleared when a score sprite adds to $18E4."
+   ]
+  }
+ }
+}

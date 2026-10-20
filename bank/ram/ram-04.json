@@ -1,0 +1,417 @@
+{
+ "addresses": {
+  "0100": {
+   "name": "Game mode",
+   "kind": "byte, state",
+   "desc": [
+    "Master state of the game: the main loop runs one routine per frame chosen by this value (via $009322).",
+    "Modes step forward with INC $0100 as each stage (fade, load, wait) finishes; some routines set it directly.",
+    "Values: $00 = load Nintendo Presents, $01 = Nintendo Presents, $02 = fade to title, $07 = title/demo,",
+    "$08 = file select, $09 = erase file, $0B = fade out to overworld, $0C = load overworld, $0F/$10 = Mario Start,",
+    "$11 = Mario Start text and level music, $14 = in level, $18 = reload cutscene, $25/$26 = ending, fade to",
+    "THE END."
+   ]
+  },
+  "0101": {
+   "name": "Loaded sprite GFX files",
+   "kind": "byte table, 4 entries (index X = 0-3; $0101-$0104)",
+   "desc": [
+    "Remembers which sprite graphics file is currently loaded in each of the 4 sprite GFX slots in VRAM.",
+    "The upload routine compares the wanted file to this entry and skips the upload when it is already loaded,",
+    "then stores the new file number. Set to $FF at game start so the first level uploads everything.",
+    "Values: $FF = nothing loaded."
+   ]
+  },
+  "0105": {
+   "name": "Loaded FG/BG GFX files",
+   "kind": "byte table, indexed by slot (X; $0105-$0108)",
+   "desc": [
+    "Same caching idea as $0101, but for the foreground/background graphics file slots. The FG/BG upload",
+    "routine skips a file that is already loaded and stores the new file number after uploading.",
+    "A routine also fills the table with $80, which marks the slot as needing a fresh upload.",
+    "Values: $80 = slot not valid/forces reload."
+   ]
+  },
+  "0109": {
+   "name": "Intro level override",
+   "kind": "byte",
+   "desc": [
+    "Non-zero makes the game load a level directly instead of using the overworld. Set to $E9 when the title",
+    "screen demo starts the intro level; $E9 - $24 = $C5 is the level number used. The Mario Start mode picks",
+    "intro level music when it is $E9, the overworld loader skips the map when it is non-zero, and the message",
+    "box and level loader test it to behave differently in the intro. Cleared at reset, by the message box",
+    "close routine and by file select, which means normal overworld play.",
+    "Values: 0 = normal, $E9 = intro level."
+   ]
+  },
+  "0200": {
+   "name": "OAM entry 0 X position",
+   "kind": "byte, shadow OAM (sprite 0; indexed by OAM offset X or Y)",
+   "desc": [
+    "Shadow copy of the X position of hardware sprite 0. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader. Slot 0 is",
+    "also used by the item box drawing.",
+    "Values: screen X in pixels, $00-$FF (the high X bit lives in the $0400 table)."
+   ]
+  },
+  "0201": {
+   "name": "OAM entry 0 Y position",
+   "kind": "byte, shadow OAM (sprite 0; indexed by OAM offset X or Y)",
+   "desc": [
+    "Shadow copy of the Y position of hardware sprite 0. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader. The item",
+    "box sprite here is hidden with $F0 when the box is empty.",
+    "Values: screen Y in pixels; $F0 hides the sprite (off-screen)."
+   ]
+  },
+  "0202": {
+   "name": "OAM entry 0 tile number",
+   "kind": "byte, shadow OAM (sprite 0; indexed by OAM offset X or Y)",
+   "desc": [
+    "Shadow copy of the tile number of hardware sprite 0. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: tile number in the sprite GFX page."
+   ]
+  },
+  "0203": {
+   "name": "OAM entry 0 tile properties",
+   "kind": "byte, shadow OAM (sprite 0; indexed by OAM offset X or Y)",
+   "desc": [
+    "Shadow copy of the tile properties of hardware sprite 0. Shadow OAM ($0200-$041F) is DMA'd to the PPU",
+    "every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Bits: YXPPCCCT: Y flip, X flip, priority (bits 4-5), palette (bits 1-3), tile page (bit 0)."
+   ]
+  },
+  "0204": {
+   "name": "OAM entry 1 X position",
+   "kind": "byte, shadow OAM (sprite 1; indexed by OAM offset X or Y)",
+   "desc": [
+    "Shadow copy of the X position of hardware sprite 1. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: screen X in pixels, $00-$FF (the high X bit lives in the $0400 table)."
+   ]
+  },
+  "0205": {
+   "name": "OAM entry 1 Y position",
+   "kind": "byte, shadow OAM (sprite 1; indexed by OAM offset X or Y)",
+   "desc": [
+    "Shadow copy of the Y position of hardware sprite 1. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: screen Y in pixels; $F0 hides the sprite (off-screen)."
+   ]
+  },
+  "0206": {
+   "name": "OAM entry 1 tile number",
+   "kind": "byte, shadow OAM (sprite 1; indexed by OAM offset X or Y)",
+   "desc": [
+    "Shadow copy of the tile number of hardware sprite 1. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: tile number in the sprite GFX page."
+   ]
+  },
+  "0207": {
+   "name": "OAM entry 1 tile properties",
+   "kind": "byte, shadow OAM (sprite 1; indexed by OAM offset X or Y)",
+   "desc": [
+    "Shadow copy of the tile properties of hardware sprite 1. Shadow OAM ($0200-$041F) is DMA'd to the PPU",
+    "every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Bits: YXPPCCCT: Y flip, X flip, priority (bits 4-5), palette (bits 1-3), tile page (bit 0)."
+   ]
+  },
+  "0209": {
+   "name": "OAM entry 2 Y position",
+   "kind": "byte, shadow OAM (sprite 2; indexed by OAM offset X or Y)",
+   "desc": [
+    "Shadow copy of the Y position of hardware sprite 2. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader. Used by",
+    "Lakitu's cloud and score sprites, which hide unused entries with $F0.",
+    "Values: screen Y in pixels; $F0 hides the sprite (off-screen)."
+   ]
+  },
+  "020A": {
+   "name": "OAM entry 2 tile number",
+   "kind": "byte, shadow OAM (sprite 2; indexed by OAM offset X or Y)",
+   "desc": [
+    "Shadow copy of the tile number of hardware sprite 2. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: tile number in the sprite GFX page."
+   ]
+  },
+  "020C": {
+   "name": "OAM entry 3 X position",
+   "kind": "byte, shadow OAM (sprite 3; indexed by OAM offset X or Y)",
+   "desc": [
+    "Shadow copy of the X position of hardware sprite 3. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader. Also used",
+    "by the parallax background sprites.",
+    "Values: screen X in pixels, $00-$FF (the high X bit lives in the $0400 table)."
+   ]
+  },
+  "020D": {
+   "name": "OAM entry 3 Y position",
+   "kind": "byte, shadow OAM (sprite 3; indexed by OAM offset X or Y)",
+   "desc": [
+    "Shadow copy of the Y position of hardware sprite 3. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: screen Y in pixels; $F0 hides the sprite (off-screen)."
+   ]
+  },
+  "020E": {
+   "name": "OAM entry 3 tile number",
+   "kind": "byte, shadow OAM (sprite 3; indexed by OAM offset X or Y)",
+   "desc": [
+    "Shadow copy of the tile number of hardware sprite 3. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: tile number in the sprite GFX page."
+   ]
+  },
+  "020F": {
+   "name": "OAM entry 3 tile properties",
+   "kind": "byte, shadow OAM (sprite 3; indexed by OAM offset X or Y)",
+   "desc": [
+    "Shadow copy of the tile properties of hardware sprite 3. Shadow OAM ($0200-$041F) is DMA'd to the PPU",
+    "every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Bits: YXPPCCCT: Y flip, X flip, priority (bits 4-5), palette (bits 1-3), tile page (bit 0)."
+   ]
+  },
+  "029C": {
+   "name": "OAM entry 39 X position",
+   "kind": "byte, shadow OAM (sprite 39; indexed by OAM offset X or Y)",
+   "desc": [
+    "Shadow copy of the X position of hardware sprite 39. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader. Also used",
+    "for the overworld player sprite and lives exchange (OAM sprite 39 at X=$48).",
+    "Values: screen X in pixels, $00-$FF (the high X bit lives in the $0400 table)."
+   ]
+  },
+  "029E": {
+   "name": "OAM entry 39 tile number",
+   "kind": "byte, shadow OAM (sprite 39; indexed by OAM offset X or Y)",
+   "desc": [
+    "Shadow copy of the tile number of hardware sprite 39. Shadow OAM ($0200-$041F) is DMA'd to the PPU every",
+    "frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader. Also used",
+    "for the overworld player sprite and lives exchange (tile $0A, props $34).",
+    "Values: tile number in the sprite GFX page."
+   ]
+  },
+  "0300": {
+   "name": "OAM entry 64 X position",
+   "kind": "byte, shadow OAM (sprite 64; indexed by OAM offset Y)",
+   "desc": [
+    "Shadow copy of the X position of hardware sprite 64. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: screen X in pixels, $00-$FF (the high X bit lives in the $0400 table)."
+   ]
+  },
+  "0301": {
+   "name": "OAM entry 64 Y position",
+   "kind": "byte, shadow OAM (sprite 64; indexed by OAM offset Y)",
+   "desc": [
+    "Shadow copy of the Y position of hardware sprite 64. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: screen Y in pixels; $F0 hides the sprite (off-screen)."
+   ]
+  },
+  "0302": {
+   "name": "OAM entry 64 tile number",
+   "kind": "byte, shadow OAM (sprite 64; indexed by OAM offset Y)",
+   "desc": [
+    "Shadow copy of the tile number of hardware sprite 64. Shadow OAM ($0200-$041F) is DMA'd to the PPU every",
+    "frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: tile number in the sprite GFX page."
+   ]
+  },
+  "0303": {
+   "name": "OAM entry 64 tile properties",
+   "kind": "byte, shadow OAM (sprite 64; indexed by OAM offset Y)",
+   "desc": [
+    "Shadow copy of the tile properties of hardware sprite 64. Shadow OAM ($0200-$041F) is DMA'd to the PPU",
+    "every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Bits: YXPPCCCT: Y flip, X flip, priority (bits 4-5), palette (bits 1-3), tile page (bit 0)."
+   ]
+  },
+  "0304": {
+   "name": "OAM entry 65 X position",
+   "kind": "byte, shadow OAM (sprite 65; indexed by OAM offset Y)",
+   "desc": [
+    "Shadow copy of the X position of hardware sprite 65. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: screen X in pixels, $00-$FF (the high X bit lives in the $0400 table)."
+   ]
+  },
+  "0305": {
+   "name": "OAM entry 65 Y position",
+   "kind": "byte, shadow OAM (sprite 65; indexed by OAM offset Y)",
+   "desc": [
+    "Shadow copy of the Y position of hardware sprite 65. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: screen Y in pixels; $F0 hides the sprite (off-screen)."
+   ]
+  },
+  "0306": {
+   "name": "OAM entry 65 tile number",
+   "kind": "byte, shadow OAM (sprite 65; indexed by OAM offset Y)",
+   "desc": [
+    "Shadow copy of the tile number of hardware sprite 65. Shadow OAM ($0200-$041F) is DMA'd to the PPU every",
+    "frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: tile number in the sprite GFX page."
+   ]
+  },
+  "0307": {
+   "name": "OAM entry 65 tile properties",
+   "kind": "byte, shadow OAM (sprite 65; indexed by OAM offset Y)",
+   "desc": [
+    "Shadow copy of the tile properties of hardware sprite 65. Shadow OAM ($0200-$041F) is DMA'd to the PPU",
+    "every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Bits: YXPPCCCT: Y flip, X flip, priority (bits 4-5), palette (bits 1-3), tile page (bit 0)."
+   ]
+  },
+  "0308": {
+   "name": "OAM entry 66 X position",
+   "kind": "byte, shadow OAM (sprite 66; indexed by OAM offset Y)",
+   "desc": [
+    "Shadow copy of the X position of hardware sprite 66. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: screen X in pixels, $00-$FF (the high X bit lives in the $0400 table)."
+   ]
+  },
+  "0309": {
+   "name": "OAM entry 66 Y position",
+   "kind": "byte, shadow OAM (sprite 66; indexed by OAM offset Y)",
+   "desc": [
+    "Shadow copy of the Y position of hardware sprite 66. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: screen Y in pixels; $F0 hides the sprite (off-screen)."
+   ]
+  },
+  "030A": {
+   "name": "OAM entry 66 tile number",
+   "kind": "byte, shadow OAM (sprite 66; indexed by OAM offset Y)",
+   "desc": [
+    "Shadow copy of the tile number of hardware sprite 66. Shadow OAM ($0200-$041F) is DMA'd to the PPU every",
+    "frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: tile number in the sprite GFX page."
+   ]
+  },
+  "030B": {
+   "name": "OAM entry 66 tile properties",
+   "kind": "byte, shadow OAM (sprite 66; indexed by OAM offset Y)",
+   "desc": [
+    "Shadow copy of the tile properties of hardware sprite 66. Shadow OAM ($0200-$041F) is DMA'd to the PPU",
+    "every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Bits: YXPPCCCT: Y flip, X flip, priority (bits 4-5), palette (bits 1-3), tile page (bit 0)."
+   ]
+  },
+  "030C": {
+   "name": "OAM entry 67 X position",
+   "kind": "byte, shadow OAM (sprite 67; indexed by OAM offset Y)",
+   "desc": [
+    "Shadow copy of the X position of hardware sprite 67. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: screen X in pixels, $00-$FF (the high X bit lives in the $0400 table)."
+   ]
+  },
+  "030D": {
+   "name": "OAM entry 67 Y position",
+   "kind": "byte, shadow OAM (sprite 67; indexed by OAM offset Y)",
+   "desc": [
+    "Shadow copy of the Y position of hardware sprite 67. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: screen Y in pixels; $F0 hides the sprite (off-screen)."
+   ]
+  },
+  "030E": {
+   "name": "OAM entry 67 tile number",
+   "kind": "byte, shadow OAM (sprite 67; indexed by OAM offset Y)",
+   "desc": [
+    "Shadow copy of the tile number of hardware sprite 67. Shadow OAM ($0200-$041F) is DMA'd to the PPU every",
+    "frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: tile number in the sprite GFX page."
+   ]
+  },
+  "030F": {
+   "name": "OAM entry 67 tile properties",
+   "kind": "byte, shadow OAM (sprite 67; indexed by OAM offset Y)",
+   "desc": [
+    "Shadow copy of the tile properties of hardware sprite 67. Shadow OAM ($0200-$041F) is DMA'd to the PPU",
+    "every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Bits: YXPPCCCT: Y flip, X flip, priority (bits 4-5), palette (bits 1-3), tile page (bit 0)."
+   ]
+  },
+  "0310": {
+   "name": "OAM entry 68 X position",
+   "kind": "byte, shadow OAM (sprite 68; indexed by OAM offset Y)",
+   "desc": [
+    "Shadow copy of the X position of hardware sprite 68. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: screen X in pixels, $00-$FF (the high X bit lives in the $0400 table)."
+   ]
+  },
+  "0311": {
+   "name": "OAM entry 68 Y position",
+   "kind": "byte, shadow OAM (sprite 68; indexed by OAM offset Y)",
+   "desc": [
+    "Shadow copy of the Y position of hardware sprite 68. Shadow OAM ($0200-$041F) is DMA'd to the PPU every frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: screen Y in pixels; $F0 hides the sprite (off-screen)."
+   ]
+  },
+  "0312": {
+   "name": "OAM entry 68 tile number",
+   "kind": "byte, shadow OAM (sprite 68; indexed by OAM offset Y)",
+   "desc": [
+    "Shadow copy of the tile number of hardware sprite 68. Shadow OAM ($0200-$041F) is DMA'd to the PPU every",
+    "frame.",
+    "Each sprite is 4 bytes: X, Y, tile, properties. Game code picks a free slot and writes all four.",
+    "Drawing routines (sprites, smoke, score, cutscenes) write it; the NMI DMA is the only reader.",
+    "Values: tile number in the sprite GFX page."
+   ]
+  }
+ }
+}

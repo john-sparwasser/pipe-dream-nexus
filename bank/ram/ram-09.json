@@ -1,0 +1,385 @@
+{
+ "addresses": {
+  "0F29": {
+   "name": "Score digit tiles",
+   "kind": "byte table, one tile per digit (index X)",
+   "desc": [
+    "Tile numbers for the score digits shown on the status bar. The status bar routine converts the score into",
+    "digits here, then blanks leading zeros and copies the tiles to the status bar tilemap."
+   ]
+  },
+  "0F30": {
+   "name": "Level timer frame countdown",
+   "kind": "counter",
+   "desc": [
+    "Frames until the next tick of the level timer. Reloaded with $28 (about 40 frames) by the status bar",
+    "routine each time it ticks the clock down, and set to $28 when the initial status bar is uploaded.",
+    "Values: 0 = decrement the timer digits and reload $28."
+   ]
+  },
+  "0F31": {
+   "name": "Level timer hundreds digit",
+   "kind": "byte (0-9)",
+   "desc": [
+    "Hundreds digit of the level timer. $0F32 is the tens digit and $0F33 the ones digit. Set from the level",
+    "header, cleared in bonus rooms and at Time Up, decremented by the status bar routine and carried into by",
+    "Yoshi's tongue code (the Yoshi berry time bonus). Read for the status bar, the time bonus tally",
+    "($05:CE4E) and the death/Time Up check."
+   ]
+  },
+  "0F32": {
+   "name": "Level timer tens digit",
+   "kind": "byte (0-9)",
+   "desc": [
+    "Tens digit of the level timer ($0F31 is hundreds, $0F33 ones). Zeroed by the level header parse when the",
+    "header timer is 0 or by bonus game setup, counted down by the status bar routine, and read by the Time Up",
+    "check and the level end tally."
+   ]
+  },
+  "0F33": {
+   "name": "Level timer ones digit",
+   "kind": "byte (0-9)",
+   "desc": [
+    "Ones digit of the level timer ($0F31 hundreds, $0F32 tens). Cleared for bonus games (time = 000) and by",
+    "the level header parse; counted down by the status bar routine; read by the Time Up check and the end of",
+    "level time bonus."
+   ]
+  },
+  "0F34": {
+   "name": "Player score, low byte",
+   "kind": "byte table, 3 bytes per player (index X = 0 or 3)",
+   "desc": [
+    "Low byte of a player's 24-bit score, in units of 10 points. $0F35 is the middle and $0F36 the high byte.",
+    "Added to by score sprites, breaking turn blocks and the end of level bonus tally; cleared when a new game",
+    "starts; the status bar routine clamps it to $0F423F (999,999 after x10) and draws it."
+   ]
+  },
+  "0F35": {
+   "name": "Player score, middle byte",
+   "kind": "byte table, 3 bytes per player (index X)",
+   "desc": [
+    "Middle byte of the 24-bit score in units of 10 points ($0F34 is the low byte, $0F36 the high byte).",
+    "Incremented as a carry by turn block breaking and the bonus tally; read by score sprites and the status",
+    "bar."
+   ]
+  },
+  "0F36": {
+   "name": "Player score, high byte",
+   "kind": "byte table, 3 bytes per player (index X)",
+   "desc": [
+    "High byte of the 24-bit score in units of 10 points ($0F34 low, $0F35 middle). Receives the carry from",
+    "the middle byte in score sprites, turn block breaking and the bonus tally; cleared at new game; read by",
+    "the status bar to show the score."
+   ]
+  },
+  "0F40": {
+   "name": "Remaining time bonus",
+   "kind": "byte",
+   "desc": [
+    "Working copy of the time bonus counter in the end of level tally. Set from a scratch value when the tally",
+    "starts and counted down by the course clear state that adds the bonus to the score (rewarding 1 or 10 at",
+    "a time)."
+   ]
+  },
+  "0F48": {
+   "name": "Bonus stars per player",
+   "kind": "byte table indexed by player (X = 0 or 1)",
+   "desc": [
+    "Bonus star count for each player. Cleared on game start, incremented by the course clear tally when the",
+    "player earns stars, read by the status bar for the bonus star display and by the level end tally to",
+    "trigger the bonus game."
+   ]
+  },
+  "0F4A": {
+   "name": "Cluster / flame misc table",
+   "kind": "byte table, one per cluster or extended sprite slot",
+   "desc": [
+    "General per-slot byte used by several cluster-type effects, meaning depends on the effect. Examples: Sumo",
+    "Bro lightning flame timer (starts at $7F), castle candle flame animation counter, Boo/bat ceiling sway",
+    "direction, and a copy of X position low or an X*4 phase offset for newly spawned cluster sprites."
+   ]
+  },
+  "0F72": {
+   "name": "Cluster sprite group index",
+   "kind": "byte table, one per cluster sprite slot",
+   "desc": [
+    "Index of a cluster sprite within its spawn group (loaded from $000E when spawned). The ring of Boos and",
+    "the Boo/bat ceiling routines use it to offset each member's position and timing."
+   ]
+  },
+  "0F86": {
+   "name": "Cluster sprite state / ring number",
+   "kind": "byte table, one per cluster sprite slot",
+   "desc": [
+    "Cleared when cluster sprites spawn. For ceiling Boos/bats it is incremented to 1 to wake the slot; for a",
+    "ring of Boos it holds the ring number of that Boo (used to index the ring tables $0FAE-$0FBA). Also read",
+    "by Banzai Bill code."
+   ]
+  },
+  "0F9A": {
+   "name": "Cluster sprite delay timer",
+   "kind": "byte table, one per cluster sprite slot",
+   "desc": [
+    "Delay before a ceiling Boo/bat swoops down. Set to $20 frames when the slot is woken by the Boo/bat",
+    "ceiling code."
+   ]
+  },
+  "0FAE": {
+   "name": "Ring of Boos angle, low byte",
+   "kind": "byte table indexed by ring number",
+   "desc": [
+    "Low byte of the 9-bit rotation angle of each ring of Boos. Increased by the ring's speed each frame;",
+    "$0FB0 holds the ninth bit."
+   ]
+  },
+  "0FB0": {
+   "name": "Ring of Boos angle, high bit",
+   "kind": "byte table indexed by ring number",
+   "desc": [
+    "Bit 0 is the ninth bit of the ring angle ($0FAE is the low byte); updated with the carry from the speed",
+    "add."
+   ]
+  },
+  "0FB2": {
+   "name": "Ring of Boos screen boundary low",
+   "kind": "byte table indexed by ring number",
+   "desc": [
+    "Low byte of the adjusted screen boundary used by each ring of Boos, stored at load by the cluster loader",
+    "and read by the ring routine ($0FB4 is the high byte)."
+   ]
+  },
+  "0FB4": {
+   "name": "Ring of Boos screen boundary high",
+   "kind": "byte table indexed by ring number",
+   "desc": [
+    "High byte of the adjusted screen boundary for each ring of Boos ($0FB2 is the low byte). Stored at",
+    "cluster load, read by the ring routine."
+   ]
+  },
+  "0FBA": {
+   "name": "Ring of Boos despawned flag",
+   "kind": "flag byte table indexed by ring number",
+   "desc": [
+    "Cleared to 0 when a ring is loaded. The ring of Boos routine reads it to tell whether that ring has been",
+    "despawned."
+   ]
+  },
+  "0FBE": {
+   "name": "Map16 tile definition pointers",
+   "kind": "word table (pointer low/high pairs)",
+   "desc": [
+    "Table of 16-bit addresses of tile definitions. Filled by level load and Map16 pointer setup, read when",
+    "building Map16 tiles, layer 2 updates, credits backgrounds, and the overworld layers, where it points at",
+    "each tile definition."
+   ]
+  },
+  "13BE": {
+   "name": "Item memory setting",
+   "kind": "byte (0-3)",
+   "desc": [
+    "Which item memory table the level uses, taken from the top two bits of level header byte 5. Used when",
+    "drawing coins, midway/goal gates and other objects to find the item memory bytes for this level."
+   ]
+  },
+  "13BF": {
+   "name": "Translevel number",
+   "kind": "byte",
+   "desc": [
+    "Number of the level currently loaded (the translevel number, not the overworld tile). Set during level",
+    "load and read by many routines to special-case certain levels: tile interaction, Dry Bones, cutscene",
+    "check, message box, overworld return."
+   ]
+  },
+  "13C1": {
+   "name": "Overworld tile under player",
+   "kind": "byte",
+   "desc": [
+    "Overworld tile number Mario is standing on (the current map tile). Set by the overworld setup, read by",
+    "the walking, level entry, pipe, star warp and event code and by overworld sprites."
+   ]
+  },
+  "13C3": {
+   "name": "Current player submap",
+   "kind": "byte",
+   "desc": [
+    "Submap (overworld map number) of the active player. Stored by overworld setup code from $1F11+X and OR'd",
+    "back into $1F11 when switching maps in submap transitions."
+   ]
+  },
+  "13C6": {
+   "name": "Cutscene / level end state",
+   "kind": "byte",
+   "desc": [
+    "Counter/flag set by bosses and the goal to start the end of level sequence, and cutscene number for the",
+    "castle scenes and credits (1-7 castle scenes, 8 = credits). Incremented when a boss dies or goal is hit,",
+    "decremented by Reznor ring to stop Mario walking. Read by NMI, the Mario animation code, Yoshi and",
+    "overworld load."
+   ]
+  },
+  "13C7": {
+   "name": "Yoshi color",
+   "kind": "byte",
+   "desc": [
+    "Color of the Yoshi Mario owns or is riding (the palette selection). Set when Mario gets on Yoshi and",
+    "copied to and from the player's saved Yoshi color when entering or leaving levels."
+   ]
+  },
+  "13C9": {
+   "name": "Continue/End menu flag",
+   "kind": "flag byte",
+   "desc": [
+    "Non-zero while the CONTINUE/END menu is active after Game Over. Incremented when both players are out of",
+    "lives and to enter the menu state, cleared when a game starts, and read when loading the overworld to",
+    "skip ahead unless returning from it."
+   ]
+  },
+  "13CA": {
+   "name": "Save pending flag",
+   "kind": "flag byte",
+   "desc": [
+    "Incremented by the overworld after-level routine to flag that the game should be saved, tested later in",
+    "overworld processing."
+   ]
+  },
+  "13CB": {
+   "name": "Give Mario star flag",
+   "kind": "bit flags",
+   "desc": [
+    "Bit 7 gives Mario a star when tested by the per-frame Mario state code, which then clears it. Incremented",
+    "when a level-end sprite is converted to a bonus powerup and shifted left at level start; the purpose of",
+    "the shift is unclear."
+   ]
+  },
+  "13CC": {
+   "name": "Coins to add",
+   "kind": "counter",
+   "desc": [
+    "Pending coins to add to the coin counter. Switch icon and coin counter code add to it, and the status bar",
+    "routine takes one coin off per frame (decrementing it) and adds it to the displayed total."
+   ]
+  },
+  "13CE": {
+   "name": "Midway point reached flag",
+   "kind": "flag byte",
+   "desc": [
+    "Set to 1 when Mario passes the midway gate or finishes a level cleared by the message box; cleared when a",
+    "level loads. Tested by midway point drawing and overworld level exit code. Probably the midway/level",
+    "cleared flag."
+   ]
+  },
+  "13CF": {
+   "name": "Midway entry flag",
+   "kind": "flag byte",
+   "desc": [
+    "Cleared when a level loads and may be set when entering from a midway point. Read by level start setup to",
+    "choose the start position."
+   ]
+  },
+  "13D0": {
+   "name": "Overworld event tile kind",
+   "kind": "byte",
+   "desc": [
+    "Kind of tile an overworld event draws (stored by the event state machine) and read by the code that",
+    "writes the event tile blocks into the stripe image."
+   ]
+  },
+  "13D2": {
+   "name": "Switch palace event flag",
+   "kind": "flag byte",
+   "desc": [
+    "Set to 1 when Mario presses a switch, used with $13C6 to choose the scripted walk, and as a Switch Palace",
+    "message flag by the message box (X + 1). Cleared to 0 when the ! block particle effect finishes."
+   ]
+  },
+  "13D3": {
+   "name": "Pause delay timer",
+   "kind": "timer",
+   "desc": [
+    "Frames before the game may be paused again. Set to $3C on pause and counted down each frame in the level;",
+    "the byte is also the start of the area cleared on overworld load."
+   ]
+  },
+  "13D4": {
+   "name": "Pause flag",
+   "kind": "flag byte",
+   "desc": [
+    "In levels, non-zero while the game is paused. On the overworld, set while looking around the map with the",
+    "L/R buttons and cleared with 0 when leaving that mode."
+   ]
+  },
+  "13D5": {
+   "name": "Layer 3 / scroll-sprite stop flag",
+   "kind": "flag byte",
+   "desc": [
+    "Non-zero while layer 3 effects such as the message box or end of level tally are active; the scroll",
+    "routines read it to stop scroll sprites. Cleared at level start, incremented when there is no animated",
+    "layer 3, set to 1 by the message box and tally."
+   ]
+  },
+  "13D6": {
+   "name": "Level start / tally delay timer",
+   "kind": "timer",
+   "desc": [
+    "Countdown set to $50 at level start and $30 between course clear states. Decremented by the bonus star",
+    "line state."
+   ]
+  },
+  "13D9": {
+   "name": "Overworld process",
+   "kind": "byte (state)",
+   "desc": [
+    "Overworld state machine number. 0 = stop overworld processing, 3 = normal control, 4/5 = after-level",
+    "save, 8 = Mario walks along the path, $0B = star warp, $0C = special event. Read by NMI, palette upload,",
+    "overworld sprites and drawing."
+   ]
+  },
+  "13DA": {
+   "name": "X speed fraction",
+   "kind": "byte",
+   "desc": [
+    "Fractional bits of Mario's X speed, kept for sub-pixel movement. Cleared when climbing and written by",
+    "collision code; used by the Mario movement code with ADC to carry the fraction."
+   ]
+  },
+  "13DB": {
+   "name": "Mario walk frame",
+   "kind": "byte",
+   "desc": [
+    "Mario's walking animation frame number. Set when finishing the pose and read by the walk animation",
+    "counter, the OAM drawer and cape/accessory drawing, which index tables by it."
+   ]
+  },
+  "13DD": {
+   "name": "Mario turning direction",
+   "kind": "flag byte",
+   "desc": [
+    "Non-zero while Mario is turning around on the ground; set to $0D to show the turn-around pose, cleared by",
+    "normal animation. Read by pose choice, carried item and kick code."
+   ]
+  },
+  "13DE": {
+   "name": "Mario pose offset",
+   "kind": "byte",
+   "desc": [
+    "Offset added to the walking pose frame (walking, running, ...) by the pose finish code. Cleared by",
+    "scripted animations, pipes and normal animation when there is no cape interaction."
+   ]
+  },
+  "13DF": {
+   "name": "Cape image",
+   "kind": "byte",
+   "desc": [
+    "Index of the cape animation frame. Updated by the cape image routines and pose choice from a table,",
+    "cleared for pipes and climbing, and read by the Mario OAM drawing."
+   ]
+  },
+  "13E0": {
+   "name": "Mario pose",
+   "kind": "byte",
+   "desc": [
+    "Mario's current image (pose) number. Written by the animation routines (pipe $0F, death $3E, peace sign",
+    "$26, flower power-up 0, etc.) and read by the OAM drawing and cape tables to choose tiles."
+   ]
+  }
+ }
+}
