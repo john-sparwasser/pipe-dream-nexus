@@ -1,0 +1,854 @@
+{
+ "bank": "00",
+ "sections": {
+  "lbl14A2Not0": {
+   "name": "Choose Mario pose: spin, slide, duck, walk",
+   "summary": [
+    "Second half of the Mario pose selector (earlier part is in the chunk before). Picks the pose number for this frame and ends by",
+    "storing it in MarioFrame via $D01A.",
+    "Order: spin jump or cape spin, slope slide, ducking, fireball, kick, pick-up, face camera, then walking/standing based on",
+    "|X speed|. Falls into MarioAnimNoAbs1."
+   ]
+  },
+  "MarioAnimNoAbs1": {
+   "name": "Walk animation frame counter",
+   "summary": [
+    "Takes A = |X speed|. If standing still, resets the walk frame (or sets 'looking up' pose offset 3 when Up is held).",
+    "Otherwise counts the walk frame [$13DB] down whenever the animation timer [$1496] has run out and reloads the timer from",
+    "DATA_00DC7C (shorter timer at higher speeds). Leaves the new frame in B for Remember."
+   ]
+  },
+  "Remember": {
+   "name": "Finish pose: add offsets, store frame",
+   "summary": [
+    "Parameters: A = walk frame, X = |X speed|.",
+    "Stores the walk frame in [$13DB], adds the pose offset [$13DE] (+7 carrying an item, +4 when fast), then handles the 45 degree",
+    "slope poses. Entries at $D01A (A = final pose) and $D003 are jumped to from the code above."
+   ]
+  },
+  "MarioAnimNo45": {
+   "name": "Store Mario pose and return",
+   "summary": [
+    "Writes A to MarioFrame and returns (RTL), ending the pose selector."
+   ]
+  },
+  "s00D034": {
+   "name": "Table: cape interaction offsets",
+   "summary": [
+    "Two tables of four 16-bit offsets from Mario's position, indexed by 2 * A; used by CODE_00D044 for the cape hit point."
+   ]
+  },
+  "s00D044": {
+   "name": "Cape hit point, cape spin and fireball input",
+   "summary": [
+    "$D044: sets the cape interaction point [$13E9]/[$13EB] from Mario's position plus a table offset.",
+    "$D062: called each frame; Cape Mario starts a spin ([$14A6] = $12) when Y is pressed (not ducking, on Yoshi or already spinning).",
+    "Fire Mario shoots a fireball when Y is pressed, or alternately left and right every 16 frames while spin jumping."
+   ]
+  },
+  "s00D0AE": {
+   "name": "Unused data"
+  },
+  "MarioDeathAni": {
+   "name": "Mario animation 9: death",
+   "summary": [
+    "Sets the death pose and counts down the death timer [$1496] (every 4 frames). When it expires: exits the level with no event",
+    "([$0DD5] = $80), loses Yoshi, takes a life and chooses Game Over, Time Up or fade to overworld."
+   ]
+  },
+  "DeathNotGameOver": {
+   "name": "Death: choose fade to overworld or Time Up",
+   "summary": [
+    "Y = game mode $0B (fade to overworld) unless the level timer ran out, in which case X = $1D (TIME UP message) is used."
+   ]
+  },
+  "DeathShowMessage": {
+   "name": "Death: start the message and set game mode",
+   "summary": [
+    "Parameters: X = message number ($14 GAME OVER, $1D TIME UP), Y = game mode to switch to.",
+    "Sets the message number, animation and timer, then game mode $15 (fade to Game Over)."
+   ]
+  },
+  "DeathNotTimeUp": {
+   "name": "Death: set game mode and return",
+   "summary": [
+    "Game mode = Y."
+   ]
+  },
+  "DeathNotDone": {
+   "name": "Death: Mario falls, flips pose",
+   "summary": [
+    "While the death timer is < $26 Mario's X speed is zeroed, Y speed is applied and the death pose flips left/right every 4 frames."
+   ]
+  },
+  "DeathNotDoneEnd": {
+   "name": "Return"
+  },
+  "GrowingAniImgs": {
+   "name": "Table: Mario poses while changing size"
+  },
+  "PowerDownAni": {
+   "name": "Mario animation 1: power down",
+   "summary": [
+    "Counts [$1496] down, showing poses from GrowingAniImgs. When it reaches 0, starts the invincibility flash ([$1497] = $7F) and",
+    "ends the animation."
+   ]
+  },
+  "MushroomAni": {
+   "name": "Mario animation 2: mushroom power up",
+   "summary": [
+    "Plays the grow poses in reverse as [$1496] counts down; then power-up += 1 and the animation ends."
+   ]
+  },
+  "CapeAni": {
+   "name": "Mario animation 3: cape power up",
+   "summary": [
+    "Hides Mario under the smoke puff. When the timer ends: small/big go to the flash code, cape/fire end the animation directly."
+   ]
+  },
+  "FlowerAni": {
+   "name": "Mario animation 4: flower power up",
+   "summary": [
+    "Cancels cape flight and sliding, resets the pose, and counts down the flashing palette timer. Ends the animation when it is 0."
+   ]
+  },
+  "PipeSpeedX": {
+   "name": "Table: pipe X speeds (left, right)"
+  },
+  "PipeSpeedY": {
+   "name": "Table: pipe Y speeds"
+  },
+  "HIDEPIPESETS": {
+   "name": "Table: Mario hide values by pipe type"
+  },
+  "DoorPipeAni": {
+   "name": "Mario animation 5: horizontal pipe",
+   "summary": [
+    "Ignores the controller, picks a walking pose, centers Mario on the pipe tile vertically, handles the face-camera timer and hides",
+    "Mario while he moves through the pipe. Shares its tail with VertPipeAni ($D22D). Helper at $D1F4 ticks [$14A2] and the animation timer."
+   ]
+  },
+  "PipeCntrBoundryX": {
+   "name": "Table: pipe X center targets"
+  },
+  "PipeCntringSpeed": {
+   "name": "Table: pipe centering speed"
+  },
+  "VertPipeAni": {
+   "name": "Mario animation 6: vertical pipe",
+   "summary": [
+    "Handles all pipe travel (vertical and horizontal). Centers Mario on Yoshi, sets pose, fakes X/Y held, puts Mario behind scenery,",
+    "sets his speed from [$89] & 3 while the timer [$88] counts down, hides him when it ends, and then either finishes (leaving a pipe)",
+    "or loads the next level (game mode $0F, entering a pipe). $D27C is unused."
+   ]
+  },
+  "PipeCannonAni": {
+   "name": "Mario animation 7: shot from pipe cannon",
+   "summary": [
+    "Flies Mario out of a diagonal pipe at X speed $40, Y speed $C0 while the timer [$88] counts down. Plays a sound at $18 and then",
+    "puts Mario in front of the scenery, unlocks sprites; finishes like leaving a pipe."
+   ]
+  },
+  "s00D2BD": {
+   "name": "Table: jump Y speed by X speed"
+  },
+  "s00D2CD": {
+   "name": "Table: X decelerations, ground and air",
+   "summary": [
+    "16-bit decelerations indexed by slope state; used by the X speed code around $D78C."
+   ]
+  },
+  "s00D309": {
+   "name": "Table: X decelerations, water",
+   "summary": [
+    "16-bit decelerations used instead of DATA_00D2CD when in a water level."
+   ]
+  },
+  "MarioAccel?": {
+   "name": "Table: walk and run accelerations",
+   "summary": [
+    "Mario acceleration tables (D345-D5E6). Each row is 8 bytes: four 16-bit words left walk, left run, right walk, right run; rows indexed by slope/state.",
+    "The listing rows are offset by one byte from the real row starts."
+   ]
+  },
+  "MarioAccel2?": {
+   "name": "Table: walk and run accelerations"
+  },
+  "00D34E": {
+   "name": "Table: walk and run accelerations"
+  },
+  "00D356": {
+   "name": "Table: walk and run accelerations"
+  },
+  "00D35E": {
+   "name": "Table: walk and run accelerations"
+  },
+  "00D366": {
+   "name": "Table: walk and run accelerations"
+  },
+  "00D36E": {
+   "name": "Table: walk and run accelerations"
+  },
+  "00D376": {
+   "name": "Table: walk and run accelerations"
+  },
+  "00D37E": {
+   "name": "Table: walk and run accelerations"
+  },
+  "00D386": {
+   "name": "Table: walk and run accelerations"
+  },
+  "00D38E": {
+   "name": "Table: walk and run accelerations"
+  },
+  "00D396": {
+   "name": "Table: walk and run accelerations"
+  },
+  "00D39E": {
+   "name": "Table: walk and run accelerations"
+  },
+  "00D3A6": {
+   "name": "Table: walk and run accelerations"
+  },
+  "00D3AE": {
+   "name": "Table: flight accelerations"
+  },
+  "00D3B6": {
+   "name": "Table: flight accelerations"
+  },
+  "00D3BE": {
+   "name": "Table: sliding accelerations"
+  },
+  "00D3C6": {
+   "name": "Table: sliding accelerations"
+  },
+  "00D3CE": {
+   "name": "Table: sliding accelerations"
+  },
+  "00D3D6": {
+   "name": "Table: running decelerations"
+  },
+  "00D3DE": {
+   "name": "Table: running decelerations"
+  },
+  "00D3E6": {
+   "name": "Table: running decelerations"
+  },
+  "00D3EE": {
+   "name": "Table: running decelerations"
+  },
+  "00D3F6": {
+   "name": "Table: running decelerations"
+  },
+  "00D3FE": {
+   "name": "Table: running decelerations"
+  },
+  "00D406": {
+   "name": "Table: running decelerations"
+  },
+  "00D40E": {
+   "name": "Table: running decelerations"
+  },
+  "00D416": {
+   "name": "Table: running decelerations"
+  },
+  "00D41E": {
+   "name": "Table: running decelerations"
+  },
+  "00D426": {
+   "name": "Table: running decelerations"
+  },
+  "00D42E": {
+   "name": "Table: running decelerations"
+  },
+  "00D436": {
+   "name": "Table: running decelerations"
+  },
+  "00D445": {
+   "name": "Table: running accelerations, slippery levels"
+  },
+  "00D44D": {
+   "name": "Table: running accelerations, slippery levels"
+  },
+  "00D455": {
+   "name": "Table: running accelerations, slippery levels"
+  },
+  "00D45D": {
+   "name": "Table: running accelerations, slippery levels"
+  },
+  "00D465": {
+   "name": "Table: running accelerations, slippery levels"
+  },
+  "00D46D": {
+   "name": "Table: running accelerations, slippery levels"
+  },
+  "00D475": {
+   "name": "Table: running accelerations, slippery levels"
+  },
+  "00D47D": {
+   "name": "Table: running accelerations, slippery levels"
+  },
+  "00D485": {
+   "name": "Table: running accelerations, slippery levels"
+  },
+  "00D48D": {
+   "name": "Table: running accelerations, slippery levels"
+  },
+  "00D495": {
+   "name": "Table: running accelerations, slippery levels"
+  },
+  "00D49D": {
+   "name": "Table: running accelerations, slippery levels"
+  },
+  "00D4A5": {
+   "name": "Table: running accelerations, slippery levels"
+  },
+  "00D4AD": {
+   "name": "Table: running accelerations, slippery levels"
+  },
+  "00D4B5": {
+   "name": "Table: slippery slope accelerations"
+  },
+  "00D4BD": {
+   "name": "Table: slippery slope accelerations"
+  },
+  "00D4C5": {
+   "name": "Table: slippery slope accelerations"
+  },
+  "00D4CD": {
+   "name": "Table: running decelerations, slippery levels"
+  },
+  "00D4D5": {
+   "name": "Table: running decelerations, slippery levels"
+  },
+  "00D4DD": {
+   "name": "Table: running decelerations, slippery levels"
+  },
+  "00D4E5": {
+   "name": "Table: running decelerations, slippery levels"
+  },
+  "00D4ED": {
+   "name": "Table: running decelerations, slippery levels"
+  },
+  "00D4F5": {
+   "name": "Table: running decelerations, slippery levels"
+  },
+  "00D4FD": {
+   "name": "Table: running decelerations, slippery levels"
+  },
+  "00D505": {
+   "name": "Table: running decelerations, slippery levels"
+  },
+  "00D50D": {
+   "name": "Table: running decelerations, slippery levels"
+  },
+  "00D515": {
+   "name": "Table: running decelerations, slippery levels"
+  },
+  "00D51D": {
+   "name": "Table: running decelerations, slippery levels"
+  },
+  "00D525": {
+   "name": "Table: running decelerations, slippery levels"
+  },
+  "00D52D": {
+   "name": "Table: running decelerations, slippery levels"
+  },
+  "00D53D": {
+   "name": "Table: maximum walk and run speeds"
+  },
+  "00D545": {
+   "name": "Table: maximum walk and run speeds"
+  },
+  "00D54D": {
+   "name": "Table: maximum walk and run speeds"
+  },
+  "00D555": {
+   "name": "Table: maximum walk and run speeds"
+  },
+  "00D55D": {
+   "name": "Table: maximum walk and run speeds"
+  },
+  "00D565": {
+   "name": "Table: maximum walk and run speeds"
+  },
+  "00D56D": {
+   "name": "Table: maximum walk and run speeds"
+  },
+  "00D575": {
+   "name": "Table: maximum walk and run speeds"
+  },
+  "00D57D": {
+   "name": "Table: maximum walk and run speeds"
+  },
+  "00D585": {
+   "name": "Table: maximum walk and run speeds"
+  },
+  "00D58D": {
+   "name": "Table: maximum walk and run speeds"
+  },
+  "00D595": {
+   "name": "Table: maximum walk and run speeds"
+  },
+  "00D59D": {
+   "name": "Table: maximum flight speeds"
+  },
+  "00D5A5": {
+   "name": "Table: maximum flight speeds"
+  },
+  "00D5AD": {
+   "name": "Table: maximum swim speeds"
+  },
+  "00D5B5": {
+   "name": "Table: maximum slope sliding speeds"
+  },
+  "00D5BD": {
+   "name": "Table: sliding speeds, carrying item"
+  },
+  "00D5C5": {
+   "name": "Table: sliding speeds, carrying item"
+  },
+  "00D5D2": {
+   "name": "Table: auto-slide speeds on slopes"
+  },
+  "00D5DA": {
+   "name": "Table: auto-slide speeds on slopes"
+  },
+  "00D5E2": {
+   "name": "Table: auto-slide speeds on slopes"
+  }
+ },
+ "lines": {
+  "00CF16": "\\",
+  "00CF19": "/ Spin jump or cape spin active ([RAM_IsSpinJump] | [$14A6])?",
+  "00CF1C": "Neither: go to the normal pose selection at $CF4E",
+  "00CF1E": "Not ducking",
+  "00CF20": "\\",
+  "00CF22": "|",
+  "00CF24": "|",
+  "00CF25": "/ X = Y = [RAM_FrameCounterB] & 6 (cycles through 4 spin poses)",
+  "00CF26": "\\",
+  "00CF28": "/ On the ground: skip the Y adjustment",
+  "00CF2A": "\\",
+  "00CF2C": "/ Moving up: skip the Y adjustment",
+  "00CF2E": "Falling: Y += 1 (second cape image of the pair)",
+  "00CF2F": "\\",
+  "00CF32": "/ Cape image [$13DF] = DATA_00CEA9[Y]",
+  "00CF35": "A = power-up status",
+  "00CF37": "Small Mario: leave X alone",
+  "00CF39": "Big/cape/fire: X += 1",
+  "00CF3A": "\\",
+  "00CF3D": "/ Mario direction = DATA_00CEA1[X] (spin makes Mario face left/right in turn)",
+  "00CF3F": "\\",
+  "00CF41": "|",
+  "00CF43": "|",
+  "00CF45": "/ Cape Mario: set the cape interaction point (CODE_00D044)",
+  "00CF48": "\\",
+  "00CF4B": "/ A = DATA_00CE99[X] (spin pose), go store it as Mario's pose ($D01A)",
+  "00CF4E": "\\",
+  "00CF51": "|",
+  "00CF53": "/ [$13ED] = 0: go to $CF62; 1-$7F: use it as the pose ($CF85)",
+  "00CF55": "\\",
+  "00CF58": "|",
+  "00CF59": "|",
+  "00CF5A": "|",
+  "00CF5C": "/ Y = ([$13E1] >> 2) | direction (sliding on a slope)",
+  "00CF5D": "A = slide pose DATA_00CE7F[Y]",
+  "00CF60": "Go store the pose",
+  "00CF62": "\\",
+  "00CF64": "|",
+  "00CF67": "|",
+  "00CF69": "/ A = $3C (probably ducking pose), or $1D if carrying an item ([$148F] != 0)",
+  "00CF6B": "\\",
+  "00CF6D": "/ Ducking while jumping: use that pose ($CF85)",
+  "00CF6F": "\\",
+  "00CF72": "/ Fireball pose timer = 0: go to $CF7E",
+  "00CF74": "A = $3F: probably throwing-fireball pose on the ground",
+  "00CF76": "\\",
+  "00CF78": "/ On the ground: use $3F",
+  "00CF7A": "\\",
+  "00CF7C": "/ In the air: A = $16 instead, use it",
+  "00CF7E": "A = $0E: kick pose",
+  "00CF80": "\\",
+  "00CF83": "/ Kick timer = 0: go on to $CF88, else fall into the store",
+  "00CF85": "Use A as Mario's pose: go to $D01A",
+  "00CF88": "A = $1D: pick-up pose",
+  "00CF8A": "\\",
+  "00CF8D": "/ Pick-up timer non-zero: use that pose",
+  "00CF8F": "A = $0F: facing-the-camera pose",
+  "00CF91": "\\",
+  "00CF94": "/ Face-camera timer non-zero: use that pose",
+  "00CF96": "A = 0: default pose",
+  "00CF98": "X = [$18C2] (purpose unknown)",
+  "00CF9B": "Non-zero: go to MarioAnimNoAbs1 (A = 0, acts as standing still)",
+  "00CF9D": "\\",
+  "00CF9F": "/ On the ground: go to $CFB7",
+  "00CFA1": "\\",
+  "00CFA4": "/ [$14A0] non-zero: go to the walk animation code ($CFBC)",
+  "00CFA6": "Y = [$1407] (cape flight phase)",
+  "00CFA9": "Zero: keep A = 0",
+  "00CFAB": "A = table at $00CE78[Y] (cape flying pose)",
+  "00CFAE": "\\",
+  "00CFB1": "/ Not carrying anything: use A as the pose",
+  "00CFB3": "\\",
+  "00CFB5": "/ Carrying an item in the air: pose $09",
+  "00CFB7": "\\",
+  "00CFBA": "/ Turning around: keep pose 0",
+  "00CFBC": "\\",
+  "00CFBE": "|",
+  "00CFC0": "|",
+  "00CFC2": "/ A = |Mario X speed| (also entered by JSL from DoorPipeAni)",
+  "00CFC3": "X = |X speed|",
+  "00CFC4": "Moving: go to $CFD4",
+  "00CFC6": "Stash A (= 0) in B: walk frame resets to 0",
+  "00CFC7": "\\",
+  "00CFC9": "|",
+  "00CFCB": "/ Up not held: go to $D002",
+  "00CFCD": "\\",
+  "00CFCF": "|",
+  "00CFD2": "/ Up held: pose offset [$13DE] = 3 (looking up), go to $D002",
+  "00CFD4": "\\",
+  "00CFD6": "/ Level not slippery ([$86] = 0): go to $CFE3",
+  "00CFD8": "\\",
+  "00CFDA": "|",
+  "00CFDC": "/ Left/Right not held: go to $D003 (A = 0)",
+  "00CFDE": "\\",
+  "00CFE0": "/ [$13E5] = $68: animation speed class used in slippery levels",
+  "00CFE3": "A = [$13DB] (walk frame number)",
+  "00CFE6": "\\",
+  "00CFE9": "/ Animation timer [$1496] non-zero: keep the frame, go to $D003",
+  "00CFEB": "Previous walk frame: A -= 1",
+  "00CFEC": "\\",
+  "00CFEE": "|",
+  "00CFF0": "/ Underflow: wrap to NumWalkingFrames[power-up] (last frame)",
+  "00CFF3": "Stash the frame number in B",
+  "00CFF4": "\\",
+  "00CFF5": "|",
+  "00CFF6": "|",
+  "00CFF7": "/ A = |X speed| / 8",
+  "00CFF8": "\\",
+  "00CFFB": "/ Y = A | [$13E5]",
+  "00CFFC": "A = DATA_00DC7C[Y]: frames to show the next walk frame (shorter when faster)",
+  "00CFFF": "Animation timer [$1496] = A",
+  "00D002": "A = new walk frame (swap B back into A)",
+  "00D003": "Walk frame [$13DB] = A",
+  "00D006": "\\",
+  "00D007": "/ A += [$13DE] (pose offset: walking, running...)",
+  "00D00A": "\\",
+  "00D00D": "|",
+  "00D00F": "|",
+  "00D010": "|",
+  "00D012": "/ Carrying an item: A += 7, go to $D01A",
+  "00D014": "\\",
+  "00D016": "|",
+  "00D018": "/ |X speed| >= $2F (running): A += 4 (carry is set)",
+  "00D01A": "\\",
+  "00D01D": "/ Not on a 45 degree slope: go to MarioAnimNo45",
+  "00D01F": "\\",
+  "00D020": "|",
+  "00D022": "/ Mario direction = [RAM_WallWalkStatus] & 1",
+  "00D024": "\\",
+  "00D026": "|",
+  "00D028": "/ Status < 6: pose = $10, go store it",
+  "00D02A": "\\",
+  "00D02D": "|",
+  "00D02E": "/ Status >= 6: pose = [$13DB] + $11",
+  "00D030": "Mario pose [MarioFrame] = A",
+  "00D033": "Return",
+  "00D034": "Cape point X offsets, 16-bit words: +$0C, -$0C, +$08, -$08",
+  "00D03C": "Cape point Y offsets, 16-bit words: $10, $10, 2, 2",
+  "00D044": "\\",
+  "00D046": "/ Cape interaction flag [$13E8] = 1",
+  "00D049": "\\",
+  "00D04A": "/ Y = A * 2 (word index)",
+  "00D04B": "A 16-bit",
+  "00D04D": "\\",
+  "00D04F": "|",
+  "00D050": "|",
+  "00D053": "/ Cape interaction X [$13E9] = Mario X + DATA_00D034[Y]",
+  "00D056": "\\",
+  "00D058": "|",
+  "00D059": "|",
+  "00D05C": "/ Cape interaction Y [$13EB] = Mario Y + DATA_00D03C[Y]",
+  "00D05F": "A 8-bit",
+  "00D061": "Return",
+  "00D062": "\\",
+  "00D064": "|",
+  "00D066": "/ Not cape Mario: go to $D081",
+  "00D068": "\\",
+  "00D06A": "/ Y not newly pressed: return",
+  "00D06C": "\\",
+  "00D06E": "|",
+  "00D071": "|",
+  "00D074": "/ Ducking, on Yoshi or spin jumping: return",
+  "00D076": "\\",
+  "00D078": "/ Cape spin timer [$14A6] = $12 (start cape spin)",
+  "00D07B": "\\",
+  "00D07D": "/ Play sound effect $04 on $1DFC",
+  "00D080": "Return",
+  "00D081": "\\",
+  "00D083": "/ Not Fire Mario: return",
+  "00D085": "\\",
+  "00D087": "|",
+  "00D08A": "/ Ducking or on Yoshi: return",
+  "00D08C": "\\",
+  "00D08E": "/ Y newly pressed: shoot a fireball ($D0AA)",
+  "00D090": "\\",
+  "00D093": "/ Not spin jumping: return",
+  "00D095": "\\",
+  "00D098": "|",
+  "00D09B": "|",
+  "00D09D": "/ Spin jump: count frames in [$13E2], act only every 16th frame",
+  "00D09F": "Y = 0",
+  "00D0A0": "\\",
+  "00D0A3": "|",
+  "00D0A5": "|",
+  "00D0A7": "/ Y = bit 4 of the counter (alternates every 16 frames)",
+  "00D0A8": "Mario direction = Y (fireballs alternate left and right)",
+  "00D0AA": "Shoot a fireball (ShootFireball)",
+  "00D0AD": "Return",
+  "00D0AE": "Unused data, purpose unknown",
+  "00D0B6": "Power-up = 0 (small)",
+  "00D0B8": "\\",
+  "00D0BA": "/ Mario pose = $3E (death pose)",
+  "00D0BD": "\\",
+  "00D0BF": "|",
+  "00D0C1": "|",
+  "00D0C3": "/ Every 4th frame: [$1496] -= 1 (death timer)",
+  "00D0C6": "\\",
+  "00D0C9": "/ Timer non-zero: go to DeathNotDone",
+  "00D0CB": "\\",
+  "00D0CD": "/ [$0DD5] = $80: leave the level with no exit event",
+  "00D0D0": "\\",
+  "00D0D3": "/ [$1B9B] set: skip clearing",
+  "00D0D5": "Clear [RAM_OWHasYoshi] (Yoshi is lost on death)",
+  "00D0D8": "Lives -= 1",
+  "00D0DB": "Lives still >= 0: go to DeathNotGameOver",
+  "00D0DD": "\\",
+  "00D0DF": "/ Music request $0A on $1DFB (probably Game Over music)",
+  "00D0E2": "X = $14: death message = GAME OVER",
+  "00D0E4": "Show the message",
+  "00D0E6": "Y = $0B: game mode = fade to overworld",
+  "00D0E8": "\\",
+  "00D0EB": "|",
+  "00D0EE": "|",
+  "00D0F1": "/ Level time digits [$0F31]-[$0F33] non-zero: go to $D104",
+  "00D0F3": "X = $1D: death message = TIME UP",
+  "00D0F5": "Death message [$143B] = X",
+  "00D0F8": "\\",
+  "00D0FA": "/ Death message animation [$143C] = $C0",
+  "00D0FD": "\\",
+  "00D0FF": "/ Death message timer [$143D] = $FF",
+  "00D102": "Y = $15: game mode = fade to Game Over",
+  "00D104": "Game mode = Y",
+  "00D107": "Return",
+  "00D108": "\\",
+  "00D10A": "/ Death timer >= $26: return (Mario hangs in place first)",
+  "00D10C": "Mario X speed = 0",
+  "00D10E": "Apply Mario Y speed (CODE_00DC2D)",
+  "00D111": "Update Mario Y speed (CODE_00D92E)",
+  "00D114": "\\",
+  "00D116": "|",
+  "00D117": "|",
+  "00D118": "|",
+  "00D11A": "/ Mario direction = bit 2 of frame counter (flips every 4 frames)",
+  "00D11C": "Return",
+  "00D11D": "Pose numbers used while changing size, indexed by timer / 4",
+  "00D125": "(continued)",
+  "00D129": "\\",
+  "00D12C": "/ Animation timer [$1496] = 0: finished, go to $D140",
+  "00D12E": "\\",
+  "00D12F": "|",
+  "00D130": "/ Y = timer / 4",
+  "00D131": "\\",
+  "00D134": "/ Mario pose = GrowingAniImgs[Y]",
+  "00D137": "\\",
+  "00D13A": "/ Timer = 0: return",
+  "00D13C": "Timer -= 1",
+  "00D13F": "Return",
+  "00D140": "\\",
+  "00D142": "/ Invincibility flash timer [$1497] = $7F (about 2 seconds)",
+  "00D145": "Go end the animation and unlock sprites ($D158)",
+  "00D147": "\\",
+  "00D14A": "/ Timer = 0: done, go to $D156",
+  "00D14C": "\\",
+  "00D14D": "|",
+  "00D14E": "|",
+  "00D150": "|",
+  "00D151": "|",
+  "00D152": "/ Y = $0B - timer / 4 (poses played in reverse)",
+  "00D154": "Go look up the pose ($D130)",
+  "00D156": "Power-up += 1",
+  "00D158": "\\",
+  "00D15A": "/ Mario animation [RAM_MarioAnimation] = 0 (none)",
+  "00D15C": "Unlock sprites",
+  "00D15E": "Return",
+  "00D15F": "\\",
+  "00D161": "/ [$78] = $7F: hide Mario (smoke puff)",
+  "00D163": "Timer [$1496] -= 1",
+  "00D166": "Not finished: return",
+  "00D168": "\\",
+  "00D16A": "|",
+  "00D16B": "/ Small or big Mario: go to $D140 (flash)",
+  "00D16D": "Cape or fire: go to $D158 (no flash)",
+  "00D16F": "\\",
+  "00D172": "|",
+  "00D174": "|",
+  "00D177": "/ [$13ED] bit 7 and [$1407] both clear: go to $D187",
+  "00D179": "Cape flight phase [$1407] = 0",
+  "00D17C": "\\",
+  "00D17F": "|",
+  "00D181": "/ Clear bit 7 of [$13ED]",
+  "00D184": "Mario pose = 0",
+  "00D187": "Flashing palette timer -= 1",
+  "00D18A": "Done: go to $D158",
+  "00D18C": "Return",
+  "00D18D": "X speed for pipe direction 0 (left), 1 (right)",
+  "00D18F": "Pipe speed bytes: $00,$00 (X speed for up/down), $F0 (Y speed, up)",
+  "00D192": "Y speed for down pipe",
+  "00D193": "Values for [$78] by pipe type, indexed [$89] / 2 + 1",
+  "00D197": "Ignore controller input (NoButtons)",
+  "00D19A": "Pose offset [$13DE] = 0",
+  "00D19D": "Run the pose selection start (CODE_00CEB1)",
+  "00D1A1": "Pick a walking pose from the X speed (enters at $CFBC)",
+  "00D1A5": "Tick timers (CODE_00D1F4)",
+  "00D1A8": "\\",
+  "00D1AB": "/ Not on Yoshi: skip",
+  "00D1AD": "\\",
+  "00D1AF": "/ On Yoshi: pose $29 (entering horizontal pipe)",
+  "00D1B2": "A 16-bit",
+  "00D1B4": "\\",
+  "00D1B6": "|",
+  "00D1B7": "|",
+  "00D1BA": "|",
+  "00D1BD": "|",
+  "00D1C0": "/ Mario Y = ((Y - 8) & $FFF0) | $0E (center on the pipe)",
+  "00D1C2": "A 8-bit",
+  "00D1C4": "\\",
+  "00D1C6": "|",
+  "00D1C7": "|",
+  "00D1C8": "/ Y = [$89] / 2 + 1 (pipe type index)",
+  "00D1C9": "A = DATA_00D192[Y]",
+  "00D1CC": "\\",
+  "00D1CF": "/ Not carrying: go to $D1DB",
+  "00D1D1": "Carrying: A ^= $1C",
+  "00D1D3": "\\",
+  "00D1D6": "|",
+  "00D1D8": "/ Face-camera timer -= 1, but not below 0",
+  "00D1DB": "\\",
+  "00D1DD": "|",
+  "00D1DF": "/ Pipe timer [$88] >= $1D: go store A to [$78] ($D1F0)",
+  "00D1E1": "\\",
+  "00D1E3": "/ Y < 3: skip the Y adjustment",
+  "00D1E5": "A 16-bit",
+  "00D1E7": "\\",
+  "00D1E9": "/ Mario Y += 2",
+  "00D1EB": "A 8-bit",
+  "00D1ED": "A = HIDEPIPESETS[Y]",
+  "00D1F0": "[$78] = A (hide Mario for the pipe)",
+  "00D1F2": "Go to the shared pipe code ($D22D)",
+  "00D1F4": "\\",
+  "00D1F7": "|",
+  "00D1F9": "/ Decrement [$14A2] if non-zero",
+  "00D1FC": "Go decrement the animation timer ($D137)",
+  "00D1FF": "Mario X & $F targets for centering on a pipe: direction 0 = $0A, 1 = $06",
+  "00D201": "X nudge per frame: -1 or +1",
+  "00D203": "Ignore controller input (NoButtons)",
+  "00D206": "Cape image [$13DF] = 0",
+  "00D209": "\\",
+  "00D20B": "|",
+  "00D20E": "/ A = $0F (facing camera); not on Yoshi: use it ($D22A)",
+  "00D210": "X = 0: nudge index",
+  "00D212": "Y = Mario direction",
+  "00D214": "\\",
+  "00D216": "|",
+  "00D218": "/ Compare [X pos] & $F with PipeCntrBoundryX[Y]",
+  "00D21B": "Equal: centered, go to $D228",
+  "00D21D": "At or past the target: nudge left (X = 0)",
+  "00D21F": "Before the target: X = 1 (nudge right)",
+  "00D220": "\\",
+  "00D222": "|",
+  "00D223": "|",
+  "00D226": "/ Mario X += PipeCntringSpeed[X]",
+  "00D228": "A = $21: pose going down a pipe on Yoshi",
+  "00D22A": "Mario pose = A",
+  "00D22D": "\\",
+  "00D22F": "/ Fake controller input: X/Y held",
+  "00D231": "\\",
+  "00D233": "/ Behind-scenery flag = 2",
+  "00D236": "\\",
+  "00D238": "|",
+  "00D23A": "|",
+  "00D23C": "/ C = [$89] >= 4 (leaving a pipe); Y = [$88]: timer 0: go to $D268",
+  "00D23E": "\\",
+  "00D240": "/ Y = [$89] & 3 (0 left, 1 right, 2 up, 3 down)",
+  "00D241": "Pipe timer [$88] -= 1",
+  "00D243": "\\",
+  "00D245": "/ Still counting or leaving: go to $D24E",
+  "00D247": "\\",
+  "00D249": "/ [$78] = $7F: hide Mario",
+  "00D24B": "[$1405] += 1 (probably marks the pipe entry as done)",
+  "00D24E": "\\",
+  "00D250": "|",
+  "00D252": "|",
+  "00D254": "|",
+  "00D256": "/ Mario not moving yet: play sound $04 on $1DF9 (pipe)",
+  "00D259": "\\",
+  "00D25C": "/ Mario X speed = PipeSpeedX[Y]",
+  "00D25E": "\\",
+  "00D261": "/ Mario Y speed = PipeSpeedY[Y]",
+  "00D263": "Not flying",
+  "00D265": "Apply the speed (CODE_00DC2D), return",
+  "00D268": "Entering a pipe: go to $D273 to load the next level",
+  "00D26A": "\\",
+  "00D26D": "/ Clear behind-scenery and Yoshi-in-pipe flags",
+  "00D270": "End the animation and unlock sprites ($D158)",
+  "00D273": "\\",
+  "00D276": "|",
+  "00D278": "/ [$141A] += 1 and game mode = $0F (load level)",
+  "00D27B": "Return",
+  "00D27C": "Unused code: [$88] += Mario Y - [$D3]",
+  "00D286": "Return",
+  "00D287": "Ignore controller input (NoButtons)",
+  "00D28A": "\\",
+  "00D28C": "/ Behind-scenery flag = 2",
+  "00D28F": "\\",
+  "00D291": "/ [RAM_IsFlying] = $0C (airborne)",
+  "00D293": "Pose selection (CODE_00CD8B)",
+  "00D296": "Timer [$88] -= 1",
+  "00D298": "Not 0: go to $D29D",
+  "00D29A": "Timer ran out: finish like leaving a pipe ($D26A)",
+  "00D29D": "\\",
+  "00D29F": "|",
+  "00D2A1": "|",
+  "00D2A3": "/ Timer < $18: go to $D2AA; > $18: go to $D2B2",
+  "00D2A5": "\\",
+  "00D2A7": "/ Play sound effect $09 on $1DFC (probably the cannon blast)",
+  "00D2AA": "\\",
+  "00D2AD": "|",
+  "00D2B0": "/ Behind-scenery flag = 0, Yoshi-in-pipe = 0, sprites unlocked",
+  "00D2B2": "\\",
+  "00D2B4": "/ Mario X speed = $40",
+  "00D2B6": "\\",
+  "00D2B8": "/ Mario Y speed = $C0 (up)",
+  "00D2BA": "Apply the speed (CODE_00DC2D)",
+  "00D2BD": "Initial jump Y speed, indexed by X speed (faster = higher jump)",
+  "00D2C5": "(continued)",
+  "00D2CD": "X deceleration (16-bit) used on ground/air, indexed by slope state",
+  "00D309": "X deceleration (16-bit) used in water levels",
+  "00D345": "Walk/run accelerations start here: 4 words per row (left walk, left run, right walk, right run)",
+  "00D3A6": "Rows from $D3AD: flight accelerations",
+  "00D3B6": "Rows from $D3BD: sliding accelerations",
+  "00D3CE": "Rows from $D3D5: running decelerations",
+  "00D43D": "Running accelerations in slippery levels",
+  "00D4B5": "Slippery slope accelerations",
+  "00D4CD": "Running decelerations in slippery levels",
+  "00D535": "Maximum speeds (walk/run, left and right)",
+  "00D59D": "Maximum flight speeds",
+  "00D5AD": "Maximum swim speeds",
+  "00D5B5": "Maximum slope sliding speeds",
+  "00D5BD": "Maximum slope sliding speeds while carrying an item",
+  "00D5C9": "Auto-slide speeds per slope type (no buttons held)",
+  "00D5E2": "Rows from $D5E7: speed when no buttons are held in water"
+ }
+}

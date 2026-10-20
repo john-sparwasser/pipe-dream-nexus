@@ -1,0 +1,100 @@
+{
+ "bank": "03",
+ "sections": {
+  "s03DFCC": {
+   "name": "Bowser room palette and lightning flash",
+   "summary": [
+    "Called from Bowser's INIT/main (JSL at BowserFight). Appends an 8-color CGRAM upload record (start color 0) to the palette buffer at [$0681].",
+    "Color 0 (backdrop) flashes with thunder: a random delay in [$1FFC] counts down, then [$1FFB] steps through DATA_00B5DE colors and sound $18 plays.",
+    "Colors 1-7 come from a 14-byte row of DATA_00B69E selected by [$1429]; [$190D] non-zero (hedged: no lightning) keeps the backdrop color [$0701]."
+   ]
+  },
+  "s03E05C": {
+   "name": "Padding ($FF)"
+  },
+  "s03E400": {
+   "name": "Ending music block header (disassembled as code)",
+   "summary": [
+    "Not code: these bytes are the start of the SPC700 music bank 3 block uploaded by UploadMusicBank3 ($03E400). Disassembler produced DEC/RTS."
+   ]
+  },
+  "s03E403": {
+   "name": "Ending music bank 3 data (SPC700)",
+   "summary": [
+    "Music sequence data for the ending, uploaded to the SPC700 as one block starting at $03E400. Not 65816 data."
+   ]
+  },
+  "s03FDE0": {
+   "name": "Padding ($FF)"
+  }
+ },
+ "lines": {
+  "03DFCC": "Save X",
+  "03DFCD": "X = palette buffer write index [$0681]",
+  "03DFD0": "\\",
+  "03DFD2": "/ Record header: byte count = $10 (8 colors)",
+  "03DFD5": "CGRAM start address = 0 (backdrop color)",
+  "03DFD8": "\\",
+  "03DFDB": "/ Default color 0 = $0000 (replaced below)",
+  "03DFDE": "Y = write index (X is reused)",
+  "03DFDF": "X = [$1FFB] (lightning flash step, 0 = no flash running)",
+  "03DFE2": "Flash running: continue it at $03E01B",
+  "03DFE4": "\\",
+  "03DFE7": "/ [$190D] (probably disables lightning) = 0: go check for a new flash",
+  "03DFE9": "A 16-bit",
+  "03DFEB": "A = [$0701] (current backdrop color)",
+  "03DFEE": "Use it unchanged as color 0",
+  "03DFF0": "A = [RAM_FrameCounterB]",
+  "03DFF2": "\\",
+  "03DFF3": "/ Only act on odd frames",
+  "03DFF5": "\\",
+  "03DFF8": "/ Count down [$1FFC] (delay to next flash); not zero: no new flash",
+  "03DFFA": "X = frame counter / 2 (random-looking index)",
+  "03DFFB": "Read a byte from ROM $04F708 as a pseudo-random number",
+  "03DFFF": "\\",
+  "03E001": "/ X = random 0-7",
+  "03E002": "\\",
+  "03E006": "/ [$1FFC] = DATA_04F6F8[X] (frames until the next flash)",
+  "03E009": "\\",
+  "03E00D": "/ [$1FFB] = DATA_04F700[X] (flash length in steps)",
+  "03E010": "X = [$1FFB]",
+  "03E011": "\\",
+  "03E013": "/ [$1FFD] = 8 (frames for the first step)",
+  "03E016": "\\",
+  "03E018": "/ Play sound effect $18 (thunder)",
+  "03E01B": "Step timer [$1FFD]--",
+  "03E01E": "Still >= 0: keep the same step",
+  "03E020": "Next step: [$1FFB]--",
+  "03E023": "\\",
+  "03E025": "/ [$1FFD] = 4 (frames per later step)",
+  "03E028": "\\",
+  "03E029": "|",
+  "03E02A": "} X = [$1FFB] * 2: word index into the flash color table",
+  "03E02B": "A 16-bit",
+  "03E02D": "A = flash color DATA_00B5DE[X]",
+  "03E031": "Color 0 (backdrop) in the buffer = A",
+  "03E034": "A 8-bit",
+  "03E036": "X = [$1429] (probably Bowser's phase / palette row)",
+  "03E039": "\\",
+  "03E03D": "/ X = row offset (row * $0E) into the palette table",
+  "03E03E": "\\",
+  "03E040": "/ Byte counter = $0E (colors 1-7)",
+  "03E042": "Copy a palette byte from DATA_00B69E[X]...",
+  "03E046": "...into the buffer (colors 1-7 of the record)",
+  "03E049": "Next source byte",
+  "03E04A": "Next buffer byte",
+  "03E04B": "\\",
+  "03E04D": "/ Loop for all 14 bytes",
+  "03E04F": "X = end of record",
+  "03E050": "Write terminator 0 after the record",
+  "03E053": "\\",
+  "03E054": "|",
+  "03E055": "|",
+  "03E056": "} Buffer index += 4 (so [$0681] = old index + 18)",
+  "03E057": "Store the new palette buffer index",
+  "03E05A": "Restore X",
+  "03E05B": "Return",
+  "03E400": "Unreferenced as code: the start of the ending music block header (see UploadMusicBank3)",
+  "03E402": "Header continues: length probably $19C6, SPC address probably $1360"
+ }
+}

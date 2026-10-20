@@ -1,0 +1,22 @@
+{
+ "bank": "06",
+ "sections": {
+  "LevelData": {
+   "name": "Layer 1 level stream (one level) + $FF filler",
+   "summary": [
+    "Layer-1 object stream for one level, followed by $FF padding to the end of the bank (about 2.7KB free).",
+    "Format: 5-byte primary header, then 3-byte objects (Y/screen, X/object#, settings) until a $FF byte; see LevelData loader at $0585FF.",
+    "Header here: 3 screens, level mode 00, tileset 0, sprite GFX 3, music 0, 300 second timer, no scroll restriction.",
+    "Objects: Y = byte1 bits 0-4 (0-26), X = byte2 low nibble, object# = byte2 high nibble | byte1 bits 5-6 << 4, byte1 bit 7 = next screen.",
+    "Quirk: extended object 00 (screen exit) is 4 bytes; the extra byte is the destination. Everything after the $FF terminator is unused filler."
+   ]
+  }
+ },
+ "lines": {
+  "06F511": "Header 42 C0 03 A0 00: 3 screens, BG pal 2, mode 00, BG color 6, spr GFX 3 | obj1 38 40 28: obj $14 at Y24 X0 screen 0",
+  "06F519": "obj2 15 F1 20: pipe $0F at Y21 X1 | obj3 36 38 1B: obj $13 Y22 X8 | obj4 36 49: obj $14 Y22 X9 (cont.)",
+  "06F521": "obj4 settings $46 | obj5 B6 30 45: new screen (1), obj $13 Y22 X0 | obj6 B6 36 43: new screen (2), obj $13 Y22 X6 | obj7 36 (cont.)",
+  "06F529": "obj7 47 41: obj $14 Y22 X7 | obj8 38 49 26: obj $14 Y24 X9 | obj9 36 39 1D: obj $13 Y22 X9",
+  "06F531": "obj10 14 FD 31: pipe $0F Y20 X13 | obj11 02 02 00 C0: screen exit on screen 2, secondary exit flag, dest $C0 | $FF end of stream"
+ }
+}

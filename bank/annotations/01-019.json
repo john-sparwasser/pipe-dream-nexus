@@ -1,0 +1,1162 @@
+{
+ "bank": "01",
+ "sections": {
+  "s018000": {
+   "name": "Data: bit mask table"
+  },
+  "IsTouchingObjSide": {
+   "name": "Is sprite touching a block on its side",
+   "summary": [
+    "Returns: A = [sprite object status] & 3, non-zero if blocked on its left or right. Z flag set accordingly."
+   ]
+  },
+  "IsOnGround": {
+   "name": "Is sprite on the ground",
+   "summary": [
+    "Returns: A = [sprite object status] & 4, non-zero if standing on a block."
+   ]
+  },
+  "IsTouchingCeiling": {
+   "name": "Is sprite touching a ceiling",
+   "summary": [
+    "Returns: A = [sprite object status] & 8, non-zero if bumping a block above."
+   ]
+  },
+  "UpdateYPosNoGrvty": {
+   "name": "Update sprite Y position, no gravity",
+   "summary": [
+    "Long-call wrapper (sets the data bank to $01) for SubSprYPosNoGrvty: Y position += Y speed.",
+    "Parameters: X: sprite slot."
+   ]
+  },
+  "UpdateXPosNoGrvty": {
+   "name": "Update sprite X position",
+   "summary": [
+    "Long-call wrapper for SubSprXPosNoGrvty: X position += X speed.",
+    "Parameters: X: sprite slot."
+   ]
+  },
+  "UpdateSpritePos": {
+   "name": "Update sprite position with gravity",
+   "summary": [
+    "Long-call wrapper for SubUpdateSprPos: applies speeds and gravity and checks for block contact, setting the sprite object status.",
+    "Parameters: X: sprite slot."
+   ]
+  },
+  "SprSprInteract": {
+   "name": "Sprite-to-sprite interaction",
+   "summary": [
+    "Long-call wrapper for SubSprSprInteract (contacts between sprites, e.g. kicked shells hitting enemies).",
+    "Parameters: X: sprite slot."
+   ]
+  },
+  "SprSpr+MarioSprRts": {
+   "name": "Sprite and Mario contact check",
+   "summary": [
+    "Long-call wrapper for SubSprSpr+MarioSpr (sprite contact with sprites and with Mario).",
+    "Parameters: X: sprite slot."
+   ]
+  },
+  "GenericSprGfxRt0": {
+   "name": "Generic sprite graphics routine",
+   "summary": [
+    "Long-call wrapper for SubSprGfx0Entry0, the generic sprite drawing code.",
+    "Parameters: X: sprite slot."
+   ]
+  },
+  "InvertAccum": {
+   "name": "Negate A, skid smoke, run all sprites",
+   "summary": [
+    "Contains several routines that follow each other.",
+    "$01804A: A = -A.",
+    "$01804E: spawns a smoke puff under a sprite on the ground (every 4th frame, non-slippery levels, on screen) into a free slot of the four smoke slots at $17C0-$17CF.",
+    "$01808C (long call): main sprite loop. Resets per-frame Mario carry/platform/Yoshi flags, then for slots 11..0 sets the OAM index, decrements timers and calls HandleSprite. Clears Mario's Yoshi flags if no Yoshi sprite ran.",
+    "$0180D2: sets the OAM index of slot X and decrements its seven timers."
+   ]
+  },
+  "IsSprOffScreen": {
+   "name": "Is sprite off screen",
+   "summary": [
+    "Returns: A = [horizontal off screen flag] OR [vertical off screen flag]; non-zero if off screen.",
+    "$0180D2 (following code, same section): sets the OAM index for slot X from the tables at $07:F000/$07:F0B4 and decrements the sprite timers [$1540], [$154C], [$1558], [$1564], [$1FE2], [$15AC], [$163E] if non-zero, unless the slot is empty or sprites are locked."
+   ]
+  },
+  "HandleSprite": {
+   "name": "Run sprite by status",
+   "summary": [
+    "Status 0 erases the sprite, status 8 runs its main routine directly, any other status jumps through SpriteStatusRtPtr.",
+    "Parameters: X: sprite slot."
+   ]
+  },
+  "SpriteStatusRtPtr": {
+   "name": "Pointer table: sprite status routines",
+   "summary": [
+    "Indexed by the sprite status in [$14C8,X], 16-bit pointers."
+   ]
+  },
+  "EraseSprite": {
+   "name": "Erase sprite permanently",
+   "summary": [
+    "Sets the sprite's index in the level sprite table to $FF so it is not reloaded when the screen scrolls back. Status stays 0.",
+    "Parameters: X: sprite slot."
+   ]
+  },
+  "HandleGoalPowerup": {
+   "name": "Handle goal powerup sprite (status C)",
+   "summary": [
+    "Runs the sprite's main routine, despawns it when off screen, moves it with gravity (reduced by 2 per frame) and sets a Y speed when it lands."
+   ]
+  },
+  "HandleSprLvlEnd": {
+   "name": "Handle sprite at level end (status 6)",
+   "summary": [
+    "Calls LvlEndSprCoins to turn the sprite into a coin."
+   ]
+  },
+  "CallSpriteInit": {
+   "name": "Initialize sprite",
+   "summary": [
+    "Sets the sprite status to 8 (normal) and jumps through SpriteInitPtr by sprite number.",
+    "Parameters: X: sprite slot."
+   ]
+  },
+  "SpriteInitPtr": {
+   "name": "Pointer table: sprite init routines",
+   "summary": [
+    "Indexed by sprite number $00-$C8, 16-bit pointers. Each row names the sprite."
+   ]
+  },
+  "InitGreyLavaPlat": {
+   "name": "Init grey platform on lava",
+   "summary": [
+    "Y position += 2."
+   ]
+  },
+  "InitBowserStatue": {
+   "name": "Init Bowser statue",
+   "summary": [
+    "Direction = 1. Picks a variant like an exploding block; sprite state = variant; variant 2 uses palette 1."
+   ]
+  },
+  "InitTimedPlat": {
+   "name": "Init timed lift",
+   "summary": [
+    "[$1570,X] = $3F if X position bit 4 is set, else $FF (initial timer value, probably)."
+   ]
+  },
+  "YoshiPal": {
+   "name": "Data: Yoshi egg palettes"
+  },
+  "InitYoshiEgg": {
+   "name": "Init Yoshi egg",
+   "summary": [
+    "Palette is chosen from bits 4-5 of the X position. Increments [$187B,X] (probably makes it unstompable)."
+   ]
+  },
+  "DiagBounceInitSpeed": {
+   "name": "Data: diagonal bouncer X speeds"
+  },
+  "InitDiagBouncer": {
+   "name": "Init diagonal bouncer",
+   "summary": [
+    "Faces Mario, X speed $10 or $F0 by direction, Y speed $F0 (up). Used by the reflecting Boo stream and reflecting fireball."
+   ]
+  },
+  "InitWoodSpike": {
+   "name": "Init wooden spike",
+   "summary": [
+    "Moves the sprite $40 pixels up from its placed position."
+   ]
+  },
+  "InitWoodSpike2": {
+   "name": "Init wooden spike, up first",
+   "summary": [
+    "Same as InitMontyMole."
+   ]
+  },
+  "InitBowserScene": {
+   "name": "Init Bowser scene trigger",
+   "summary": [
+    "Calls CODE_03A0F1 in bank $03."
+   ]
+  },
+  "InitSumoBrother": {
+   "name": "Init Sumo Brother",
+   "summary": [
+    "Sprite state = 3, [$1540,X] = $70. Also the entry for InitSlidingKoopa ($018379)."
+   ]
+  },
+  "InitSlidingKoopa": {
+   "name": "Init sliding Koopa",
+   "summary": [
+    "[$1540,X] = 4 via the store in InitSumoBrother."
+   ]
+  },
+  "InitGrowingPipe": {
+   "name": "Init growing pipe end",
+   "summary": [
+    "[$1534,X] = $40."
+   ]
+  },
+  "InitBanzai": {
+   "name": "Init Banzai Bill",
+   "summary": [
+    "If Mario is to the right of the spawn point the sprite is erased (it only flies left); otherwise plays sound $09 to [$1DFC]."
+   ]
+  },
+  "InitBallNChain": {
+   "name": "Init ball and chain",
+   "summary": [
+    "A = $38, stored at $01839C in [$187B,X] (probably chain length)."
+   ]
+  },
+  "InitGreyChainPlat": {
+   "name": "Init grey platform on chain",
+   "summary": [
+    "[$187B,X] = $30 (probably chain length). Shared tail for InitBallNChain."
+   ]
+  },
+  "ExplodingBlkSpr": {
+   "name": "Data: exploding block states"
+  },
+  "InitExplodingBlk": {
+   "name": "Init exploding block",
+   "summary": [
+    "Sprite state = ExplodingBlkSpr[(X position >> 4) & 3]. Returns: Y = 0-3 variant."
+   ]
+  },
+  "ScalePlatWidth": {
+   "name": "Data: scale platform offsets"
+  },
+  "InitScalePlats": {
+   "name": "Init scale platforms",
+   "summary": [
+    "Saves the start Y position ([$1534], [$151C]) and sets state/[$1602] to X position + $80 or $40 (type from X bit 4), probably the partner platform position."
+   ]
+  },
+  "InitMsg+SideExit": {
+   "name": "Init message box and side exit",
+   "summary": [
+    "[$1564,X] = $28 timer (blocks sprite contact)."
+   ]
+  },
+  "InitYoshi": {
+   "name": "Init Yoshi",
+   "summary": [
+    "Direction = 1. Erases the sprite if Mario already has Yoshi from the overworld."
+   ]
+  },
+  "s0183EF": {
+   "name": "Data: urchin init speeds",
+   "summary": [
+    "Speed pairs used by InitUrchin: X speed table at $0183EF, Y speed table at $0183F0."
+   ]
+  },
+  "InitSpikeTop": {
+   "name": "Init Spike Top",
+   "summary": [
+    "Sets direction bit from Mario's side, enters InitUrchin at $01841D for speeds, clears [$164A,X]."
+   ]
+  },
+  "InitUrchinWallFllw": {
+   "name": "Init wall-following Urchin",
+   "summary": [
+    "Y position += 1, then falls into InitFuzzBall+Spark."
+   ]
+  },
+  "InitFuzzBall+Spark": {
+   "name": "Init Fuzzball and Sparky",
+   "summary": [
+    "Runs InitUrchin, then flips the direction bit in [$151C,X] and sets state = [$151C] >> 2."
+   ]
+  },
+  "InitUrchin": {
+   "name": "Init Urchin",
+   "summary": [
+    "Direction bit [$151C,X] = X position bit 4; speeds from DATA_0183EF/0183F0. Falls into InitRipVanFish."
+   ]
+  },
+  "InitRipVanFish": {
+   "name": "Init Rip Van Fish",
+   "summary": [
+    "[$164A,X]++ (probably the in-water flag)."
+   ]
+  },
+  "InitKey+BabyYoshi": {
+   "name": "Init key and baby Yoshi",
+   "summary": [
+    "Sprite status = 9 (carryable)."
+   ]
+  },
+  "InitChangingItem": {
+   "name": "Init changing item",
+   "summary": [
+    "Sprite state += 1."
+   ]
+  },
+  "InitPeaBouncer": {
+   "name": "Init pea bouncer",
+   "summary": [
+    "X position -= 8."
+   ]
+  },
+  "InitPSwitch": {
+   "name": "Init P-switch",
+   "summary": [
+    "Type [$151C,X] = (X >> 4) & 1 (blue/silver), palette from PSwitchPal, status 9 (carryable)."
+   ]
+  },
+  "PSwitchPal": {
+   "name": "Data: P-switch palettes",
+   "summary": [
+    "$018468 (code after the table): erases the sprite once off screen (jump target for InitLakitu)."
+   ]
+  },
+  "InitLakitu": {
+   "name": "Init Lakitu and spawn cloud",
+   "summary": [
+    "If another Lakitu or Lakitu cloud exists the sprite is erased. Otherwise clears respawn state, saves its Y position in [$18C3], spawns a Lakitu cloud ($87) in a free slot at its position and falls into InitMontyMole."
+   ]
+  },
+  "InitMontyMole": {
+   "name": "Init Monty Mole",
+   "summary": [
+    "[$151C,X] = X position bit 4 (variant flag)."
+   ]
+  },
+  "InitCreateEatBlk": {
+   "name": "Init creating/eating block",
+   "summary": [
+    "[$1909] = $FF, then InitMontyMole."
+   ]
+  },
+  "InitBulletBill": {
+   "name": "Init Bullet Bill",
+   "summary": [
+    "Sprite state = side Mario is on, [$1540,X] = $10."
+   ]
+  },
+  "InitClappinChuck": {
+   "name": "Init Clappin' Chuck",
+   "summary": [
+    "Chuck type 8."
+   ]
+  },
+  "InitPitchinChuck": {
+   "name": "Init Pitchin' Chuck",
+   "summary": [
+    "[$187B,X] = (X position & $30) >> 4; chuck type $0A."
+   ]
+  },
+  "InitPuntinChuck": {
+   "name": "Init Puntin' Chuck",
+   "summary": [
+    "Chuck type 9."
+   ]
+  },
+  "InitWhistlinChuck": {
+   "name": "Init Whistlin' Chuck",
+   "summary": [
+    "Chuck type $0B."
+   ]
+  },
+  "InitChuck": {
+   "name": "Init Splittin'/Bouncin' Chuck",
+   "summary": [
+    "Chuck type 5."
+   ]
+  },
+  "InitDigginChuck": {
+   "name": "Init Diggin' Chuck and set chuck type",
+   "summary": [
+    "$018508: [$1540,X] = $30, direction from X bit 4, type 4.",
+    "$01851A (shared by all chucks): sprite state = chuck type, faces Mario, [$151C,X] = DATA_018526[Y].",
+    "Parameters: A: chuck type (for entry $01851A)."
+   ]
+  },
+  "s018526": {
+   "name": "Data: chuck init values"
+  },
+  "InitSuperKoopa": {
+   "name": "Init Super Koopa",
+   "summary": [
+    "Y speed = $28, then FaceMario."
+   ]
+  },
+  "InitSuperKoopaFthr": {
+   "name": "Init feather Super Koopa",
+   "summary": [
+    "Faces Mario. If X bit 4 is set sets sprite tweaker bytes 1656, 1662, 1686; otherwise [$1534,X] += 1."
+   ]
+  },
+  "InitPokey": {
+   "name": "Init Pokey",
+   "summary": [
+    "State = segment bit mask: $1F (5 segments) on Yoshi, $07 (3) otherwise. Then FaceMario."
+   ]
+  },
+  "InitDinos": {
+   "name": "Init Dino Rhino and Torch",
+   "summary": [
+    "[$151C,X] = 4, falls into InitBomb."
+   ]
+  },
+  "InitBomb": {
+   "name": "Init Bob-omb",
+   "summary": [
+    "[$1540,X] = $FF fuse timer, then FaceMario."
+   ]
+  },
+  "InitBubbleSpr": {
+   "name": "Init bubble with sprite",
+   "summary": [
+    "Variant from InitExplodingBlk stored in state, [$1534,X] -= 1, FaceMario."
+   ]
+  },
+  "InitGrnBounceKoopa": {
+   "name": "Init green bouncing Koopa",
+   "summary": [
+    "[$160E,X] = Y position bit 4, falls into InitStandardSprite."
+   ]
+  },
+  "InitStandardSprite": {
+   "name": "Init standard sprite",
+   "summary": [
+    "[$1570,X] = random number, falls into FaceMario."
+   ]
+  },
+  "FaceMario": {
+   "name": "Face Mario",
+   "summary": [
+    "Sprite direction = side Mario is on (0 = Mario to the right).",
+    "Parameters: X: sprite slot.",
+    "Returns: Y = direction."
+   ]
+  },
+  "InitBowsersFire": {
+   "name": "Init Bowser's fireball",
+   "summary": [
+    "Plays sound $17, then FaceMario."
+   ]
+  },
+  "InitPowerUp": {
+   "name": "Init powerup",
+   "summary": [
+    "Sprite state += 1."
+   ]
+  },
+  "InitFishbone": {
+   "name": "Init Fishbone",
+   "summary": [
+    "[$1540,X] = random number & $1F, then FaceMario."
+   ]
+  },
+  "InitDownPiranha": {
+   "name": "Init upside-down Piranha Plant",
+   "summary": [
+    "Sets bit 7 of the palette byte (vertical flip) and moves the sprite up $10 pixels."
+   ]
+  }
+ },
+ "lines": {
+  "018000": "Bit mask table: $80,$40,$20,$10,$08,$04,$02,$01 (leftover from the previous bank's code)",
+  "018008": "\\",
+  "01800B": "/ A = [sprite object status] & 3: non-zero if blocked on its left or right side",
+  "01800D": "Return",
+  "01800E": "\\",
+  "018011": "/ A = [sprite object status] & 4: non-zero if standing on the ground",
+  "018013": "Return",
+  "018014": "\\",
+  "018017": "/ A = [sprite object status] & 8: non-zero if touching a ceiling",
+  "018019": "Return",
+  "01801A": "\\",
+  "01801B": "} Data bank = program bank ($01)",
+  "01801C": "/",
+  "01801D": "Y position += Y speed (SubSprYPosNoGrvty, no gravity or block checks)",
+  "018020": "Restore data bank",
+  "018021": "Return long",
+  "018022": "\\",
+  "018023": "} Data bank = program bank ($01)",
+  "018024": "/",
+  "018025": "X position += X speed (SubSprXPosNoGrvty, no block checks)",
+  "018028": "Restore data bank",
+  "018029": "Return long",
+  "01802A": "\\",
+  "01802B": "} Data bank = program bank ($01)",
+  "01802C": "/",
+  "01802D": "Move sprite by its speeds with gravity and block interaction (SubUpdateSprPos)",
+  "018030": "Restore data bank",
+  "018031": "Return long",
+  "018032": "\\",
+  "018033": "} Data bank = program bank ($01)",
+  "018034": "/",
+  "018035": "Sprite-to-sprite contact check (SubSprSprInteract)",
+  "018038": "Restore data bank",
+  "018039": "Return long",
+  "01803A": "\\",
+  "01803B": "} Data bank = program bank ($01)",
+  "01803C": "/",
+  "01803D": "Sprite-to-sprite and sprite-to-Mario contact check (SubSprSpr+MarioSpr)",
+  "018040": "Restore data bank",
+  "018041": "Return long",
+  "018042": "\\",
+  "018043": "} Data bank = program bank ($01)",
+  "018044": "/",
+  "018045": "Draw the sprite with generic graphics routine 0 (SubSprGfx0Entry0)",
+  "018048": "Restore data bank",
+  "018049": "Return long",
+  "01804A": "\\",
+  "01804C": "/ A = -A (two's complement)",
+  "01804D": "Return",
+  "01804E": "A = sprite's object status (blocked flags)",
+  "018051": "Zero (in the air, touching nothing): return",
+  "018053": "\\",
+  "018055": "|",
+  "018057": "} Return unless [frame counter] & 3 = 0 and [$86] (slippery level flag) = 0",
+  "018059": "/",
+  "01805B": "\\",
+  "01805D": "/ [$00] = $04: X offset of the smoke puff",
+  "01805F": "\\",
+  "018061": "/ [$01] = $0A: Y offset of the smoke puff",
+  "018063": "A = non-zero if the sprite is off screen",
+  "018066": "Off screen: return",
+  "018068": "Y = 3: search the four smoke slots",
+  "01806A": "A = smoke type in slot Y ($17C0)",
+  "01806D": "Slot is free: use it",
+  "01806F": "Next slot",
+  "018070": "Loop for slots 3..0",
+  "018072": "Return (no free slot)",
+  "018073": "\\",
+  "018075": "/ Smoke slot Y type = 3 (probably the ground skid puff)",
+  "018078": "\\",
+  "01807A": "} Smoke X position ($17C8,Y) = sprite X + [$00]",
+  "01807C": "/",
+  "01807F": "\\",
+  "018081": "} Smoke Y position ($17C4,Y) = sprite Y + [$01]",
+  "018083": "/",
+  "018086": "\\",
+  "018088": "/ Smoke timer ($17CC,Y) = $13 frames",
+  "01808B": "Return",
+  "01808C": "\\",
+  "01808D": "} Data bank = program bank ($01)",
+  "01808E": "/",
+  "01808F": "\\",
+  "018092": "/ [$1470] = [$148F]: remember whether Mario carried a sprite last frame",
+  "018095": "[$148F] = 0: Mario carries nothing (a carried sprite sets it again this frame)",
+  "018098": "[$1471] = 0: Mario is not on a sprite platform (platforms set it again)",
+  "01809B": "[$18C2] = 0: per-frame flag, purpose unclear",
+  "01809E": "\\",
+  "0180A1": "/ [$18E2] = [$18DF]: remember last frame's Yoshi slot (+1)",
+  "0180A4": "[$18DF] = 0: no Yoshi yet this frame (the Yoshi sprite sets it again)",
+  "0180A7": "X = $0B: loop over the 12 sprite slots",
+  "0180A9": "[$15E9] = current sprite slot",
+  "0180AC": "Set OAM index and decrement timers for this slot (CODE_0180D2)",
+  "0180AF": "Run the sprite according to its status (HandleSprite)",
+  "0180B2": "Next slot",
+  "0180B3": "Loop for slots 11..0",
+  "0180B5": "\\",
+  "0180B8": "/ Skip the next call if [$18B8] = 0",
+  "0180BA": "Run extra sprite code in bank $02 (CODE_02F808), not analysed",
+  "0180BE": "A = [$18DF]: did a Yoshi sprite run this frame?",
+  "0180C1": "Yes: skip",
+  "0180C3": "\\",
+  "0180C6": "/ No Yoshi: Mario is not on Yoshi (clear RAM_OnYoshi and [$188B])",
+  "0180C9": "Restore data bank",
+  "0180CA": "Return long",
+  "0180CB": "\\",
+  "0180CE": "/ A = [horizontal off screen flag] OR [vertical off screen flag]: non-zero = off screen",
+  "0180D1": "Return",
+  "0180D2": "Save sprite slot",
+  "0180D3": "A = sprite slot",
+  "0180D4": "X = [$1692]: sprite memory setting (selects an OAM allotment row)",
+  "0180D7": "\\",
+  "0180D8": "/ A = slot + DATA_07F0B4[X]",
+  "0180DC": "X = index into the OAM index table",
+  "0180DD": "A = DATA_07F000[X]: first OAM slot for this sprite",
+  "0180E1": "Restore sprite slot",
+  "0180E2": "Store as the sprite's OAM index",
+  "0180E5": "A = sprite status",
+  "0180E8": "Status 0 (no sprite): skip the timers",
+  "0180EA": "A = [RAM_SpritesLocked]",
+  "0180EC": "Sprites locked: skip the timers",
+  "0180EE": "\\",
+  "0180F1": "} Decrement [$1540,X] if non-zero",
+  "0180F3": "/",
+  "0180F6": "\\",
+  "0180F9": "} Decrement [RAM_DisableInter,X] if non-zero",
+  "0180FB": "/",
+  "0180FE": "\\",
+  "018101": "} Decrement [$1558,X] if non-zero",
+  "018103": "/",
+  "018106": "\\",
+  "018109": "} Decrement [$1564,X] if non-zero",
+  "01810B": "/",
+  "01810E": "\\",
+  "018111": "} Decrement [$1FE2,X] if non-zero",
+  "018113": "/",
+  "018116": "\\",
+  "018119": "} Decrement [$15AC,X] if non-zero",
+  "01811B": "/",
+  "01811E": "\\",
+  "018121": "} Decrement [$163E,X] if non-zero",
+  "018123": "/",
+  "018126": "Return",
+  "018127": "A = sprite status",
+  "01812A": "Status 0: erase the sprite",
+  "01812C": "\\",
+  "01812E": "/ Status other than 8: use the pointer table",
+  "018130": "Status 8 (normal): run the sprite's main routine",
+  "018133": "Jump to the routine for this status (SpriteStatusRtPtr)",
+  "018137": "00 - Empty: EraseSprite (normally bypassed above)",
+  "018139": "01 - Initialization",
+  "01813B": "02 - Killed, falling off screen (star, shell, etc.)",
+  "01813D": "03 - Smushed",
+  "01813F": "04 - Spin-jumped on",
+  "018141": "05 - Handled at $019A7B, purpose unclear",
+  "018143": "06 - End of level: turn into a coin",
+  "018145": "07 - Unused (just returns)",
+  "018147": "08 - Normal (bypassed above)",
+  "018149": "09 - Stationary (carryable, flipped, stunned)",
+  "01814B": "0A - Kicked",
+  "01814D": "0B - Carried",
+  "01814F": "0C - Powerup that appears when carrying a sprite past the goal tape",
+  "018151": "\\",
+  "018153": "/ Level sprite index = $FF: the sprite will never be reloaded",
+  "018156": "Return",
+  "018157": "Run the sprite's main routine",
+  "01815A": "Despawn when far off screen (SubOffscreen0Bnk1)",
+  "01815D": "Move sprite by its speeds with gravity and block interaction",
+  "018160": "\\",
+  "018162": "/ Y speed -= 2 (cancels part of gravity)",
+  "018164": "A = non-zero if on the ground",
+  "018167": "In the air: return",
+  "018169": "Landed: set a bounce Y speed",
+  "01816C": "Return",
+  "01816D": "Turn sprites into coins at level end (LvlEndSprCoins)",
+  "018171": "Return",
+  "018172": "\\",
+  "018174": "/ Sprite status = 8 (normal), then run its init routine",
+  "018177": "A = sprite number",
+  "018179": "Jump to the init routine in SpriteInitPtr",
+  "01817D": "00 - Green Koopa, no shell",
+  "01817F": "01 - Red Koopa, no shell",
+  "018181": "02 - Blue Koopa, no shell",
+  "018183": "03 - Yellow Koopa, no shell",
+  "018185": "04 - Green Koopa",
+  "018187": "05 - Red Koopa",
+  "018189": "06 - Blue Koopa",
+  "01818B": "07 - Yellow Koopa",
+  "01818D": "08 - Green Koopa, flying left",
+  "01818F": "09 - Green bouncing Koopa",
+  "018191": "0A - Red vertical flying Koopa",
+  "018193": "0B - Red horizontal flying Koopa",
+  "018195": "0C - Yellow Koopa with wings",
+  "018197": "0D - Bob-omb",
+  "018199": "0E - Keyhole",
+  "01819B": "0F - Goomba",
+  "01819D": "10 - Bouncing Goomba with wings",
+  "01819F": "11 - Buzzy Beetle",
+  "0181A1": "12 - Unused",
+  "0181A3": "13 - Spiny",
+  "0181A5": "14 - Spiny falling",
+  "0181A7": "15 - Fish, horizontal",
+  "0181A9": "16 - Fish, vertical",
+  "0181AB": "17 - Fish, created from generator",
+  "0181AD": "18 - Surface jumping fish",
+  "0181AF": "19 - Display text from level Message Box #1",
+  "0181B1": "1A - Classic Piranha Plant",
+  "0181B3": "1B - Bouncing football in place",
+  "0181B5": "1C - Bullet Bill",
+  "0181B7": "1D - Hopping flame",
+  "0181B9": "1E - Lakitu",
+  "0181BB": "1F - Magikoopa",
+  "0181BD": "20 - Magikoopa's magic",
+  "0181BF": "21 - Moving coin",
+  "0181C1": "22 - Green vertical net Koopa",
+  "0181C3": "23 - Red vertical net Koopa",
+  "0181C5": "24 - Green horizontal net Koopa",
+  "0181C7": "25 - Red horizontal net Koopa",
+  "0181C9": "26 - Thwomp",
+  "0181CB": "27 - Thwimp",
+  "0181CD": "28 - Big Boo",
+  "0181CF": "29 - Koopa Kid",
+  "0181D1": "2A - Upside down Piranha Plant",
+  "0181D3": "2B - Sumo Brother's fire lightning",
+  "0181D5": "2C - Yoshi egg",
+  "0181D7": "2D - Baby green Yoshi",
+  "0181D9": "2E - Spike Top",
+  "0181DB": "2F - Portable spring board",
+  "0181DD": "30 - Dry Bones, throws bones",
+  "0181DF": "31 - Bony Beetle",
+  "0181E1": "32 - Dry Bones, stay on ledge",
+  "0181E3": "33 - Fireball",
+  "0181E5": "34 - Boss fireball",
+  "0181E7": "35 - Green Yoshi",
+  "0181E9": "36 - Unused",
+  "0181EB": "37 - Boo",
+  "0181ED": "38 - Eerie",
+  "0181EF": "39 - Eerie, wave motion",
+  "0181F1": "3A - Urchin, fixed",
+  "0181F3": "3B - Urchin, wall detect",
+  "0181F5": "3C - Urchin, wall follow",
+  "0181F7": "3D - Rip Van Fish",
+  "0181F9": "3E - POW",
+  "0181FB": "3F - Para-Goomba",
+  "0181FD": "40 - Para-Bomb",
+  "0181FF": "41 - Dolphin, horizontal",
+  "018201": "42 - Dolphin2, horizontal",
+  "018203": "43 - Dolphin, vertical",
+  "018205": "44 - Torpedo Ted",
+  "018207": "45 - Directional coins",
+  "018209": "46 - Diggin' Chuck",
+  "01820B": "47 - Swimming/Jumping fish",
+  "01820D": "48 - Diggin' Chuck's rock",
+  "01820F": "49 - Growing/shrinking pipe end",
+  "018211": "4A - Goal Point Question Sphere",
+  "018213": "4B - Pipe dwelling Lakitu",
+  "018215": "4C - Exploding Block",
+  "018217": "4D - Ground dwelling Monty Mole",
+  "018219": "4E - Ledge dwelling Monty Mole",
+  "01821B": "4F - Jumping Piranha Plant",
+  "01821D": "50 - Jumping Piranha Plant, spit fire",
+  "01821F": "51 - Ninji",
+  "018221": "52 - Moving ledge hole in ghost house",
+  "018223": "53 - Throw block sprite",
+  "018225": "54 - Climbing net door",
+  "018227": "55 - Checkerboard platform, horizontal",
+  "018229": "56 - Flying rock platform, horizontal",
+  "01822B": "57 - Checkerboard platform, vertical",
+  "01822D": "58 - Flying rock platform, vertical",
+  "01822F": "59 - Turn block bridge, horizontal and vertical",
+  "018231": "5A - Turn block bridge, horizontal",
+  "018233": "5B - Brown platform floating in water",
+  "018235": "5C - Checkerboard platform that falls",
+  "018237": "5D - Orange platform floating in water",
+  "018239": "5E - Orange platform, goes on forever",
+  "01823B": "5F - Brown platform on a chain",
+  "01823D": "60 - Flat green switch palace switch",
+  "01823F": "61 - Floating skulls",
+  "018241": "62 - Brown platform, line-guided",
+  "018243": "63 - Checker/brown platform, line-guided",
+  "018245": "64 - Rope mechanism, line-guided",
+  "018247": "65 - Chainsaw, line-guided",
+  "018249": "66 - Upside down chainsaw, line-guided",
+  "01824B": "67 - Grinder, line-guided",
+  "01824D": "68 - Fuzz ball, line-guided",
+  "01824F": "69 - Unused",
+  "018251": "6A - Coin game cloud",
+  "018253": "6B - Spring board, left wall",
+  "018255": "6C - Spring board, right wall",
+  "018257": "6D - Invisible solid block",
+  "018259": "6E - Dino Rhino",
+  "01825B": "6F - Dino Torch",
+  "01825D": "70 - Pokey",
+  "01825F": "71 - Super Koopa, red cape",
+  "018261": "72 - Super Koopa, yellow cape",
+  "018263": "73 - Super Koopa, feather",
+  "018265": "74 - Mushroom",
+  "018267": "75 - Flower",
+  "018269": "76 - Star",
+  "01826B": "77 - Feather",
+  "01826D": "78 - 1-Up",
+  "01826F": "79 - Growing Vine",
+  "018271": "7A - Firework",
+  "018273": "7B - Goal Point",
+  "018275": "7C - Princess Peach",
+  "018277": "7D - Balloon",
+  "018279": "7E - Flying Red coin",
+  "01827B": "7F - Flying yellow 1-Up",
+  "01827D": "80 - Key",
+  "01827F": "81 - Changing item from translucent block",
+  "018281": "82 - Bonus game sprite",
+  "018283": "83 - Left flying question block",
+  "018285": "84 - Flying question block",
+  "018287": "85 - Unused (Pretty sure)",
+  "018289": "86 - Wiggler",
+  "01828B": "87 - Lakitu's cloud",
+  "01828D": "88 - Unused (Winged cage sprite)",
+  "01828F": "89 - Layer 3 smash",
+  "018291": "8A - Bird from Yoshi's house",
+  "018293": "8B - Puff of smoke from Yoshi's house",
+  "018295": "8C - Fireplace smoke/exit from side screen",
+  "018297": "8D - Ghost house exit sign and door",
+  "018299": "8E - Invisible \"Warp Hole\" blocks",
+  "01829B": "8F - Scale platforms",
+  "01829D": "90 - Large green gas bubble",
+  "01829F": "91 - Chargin' Chuck",
+  "0182A1": "92 - Splittin' Chuck",
+  "0182A3": "93 - Bouncin' Chuck",
+  "0182A5": "94 - Whistlin' Chuck",
+  "0182A7": "95 - Clapin' Chuck",
+  "0182A9": "96 - Unused (Chargin' Chuck clone)",
+  "0182AB": "97 - Puntin' Chuck",
+  "0182AD": "98 - Pitchin' Chuck",
+  "0182AF": "99 - Volcano Lotus",
+  "0182B1": "9A - Sumo Brother",
+  "0182B3": "9B - Hammer Brother",
+  "0182B5": "9C - Flying blocks for Hammer Brother",
+  "0182B7": "9D - Bubble with sprite",
+  "0182B9": "9E - Ball and Chain",
+  "0182BB": "9F - Banzai Bill",
+  "0182BD": "A0 - Activates Bowser scene",
+  "0182BF": "A1 - Bowser's bowling ball",
+  "0182C1": "A2 - MechaKoopa",
+  "0182C3": "A3 - Grey platform on chain",
+  "0182C5": "A4 - Floating Spike ball",
+  "0182C7": "A5 - Fuzzball/Sparky, ground-guided",
+  "0182C9": "A6 - HotHead, ground-guided",
+  "0182CB": "A7 - Iggy's ball",
+  "0182CD": "A8 - Blargg",
+  "0182CF": "A9 - Reznor",
+  "0182D1": "AA - Fishbone",
+  "0182D3": "AB - Rex",
+  "0182D5": "AC - Wooden Spike, moving down and up",
+  "0182D7": "AD - Wooden Spike, moving up/down first",
+  "0182D9": "AE - Fishin' Boo",
+  "0182DB": "AF - Boo Block",
+  "0182DD": "B0 - Reflecting stream of Boo Buddies",
+  "0182DF": "B1 - Creating/Eating block",
+  "0182E1": "B2 - Falling Spike",
+  "0182E3": "B3 - Bowser statue fireball",
+  "0182E5": "B4 - Grinder, non-line-guided",
+  "0182E7": "B5 - Sinking fireball used in boss battles",
+  "0182E9": "B6 - Reflecting fireball",
+  "0182EB": "B7 - Carrot Top lift, upper right",
+  "0182ED": "B8 - Carrot Top lift, upper left",
+  "0182EF": "B9 - Info Box",
+  "0182F1": "BA - Timed lift",
+  "0182F3": "BB - Grey moving castle block",
+  "0182F5": "BC - Bowser statue",
+  "0182F7": "BD - Sliding Koopa without a shell",
+  "0182F9": "BE - Swooper bat",
+  "0182FB": "BF - Mega Mole",
+  "0182FD": "C0 - Grey platform on lava",
+  "0182FF": "C1 - Flying grey turnblocks",
+  "018301": "C2 - Blurp fish",
+  "018303": "C3 - Porcu-Puffer fish",
+  "018305": "C4 - Grey platform that falls",
+  "018307": "C5 - Big Boo Boss",
+  "018309": "C6 - Dark room with spot light",
+  "01830B": "C7 - Invisible mushroom",
+  "01830D": "C8 - Light switch block for dark room",
+  "01830F": "\\",
+  "018311": "/ Y position += 2",
+  "018313": "Return",
+  "018314": "Direction = 1",
+  "018317": "Pick variant from X position (InitExplodingBlk, returns Y = 0-3)",
+  "01831A": "Sprite state = Y",
+  "01831C": "\\",
+  "01831E": "/ Variant other than 2: return",
+  "018320": "\\",
+  "018322": "/ Sprite palette = 1",
+  "018325": "Return",
+  "018326": "Y = $3F",
+  "018328": "\\",
+  "01832A": "} X position bit 4 set: keep Y = $3F",
+  "01832C": "/",
+  "01832E": "Else Y = $FF",
+  "018330": "\\",
+  "018331": "/ [$1570,X] = Y: initial platform timer value (probably)",
+  "018334": "Return",
+  "018335": "Yoshi egg palettes, indexed by (X position >> 4) & 3",
+  "018339": "\\",
+  "01833B": "|",
+  "01833C": "|",
+  "01833D": "|",
+  "01833E": "|",
+  "01833F": "} Y = (X position low >> 4) & 3: egg colour comes from its position",
+  "018341": "/",
+  "018342": "\\",
+  "018345": "/ Sprite palette = YoshiPal[Y]",
+  "018348": "[$187B,X]++ (probably prevents stomping the egg)",
+  "01834B": "Return",
+  "01834C": "Initial X speeds: $10 (moves right), $F0 (moves left)",
+  "01834E": "Face Mario (Y = direction)",
+  "018351": "\\",
+  "018354": "/ X speed = DiagBounceInitSpeed[Y]",
+  "018356": "\\",
+  "018358": "/ Y speed = $F0 (moving up)",
+  "01835A": "Return",
+  "01835B": "\\",
+  "01835D": "|",
+  "01835E": "} Y position low -= $40",
+  "018360": "/",
+  "018362": "\\",
+  "018365": "} Y position high -= borrow: spawn $40 pixels above the placed position",
+  "018367": "/",
+  "01836A": "Return",
+  "01836B": "Same init as Monty Mole",
+  "01836E": "Run Bowser scene init (CODE_03A0F1)",
+  "018372": "Return",
+  "018373": "\\",
+  "018375": "/ Sprite state = 3",
+  "018377": "\\",
+  "018379": "/ [$1540,X] = $70 timer",
+  "01837C": "Return",
+  "01837D": "\\",
+  "01837F": "/ A = 4, stored to [$1540,X] at $018379",
+  "018381": "\\",
+  "018383": "/ [$1534,X] = $40",
+  "018386": "Return",
+  "018387": "Y = 0 if Mario is right of the sprite, else 1",
+  "01838A": "A = Y",
+  "01838B": "Mario is on the left: go play the sound",
+  "01838D": "Mario is on the right (Banzai Bill flies left): erase the sprite",
+  "018390": "\\",
+  "018392": "/ Play sound effect $09 (Banzai Bill)",
+  "018395": "Return",
+  "018396": "A = $38",
+  "018398": "Go store it at $01839C",
+  "01839A": "A = $30",
+  "01839C": "[$187B,X] = A (probably chain length)",
+  "01839F": "Return",
+  "0183A0": "Exploding block states: $15, $0F, $00, $04",
+  "0183A4": "\\",
+  "0183A6": "|",
+  "0183A7": "|",
+  "0183A8": "|",
+  "0183A9": "|",
+  "0183AA": "} Y = (X position low >> 4) & 3: block type from its position",
+  "0183AC": "/",
+  "0183AD": "\\",
+  "0183B0": "/ Sprite state = ExplodingBlkSpr[Y]",
+  "0183B2": "Return",
+  "0183B3": "Scale platform offsets: $80, $40",
+  "0183B5": "\\",
+  "0183B7": "/ [$1534,X] = Y position low (remember the start)",
+  "0183BA": "\\",
+  "0183BD": "/ [$151C,X] = Y position high",
+  "0183C0": "\\",
+  "0183C2": "|",
+  "0183C4": "|",
+  "0183C5": "|",
+  "0183C6": "|",
+  "0183C7": "} Y = X position bit 4 (0 or 1): platform type",
+  "0183C8": "/",
+  "0183C9": "\\",
+  "0183CB": "|",
+  "0183CC": "} Sprite state = X position low + ScalePlatWidth[Y]",
+  "0183CF": "/",
+  "0183D1": "\\",
+  "0183D4": "} [$1602,X] = X position high + carry",
+  "0183D6": "/",
+  "0183D9": "Return",
+  "0183DA": "\\",
+  "0183DC": "/ [$1564,X] = $28: timer that blocks sprite contact",
+  "0183DF": "Return",
+  "0183E0": "[$160E,X] -= 1 (to $FF)",
+  "0183E3": "Direction = 1",
+  "0183E6": "\\",
+  "0183E9": "/ If Mario already has Yoshi (overworld flag), return",
+  "0183EB": "Else erase this sprite (status 0)",
+  "0183EE": "Return",
+  "0183EF": "Urchin speed table: $08, then shared with next byte",
+  "0183F0": "$00, $08: X speed for Y = 1; Y speed for Y = 0 and 1",
+  "0183F2": "Y = 0 if Mario is right of the sprite, else 1",
+  "0183F5": "\\",
+  "0183F6": "|",
+  "0183F8": "|",
+  "0183F9": "|",
+  "0183FA": "} A = (Y EOR 1) << 4: $10 if Mario is on the right, else 0",
+  "0183FB": "/",
+  "0183FC": "Set direction bit and speeds (InitUrchin entry at $01841D)",
+  "0183FF": "[$164A,X] = 0",
+  "018402": "Continue at $01840E",
+  "018404": "Y position low += 1 (sprite hugs the wall)",
+  "018406": "No overflow: go to InitFuzzBall+Spark",
+  "018408": "Carry into Y position high",
+  "01840B": "Initialize like an Urchin",
+  "01840E": "\\",
+  "018411": "} [$151C,X] EOR= $10: flip the direction bit",
+  "018413": "/",
+  "018416": "\\",
+  "018417": "} Sprite state = [$151C,X] >> 2",
+  "018418": "/",
+  "01841A": "Return",
+  "01841B": "A = X position low",
+  "01841D": "Y = 0",
+  "01841F": "A = X position bit 4",
+  "018421": "[$151C,X] = direction bit",
+  "018424": "Bit set: keep Y = 0",
+  "018426": "Else Y = 1",
+  "018427": "A = DATA_0183EF[Y]",
+  "01842A": "X speed = A",
+  "01842C": "A = DATA_0183F0[Y]",
+  "01842F": "Y speed = A (then falls into InitRipVanFish)",
+  "018431": "[$164A,X]++ (probably the in-water flag)",
+  "018434": "Return",
+  "018435": "\\",
+  "018437": "/ Sprite status = 9 (carryable)",
+  "01843A": "Return",
+  "01843B": "Sprite state += 1",
+  "01843D": "Return",
+  "01843E": "\\",
+  "018440": "|",
+  "018441": "} X position low -= 8",
+  "018443": "/",
+  "018445": "\\",
+  "018448": "} X position high -= borrow",
+  "01844A": "/",
+  "01844D": "Return",
+  "01844E": "\\",
+  "018450": "|",
+  "018451": "|",
+  "018452": "|",
+  "018453": "|",
+  "018454": "} [$151C,X] = (X position >> 4) & 1: 0 = blue, 1 = silver",
+  "018456": "/",
+  "018459": "\\",
+  "01845A": "} Sprite palette = PSwitchPal[Y]",
+  "01845D": "/",
+  "018460": "\\",
+  "018462": "/ Sprite status = 9 (carryable)",
+  "018465": "Return",
+  "018466": "P-switch palettes: $06 (blue), $02 (silver)",
+  "018468": "Erase this sprite once off screen (used by InitLakitu)",
+  "01846B": "Y = 9: look through sprite slots 9..0",
+  "01846D": "Skip this sprite's own slot",
+  "018470": "Own slot: next slot",
+  "018472": "A = status of slot Y",
+  "018475": "\\",
+  "018477": "/ Not status 8 (normal): next slot",
+  "018479": "A = sprite number in slot Y",
+  "01847C": "\\",
+  "01847E": "/ Lakitu's cloud ($87) already exists: erase this sprite",
+  "018480": "\\",
+  "018482": "/ Another Lakitu ($1E) exists: erase this sprite",
+  "018484": "Next slot",
+  "018485": "Loop for slots 9..0",
+  "018487": "Respawn timer = 0",
+  "01848A": "[$18BF] = 0",
+  "01848D": "Generator number = 0 (no generator)",
+  "018490": "\\",
+  "018492": "|",
+  "018495": "} Save Lakitu's Y position in [$18C3]/[$18C4]",
+  "018498": "/",
+  "01849B": "Find a free sprite slot (Y; N set if none)",
+  "01849F": "None free: skip the cloud",
+  "0184A1": "[$18E1] = slot of the cloud",
+  "0184A4": "\\",
+  "0184A6": "/ New sprite number = $87 (Lakitu's cloud)",
+  "0184A9": "\\",
+  "0184AB": "/ New sprite status = 8 (normal)",
+  "0184AE": "\\",
+  "0184B0": "/ Cloud X position low = Lakitu's",
+  "0184B3": "\\",
+  "0184B6": "/ Cloud X position high = Lakitu's",
+  "0184B9": "\\",
+  "0184BB": "/ Cloud Y position low = Lakitu's",
+  "0184BE": "\\",
+  "0184C1": "/ Cloud Y position high = Lakitu's",
+  "0184C4": "\\",
+  "0184C5": "|",
+  "0184C6": "} Initialize the cloud's sprite tables (X = cloud slot)",
+  "0184CA": "/",
+  "0184CB": "[$18E0] = 0 (then falls into InitMontyMole)",
+  "0184CE": "\\",
+  "0184D0": "} [$151C,X] = X position bit 4 (variant flag)",
+  "0184D2": "/",
+  "0184D5": "Return",
+  "0184D6": "\\",
+  "0184D8": "/ [$1909] = $FF",
+  "0184DB": "Then set the variant flag (InitMontyMole)",
+  "0184DD": "Y = 0 if Mario is right of the sprite, else 1",
+  "0184E0": "\\",
+  "0184E1": "/ Sprite state = Y (direction)",
+  "0184E3": "\\",
+  "0184E5": "/ [$1540,X] = $10 timer",
+  "0184E8": "Return",
+  "0184E9": "A = chuck type 8 (Clappin')",
+  "0184EB": "Go store it at $01851A",
+  "0184ED": "\\",
+  "0184EF": "|",
+  "0184F1": "|",
+  "0184F2": "|",
+  "0184F3": "|",
+  "0184F4": "} [$187B,X] = (X position & $30) >> 4: variant 0-3 (probably)",
+  "0184F5": "/",
+  "0184F8": "\\",
+  "0184FA": "/ A = chuck type $0A (Pitchin'), go store it at $01851A",
+  "0184FC": "\\",
+  "0184FE": "/ A = chuck type 9 (Puntin'), go store it at $01851A",
+  "018500": "\\",
+  "018502": "/ A = chuck type $0B (Whistlin'), go store it at $01851A",
+  "018504": "\\",
+  "018506": "/ A = chuck type 5 (Splittin'/Bouncin'), go store it at $01851A",
+  "018508": "\\",
+  "01850A": "/ [$1540,X] = $30 timer",
+  "01850D": "\\",
+  "01850F": "|",
+  "018511": "|",
+  "018512": "|",
+  "018513": "|",
+  "018514": "} Direction = X position bit 4",
+  "018515": "/",
+  "018518": "A = chuck type 4 (Diggin')",
+  "01851A": "Sprite state = chuck type (chucks share most of their code)",
+  "01851C": "Face Mario (Y = direction)",
+  "01851F": "\\",
+  "018522": "/ [$151C,X] = DATA_018526[Y]",
+  "018525": "Return",
+  "018526": "Chuck init values: $00, $04",
+  "018528": "\\",
+  "01852A": "/ Y speed = $28 (moving down)",
+  "01852C": "Face Mario",
+  "01852E": "Face Mario",
+  "018531": "\\",
+  "018533": "} X position bit 4 clear: go to $018547",
+  "018535": "/",
+  "018537": "\\",
+  "018539": "/ Sprite tweaker 1656 = $10",
+  "01853C": "\\",
+  "01853E": "/ Sprite tweaker 1662 = $80",
+  "018541": "\\",
+  "018543": "/ Sprite tweaker 1686 = $10",
+  "018546": "Return",
+  "018547": "[$1534,X] += 1",
+  "01854A": "Return",
+  "01854B": "A = $1F: 5 Pokey segments (one bit each)",
+  "01854D": "\\",
+  "018550": "/ On Yoshi: keep $1F",
+  "018552": "Not on Yoshi: A = $07, 3 segments",
+  "018554": "Sprite state = segment bit mask",
+  "018556": "Face Mario",
+  "018558": "\\",
+  "01855A": "/ [$151C,X] = 4 (falls into InitBomb)",
+  "01855D": "\\",
+  "01855F": "/ [$1540,X] = $FF timer",
+  "018562": "Face Mario",
+  "018564": "Choose variant like an exploding block (Y = 0-3)",
+  "018567": "Sprite state = Y",
+  "018569": "[$1534,X] -= 1",
+  "01856C": "Face Mario",
+  "01856E": "\\",
+  "018570": "} [$160E,X] = Y position bit 4",
+  "018572": "/",
+  "018575": "A = random number",
+  "018579": "[$1570,X] = A (falls into FaceMario)",
+  "01857C": "Y = 0 if Mario is right of the sprite, else 1",
+  "01857F": "A = Y",
+  "018580": "Sprite direction = Y (face Mario)",
+  "018583": "Return",
+  "018584": "\\",
+  "018586": "/ Play sound effect $17 (Bowser's fire)",
+  "018589": "Face Mario",
+  "01858B": "Sprite state += 1",
+  "01858D": "Return",
+  "01858E": "A = random number",
+  "018592": "\\",
+  "018594": "/ [$1540,X] = random number & $1F",
+  "018597": "Face Mario",
+  "01859A": "\\",
+  "01859D": "} Set bit 7 of the sprite palette byte (vertical flip)",
+  "01859E": "/",
+  "0185A1": "\\",
+  "0185A3": "|",
+  "0185A4": "} Y position low -= $10",
+  "0185A6": "/",
+  "0185A8": "\\",
+  "0185AB": "} Y position high -= borrow",
+  "0185AD": "/"
+ }
+}

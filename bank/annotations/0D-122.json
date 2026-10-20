@@ -1,0 +1,1088 @@
+{
+ "bank": "0D",
+ "sections": {
+  "s0DC42E": {
+   "name": "Draw horizontal row of spikes",
+   "summary": [
+    "Level object: row of spike tiles, Map16 $15A or $159 chosen by type.",
+    "Object byte [$59]: high nibble = type (index into DATA_0DC42C), low nibble = width-1. Start index in [$57]."
+   ]
+  },
+  "s0DC44C": {
+   "name": "Data: vertical spike tiles",
+   "summary": [
+    "Map16 $15B,$15C,$153 selected by the type nibble."
+   ]
+  },
+  "s0DC44F": {
+   "name": "Draw vertical column of spikes",
+   "summary": [
+    "Level object: column of tiles drawn downward, Map16 $15B/$15C/$153 by type.",
+    "Object byte [$59]: high nibble = height-1, low nibble = type."
+   ]
+  },
+  "s0DC46F": {
+   "name": "Data: stone block wall tiles",
+   "summary": [
+    "Left, middle and right column tile sets; each holds the top, middle and bottom row tile (Map16 $15D-$165)."
+   ]
+  },
+  "s0DC478": {
+   "name": "Tileset objects: wall, ledge, spikes, pipe",
+   "summary": [
+    "Contains five object draw routines that write Map16 tiles into the level buffer at [$6B]/[$57]:",
+    "stone block wall ($DC478, 3x3 tile set), castle ledge ($DC4C9), large spikes ($DC4EF), rock wall background ($DC58A)",
+    "and double-ended pipe ($DC5D8, walkable middle).",
+    "Parameters: [$57] = start index, [$59] = size/type byte, [$6B] = buffer pointer. Page 0/1 of Map16 is chosen by the two 'store page' helpers."
+   ]
+  },
+  "s0DC620": {
+   "name": "Map16 definitions: tileset page $0DC800",
+   "summary": [
+    "$0DC620-$0DC7FF is $FF padding. From $0DC800: Map16 tiles $100-$1B1 for this tileset page (8 bytes each = TL,TR,BL,BR as chr,prop).",
+    "Shared by several tilesets through TilesetMAP16Loc (bank 04). Tiles $131-$18C are blank (all 00)."
+   ]
+  },
+  "s0DCD90": {
+   "name": "Dispatch object for tileset 2 objects",
+   "summary": [
+    "Looks up the object number in [$5A] (minus 1) and jumps through the long pointer table that follows."
+   ]
+  },
+  "PtrsLong0DCD9A": {
+   "name": "Object pointer 01: Water (Blue)",
+   "summary": [
+    "Long pointer table (3 bytes per entry), indexed by object number - 1. Many entries are placeholders or share a routine;",
+    "many point at shared routines in this bank (CODE_0DA8C3 for single/repeating blocks, CODE_0DB3E3 for edges)."
+   ]
+  },
+  "PtrsLong0DCD9D": {
+   "name": "Object pointer 02: Invisible coin blocks"
+  },
+  "PtrsLong0DCDA0": {
+   "name": "Object pointer 03: Invisible note blocks"
+  },
+  "PtrsLong0DCDA3": {
+   "name": "Object pointer 04: Invisible POW coins"
+  },
+  "PtrsLong0DCDA6": {
+   "name": "Object pointer 05: Coins"
+  },
+  "PtrsLong0DCDA9": {
+   "name": "Object pointer 06: Walk-through dirt"
+  },
+  "PtrsLong0DCDAC": {
+   "name": "Object pointer 07: Water (Other color)"
+  },
+  "PtrsLong0DCDAF": {
+   "name": "Object pointer 08: Note blocks"
+  },
+  "PtrsLong0DCDB2": {
+   "name": "Object pointer 09: Turn blocks"
+  },
+  "PtrsLong0DCDB5": {
+   "name": "Object pointer 0A: Coin ? blocks"
+  },
+  "PtrsLong0DCDB8": {
+   "name": "Object pointer 0B: Throw blocks"
+  },
+  "PtrsLong0DCDBB": {
+   "name": "Object pointer 0C: Black piranha plants"
+  },
+  "PtrsLong0DCDBE": {
+   "name": "Object pointer 0D: Cement blocks"
+  },
+  "PtrsLong0DCDC1": {
+   "name": "Object pointer 0E: Brown blocks"
+  },
+  "PtrsLong0DCDC4": {
+   "name": "Object pointer 0F: Vertical pipes"
+  },
+  "PtrsLong0DCDC7": {
+   "name": "Object pointer 10: Horizontal pipes"
+  },
+  "PtrsLong0DCDCA": {
+   "name": "Object pointer 11: Bullet shooter"
+  },
+  "PtrsLong0DCDCD": {
+   "name": "Object pointer 12: Slopes"
+  },
+  "PtrsLong0DCDD0": {
+   "name": "Object pointer 13: Ledge edges"
+  },
+  "PtrsLong0DCDD3": {
+   "name": "Object pointer 14: Ground ledge"
+  },
+  "PtrsLong0DCDD6": {
+   "name": "Object pointer 15: Midway/Goal point"
+  },
+  "PtrsLong0DCDD9": {
+   "name": "Object pointer 16: Blue coins"
+  },
+  "PtrsLong0DCDDC": {
+   "name": "Object pointer 17: Rope/Clouds"
+  },
+  "PtrsLong0DCDDF": {
+   "name": "Object pointer 18: Water surface (ani)"
+  },
+  "PtrsLong0DCDE2": {
+   "name": "Object pointer 19: Water surface (not ani)"
+  },
+  "PtrsLong0DCDE5": {
+   "name": "Object pointer 1A: Lava surface (ani)"
+  },
+  "PtrsLong0DCDE8": {
+   "name": "Object pointer 1B: Net top edge"
+  },
+  "PtrsLong0DCDEB": {
+   "name": "Object pointer 1C: Donut bridge"
+  },
+  "PtrsLong0DCDEE": {
+   "name": "Object pointer 1D: Net bottom edge"
+  },
+  "PtrsLong0DCDF1": {
+   "name": "Object pointer 1E: Net vertical edge"
+  },
+  "PtrsLong0DCDF4": {
+   "name": "Object pointer 1F: Vert. Pipe/Bone/Log"
+  },
+  "PtrsLong0DCDF7": {
+   "name": "Object pointer 20: Horiz. Pipe/Bone/Log"
+  },
+  "PtrsLong0DCDFA": {
+   "name": "Object pointer 21: Long ground ledge"
+  },
+  "PtrsLong0DCDFD": {
+   "name": "Object pointer 22: unused (reserved)"
+  },
+  "PtrsLong0DCE00": {
+   "name": "Object pointer 23: unused (reserved)"
+  },
+  "PtrsLong0DCE03": {
+   "name": "Object pointer 24: unused (reserved)"
+  },
+  "PtrsLong0DCE06": {
+   "name": "Object pointer 25: unused (reserved)"
+  },
+  "PtrsLong0DCE09": {
+   "name": "Object pointer 26: unused (reserved)"
+  },
+  "PtrsLong0DCE0C": {
+   "name": "Object pointer 27: unused (reserved)"
+  },
+  "PtrsLong0DCE0F": {
+   "name": "Object pointer 28: unused (reserved)"
+  },
+  "PtrsLong0DCE12": {
+   "name": "Object pointer 29: unused (reserved)"
+  },
+  "PtrsLong0DCE15": {
+   "name": "Object pointer 2A: unused (reserved)"
+  },
+  "PtrsLong0DCE18": {
+   "name": "Object pointer 2B: unused (reserved)"
+  },
+  "PtrsLong0DCE1B": {
+   "name": "Object pointer 2C: unused (reserved)"
+  },
+  "PtrsLong0DCE1E": {
+   "name": "Object pointer 2D: unused (reserved)"
+  },
+  "PtrsLong0DCE21": {
+   "name": "Object pointer 2E: placeholder (not tileset specific)"
+  },
+  "PtrsLong0DCE24": {
+   "name": "Object pointer 2F: placeholder (not tileset specific)"
+  },
+  "PtrsLong0DCE27": {
+   "name": "Object pointer 30: placeholder (not tileset specific)"
+  },
+  "PtrsLong0DCE2A": {
+   "name": "Object pointer 31: placeholder (not tileset specific)"
+  },
+  "PtrsLong0DCE2D": {
+   "name": "Object pointer 32: Log bridge"
+  },
+  "PtrsLong0DCE30": {
+   "name": "Object pointer 33: Blue switch blocks"
+  },
+  "PtrsLong0DCE33": {
+   "name": "Object pointer 34: Red switch blocks"
+  },
+  "PtrsLong0DCE36": {
+   "name": "Object pointer 35: Plants on columns"
+  },
+  "PtrsLong0DCE39": {
+   "name": "Object pointer 36: Horizontal conveyors"
+  },
+  "PtrsLong0DCE3C": {
+   "name": "Object pointer 37: Diagonal conveyors"
+  },
+  "PtrsLong0DCE3F": {
+   "name": "Object pointer 38: Horizontal guide lines"
+  },
+  "PtrsLong0DCE42": {
+   "name": "Object pointer 39: Vertical guide lines / vertical column"
+  },
+  "PtrsLong0DCE45": {
+   "name": "Object pointer 3A: Normal/steep/ON/OFF guide lines"
+  },
+  "PtrsLong0DCE48": {
+   "name": "Object pointer 3B: Very steep guide lines"
+  },
+  "PtrsLong0DCE4B": {
+   "name": "Object pointer 3C: Mushroom ledge"
+  },
+  "PtrsLong0DCE4E": {
+   "name": "Object pointer 3D: Mushroom column"
+  },
+  "PtrsLong0DCE51": {
+   "name": "Object pointer 3E: Horizontal log"
+  },
+  "PtrsLong0DCE54": {
+   "name": "Large line guide circle quarters",
+   "summary": [
+    "Last pointer entry (vertical log) followed by the 2x2 tile data for each large line-guide circle quarter and the routine that draws them.",
+    "Object byte: object number - $4D times 4 indexes DATA_0DCE57; places 2 rows of 2 tiles. Parameters: [$57] start index, [$59] object number."
+   ]
+  },
+  "s0DCE90": {
+   "name": "Data: small circle quarter tiles",
+   "summary": [
+    "Map16 $076-$079 for the four quarters of a small line-guide circle."
+   ]
+  },
+  "s0DCE94": {
+   "name": "Draw small line guide circle quarter",
+   "summary": [
+    "Writes a single Map16 tile ($076-$079 by object number - $51). Followed by ADDR_0DCEA6, unused canvas bit drawing Map16 $084/$085 stacked vertically."
+   ]
+  },
+  "s0DCEBE": {
+   "name": "Data: horizontal guide end tiles",
+   "summary": [
+    "Map16 $096,$097."
+   ]
+  },
+  "s0DCEC0": {
+   "name": "Draw horizontal line guide end",
+   "summary": [
+    "Writes Map16 $096 and $097 going down: end cap of a horizontal line guide."
+   ]
+  },
+  "s0DCED8": {
+   "name": "Data: vertical guide end tiles",
+   "summary": [
+    "Map16 $098,$099."
+   ]
+  },
+  "s0DCEDA": {
+   "name": "Draw vertical line guide end",
+   "summary": [
+    "Writes Map16 $098 and $099 going right: end cap of a vertical line guide."
+   ]
+  },
+  "s0DCEF0": {
+   "name": "Data: conveyor tiles",
+   "summary": [
+    "Map16 $10C,$10D."
+   ]
+  },
+  "s0DCEF2": {
+   "name": "Draw horizontal conveyor",
+   "summary": [
+    "Row of Map16 $10C or $10D by type; low nibble of [$59] = width-1."
+   ]
+  },
+  "s0DCF10": {
+   "name": "Data: horizontal guide line tiles",
+   "summary": [
+    "Map16 $092,$093 by type."
+   ]
+  },
+  "s0DCF12": {
+   "name": "Draw horizontal guide line",
+   "summary": [
+    "Row of Map16 $092 or $093 by type; low nibble of [$59] = width-1."
+   ]
+  },
+  "s0DCF30": {
+   "name": "Data: vertical guide line tiles",
+   "summary": [
+    "Map16 $090,$091,$0A2 by type."
+   ]
+  },
+  "s0DCF33": {
+   "name": "Draw vertical guide line, dispatch shape",
+   "summary": [
+    "Vertical guide line / column going downward, followed by the dispatcher for slope-shaped guide lines (low nibble of [$59] = shape 0-5)."
+   ]
+  },
+  "PtrsLong0DCF5C": {
+   "name": "Guide line slopes and dispatch",
+   "summary": [
+    "Pointer table (6 shapes) and the four slope routines (normal left/right, steep left/right incl. ON/OFF variants) plus the very steep dispatcher.",
+    "Each routine draws one tile pair or tile per step and walks the buffer index diagonally, crossing 16x27-tile screen boundaries as needed (CODE_0DA987/CODE_0DA9D6/CODE_0DA9EF)."
+   ]
+  }
+ },
+ "lines": {
+  "0DC42E": "Y = object start index in Map16 buffer",
+  "0DC430": "\\",
+  "0DC432": "|",
+  "0DC434": "/ $00 = width-1 = low nibble of [$59]",
+  "0DC436": "\\",
+  "0DC438": "|",
+  "0DC439": "|",
+  "0DC43A": "|",
+  "0DC43B": "|",
+  "0DC43C": "/ X = type = high nibble of [$59]",
+  "0DC43D": "\\",
+  "0DC440": "|",
+  "0DC444": "/ Place Map16 $15A or $159 [X] and step right",
+  "0DC447": "\\",
+  "0DC449": "/ Loop for width+1 tiles",
+  "0DC44B": "Return",
+  "0DC44F": "Y = object start index in Map16 buffer",
+  "0DC451": "\\",
+  "0DC453": "|",
+  "0DC454": "|",
+  "0DC455": "|",
+  "0DC456": "|",
+  "0DC457": "/ $00 = height-1 = high nibble of [$59]",
+  "0DC459": "\\",
+  "0DC45B": "|",
+  "0DC45D": "/ X = type = low nibble of [$59]",
+  "0DC45E": "\\",
+  "0DC461": "|",
+  "0DC465": "/ Select page 1, write Map16 $15B/$15C/$153 [X]",
+  "0DC467": "Move pointer down one row",
+  "0DC46A": "\\",
+  "0DC46C": "/ Loop for height+1 tiles",
+  "0DC46E": "Return",
+  "0DC478": "Y = object start index in Map16 buffer",
+  "0DC47A": "\\",
+  "0DC47C": "|",
+  "0DC47E": "/ $00 = low nibble of [$59] (tiles per row)",
+  "0DC480": "\\",
+  "0DC482": "|",
+  "0DC483": "|",
+  "0DC484": "|",
+  "0DC485": "|",
+  "0DC486": "/ $01 = row count-1 = high nibble of [$59]",
+  "0DC488": "Save buffer pointer",
+  "0DC48B": "X = 0: first (top) row of tile tables",
+  "0DC48D": "\\",
+  "0DC48F": "/ $02 = tiles left in this row",
+  "0DC491": "\\",
+  "0DC494": "|",
+  "0DC498": "/ Left tile Map16 $15D/$160/$163 [X], step right",
+  "0DC49B": "Jump into the loop test",
+  "0DC49E": "\\",
+  "0DC4A1": "|",
+  "0DC4A5": "/ Middle tile Map16 $15E/$161/$164 [X], step right",
+  "0DC4A8": "\\",
+  "0DC4AA": "/ Loop for the middle tiles",
+  "0DC4AC": "\\",
+  "0DC4AF": "|",
+  "0DC4B3": "/ Right tile Map16 $15F/$162/$165 [X]",
+  "0DC4B5": "Restore buffer pointer to row start",
+  "0DC4B8": "Move pointer down one row",
+  "0DC4BB": "X = 1: middle row",
+  "0DC4BD": "\\",
+  "0DC4BF": "/ End if that was the last row",
+  "0DC4C1": "\\",
+  "0DC4C3": "|",
+  "0DC4C5": "/ X = 2 (bottom row) if only one row remains, then draw next row",
+  "0DC4C8": "Return",
+  "0DC4C9": "Y = object start index in Map16 buffer",
+  "0DC4CB": "\\",
+  "0DC4CD": "|",
+  "0DC4CF": "/ $00 = width-1 = low nibble of [$59]",
+  "0DC4D1": "X = width-1",
+  "0DC4D3": "\\",
+  "0DC4D6": "|",
+  "0DC4D8": "/ Top tile Map16 $109, step right",
+  "0DC4DB": "\\",
+  "0DC4DC": "/ Loop for width+1 tiles",
+  "0DC4DE": "Move pointer down one row",
+  "0DC4E1": "X = width-1",
+  "0DC4E3": "\\",
+  "0DC4E6": "|",
+  "0DC4E8": "/ Bottom tile Map16 $086 (page 0), step right",
+  "0DC4EB": "\\",
+  "0DC4EC": "/ Loop for width+1 tiles",
+  "0DC4EE": "Return",
+  "0DC4EF": "Y = object start index in Map16 buffer",
+  "0DC4F1": "\\",
+  "0DC4F3": "|",
+  "0DC4F5": "/ X = direction = low nibble of [$59] (0 = up)",
+  "0DC4F6": "\\",
+  "0DC4F8": "|",
+  "0DC4F9": "|",
+  "0DC4FA": "|",
+  "0DC4FB": "|",
+  "0DC4FC": "/ $00 = height-1 = high nibble of [$59]",
+  "0DC4FE": "Save buffer pointer",
+  "0DC501": "\\",
+  "0DC503": "/ Skip top tiles if the spikes point upwards",
+  "0DC505": "Leave the first column empty (step right)",
+  "0DC508": "\\",
+  "0DC50B": "|",
+  "0DC50D": "/ Top left tile Map16 $087",
+  "0DC510": "\\",
+  "0DC513": "|",
+  "0DC515": "/ Top right tile Map16 $088",
+  "0DC518": "Restore buffer pointer to row start",
+  "0DC51B": "Move pointer down one row",
+  "0DC51E": "\\",
+  "0DC521": "|",
+  "0DC523": "/ Upper row, tile 1: Map16 $089",
+  "0DC526": "\\",
+  "0DC529": "|",
+  "0DC52B": "/ Upper row, tile 2: Map16 $166",
+  "0DC52E": "\\",
+  "0DC531": "|",
+  "0DC533": "/ Upper row, tile 3: Map16 $167",
+  "0DC536": "\\",
+  "0DC539": "|",
+  "0DC53B": "/ Upper row, tile 4: Map16 $08A",
+  "0DC53E": "Restore buffer pointer to row start",
+  "0DC541": "Move pointer down one row",
+  "0DC544": "\\",
+  "0DC546": "/ Done if only one body row was requested",
+  "0DC548": "\\",
+  "0DC54B": "|",
+  "0DC54D": "/ Lower row, tile 1: Map16 $08B",
+  "0DC550": "\\",
+  "0DC553": "|",
+  "0DC555": "/ Lower row, tile 2: Map16 $168",
+  "0DC558": "\\",
+  "0DC55B": "|",
+  "0DC55D": "/ Lower row, tile 3: Map16 $169",
+  "0DC560": "\\",
+  "0DC563": "|",
+  "0DC565": "/ Lower row, tile 4: Map16 $08C",
+  "0DC568": "Restore buffer pointer to row start",
+  "0DC56B": "Move pointer down one row",
+  "0DC56E": "\\",
+  "0DC570": "/ Loop for the remaining body rows",
+  "0DC572": "\\",
+  "0DC574": "/ Done if the spikes point upwards",
+  "0DC576": "Leave the first column empty (step right)",
+  "0DC579": "\\",
+  "0DC57C": "|",
+  "0DC57E": "/ Bottom left tile Map16 $08D",
+  "0DC581": "\\",
+  "0DC584": "|",
+  "0DC586": "/ Bottom right tile Map16 $08E",
+  "0DC589": "Return",
+  "0DC58A": "Y = object start index in Map16 buffer",
+  "0DC58C": "\\",
+  "0DC58E": "|",
+  "0DC590": "/ $00 = width-1 = low nibble of [$59]",
+  "0DC592": "\\",
+  "0DC594": "|",
+  "0DC595": "|",
+  "0DC596": "|",
+  "0DC597": "|",
+  "0DC598": "/ $01 = height-1 = high nibble of [$59]",
+  "0DC59A": "Save buffer pointer",
+  "0DC59D": "X = width-1",
+  "0DC59F": "\\",
+  "0DC5A2": "|",
+  "0DC5A4": "|",
+  "0DC5A7": "|",
+  "0DC5AA": "|",
+  "0DC5AC": "/ Upper row pair: Map16 $094, $095",
+  "0DC5AF": "\\",
+  "0DC5B0": "/ Loop for width+1 pairs",
+  "0DC5B2": "Restore buffer pointer to row start",
+  "0DC5B5": "Move pointer down one row",
+  "0DC5B8": "X = width-1",
+  "0DC5BA": "\\",
+  "0DC5BD": "|",
+  "0DC5BF": "|",
+  "0DC5C2": "|",
+  "0DC5C5": "|",
+  "0DC5C7": "/ Lower row pair: Map16 $096, $097",
+  "0DC5CA": "\\",
+  "0DC5CB": "/ Loop for width+1 pairs",
+  "0DC5CD": "Restore buffer pointer to row start",
+  "0DC5D0": "Move pointer down one row",
+  "0DC5D3": "\\",
+  "0DC5D5": "/ Loop for height+1 double-rows",
+  "0DC5D7": "Return",
+  "0DC5D8": "Y = object start index in Map16 buffer",
+  "0DC5DA": "\\",
+  "0DC5DC": "|",
+  "0DC5DD": "|",
+  "0DC5DE": "|",
+  "0DC5DF": "|",
+  "0DC5E0": "/ $00 = height-1 = high nibble of [$59]",
+  "0DC5E2": "Save buffer pointer",
+  "0DC5E5": "\\",
+  "0DC5E8": "|",
+  "0DC5EA": "/ Top left tile Map16 $133",
+  "0DC5ED": "\\",
+  "0DC5F0": "|",
+  "0DC5F2": "/ Top right tile Map16 $134",
+  "0DC5F4": "Jump into the loop tail",
+  "0DC5F7": "\\",
+  "0DC5FA": "|",
+  "0DC5FC": "/ Middle left tile Map16 $09D",
+  "0DC5FF": "\\",
+  "0DC602": "|",
+  "0DC604": "/ Middle right tile Map16 $09E",
+  "0DC606": "Restore buffer pointer to row start",
+  "0DC609": "Move pointer down one row",
+  "0DC60C": "\\",
+  "0DC60E": "/ Loop for the middle rows",
+  "0DC610": "\\",
+  "0DC613": "|",
+  "0DC615": "/ Bottom left tile Map16 $133",
+  "0DC618": "\\",
+  "0DC61B": "|",
+  "0DC61D": "/ Bottom right tile Map16 $134",
+  "0DC61F": "Return",
+  "0DC44C": "Map16 $15B,$15C,$153 by type",
+  "0DC46F": "Left column tiles per row (top/mid/bottom): Map16 $15D,$160,$163",
+  "0DC472": "Middle column tiles per row: Map16 $15E,$161,$164",
+  "0DC475": "Right column tiles per row: Map16 $15F,$162,$165",
+  "0DC800": "Map16 $100: TL C5/09 TR C5/09 BL 85/09 BR C6/89",
+  "0DC808": "Map16 $101: TL C6/09 TR 85/89 BL 85/09 BR C6/89",
+  "0DC810": "Map16 $102: TL C6/09 TR 85/89 BL C5/49 BR C5/49",
+  "0DC818": "Map16 $103: TL C1/1D TR D1/1D BL C2/1D BR F8/1C",
+  "0DC820": "Map16 $104: TL C2/5D TR F8/1C BL C1/5D BR D1/5D",
+  "0DC828": "Map16 $105: TL D1/9D TR C1/9D BL F8/1C BR C2/9D",
+  "0DC830": "Map16 $106: TL F8/1C TR C2/DD BL D1/DD BR C1/DD",
+  "0DC838": "Map16 $107: TL F8/1C TR DC/1D BL CD/1D BR DD/1D",
+  "0DC840": "Map16 $108: TL CE/1D TR F8/1C BL CF/1D BR F8/1C",
+  "0DC848": "Map16 $109: TL E0/1D TR F0/1D BL F8/1C BR F8/1C",
+  "0DC850": "Map16 $10A: TL F8/1C TR F8/1C BL E0/5D BR F0/5D",
+  "0DC858": "Map16 $10B: TL CF/5D TR F8/1C BL CE/5D BR F8/1C",
+  "0DC860": "Map16 $10C: TL CD/5D TR DD/5D BL F8/1C BR DC/5D",
+  "0DC868": "Map16 $10D: TL DC/9D TR F8/1C BL DD/9D BR CD/9D",
+  "0DC870": "Map16 $10E: TL F8/1C TR CE/9D BL F8/1C BR CF/9D",
+  "0DC878": "Map16 $10F: TL F0/9D TR E0/9D BL F8/1C BR F8/1C",
+  "0DC880": "Map16 $110: TL F8/1C TR F8/1C BL F0/DD BR E0/DD",
+  "0DC888": "Map16 $111: TL F8/1C TR CF/DD BL F8/1C BR CE/DD",
+  "0DC890": "Map16 $112: TL DD/DD TR CD/DD BL DC/DD BR F8/1C",
+  "0DC898": "Map16 $113: TL F8/1C TR CC/1D BL CC/1D BR F8/1C",
+  "0DC8A0": "Map16 $114: TL CC/5D TR F8/1C BL F8/1C BR CC/5D",
+  "0DC8A8": "Map16 $115: TL F8/1C TR F8/1C BL E1/1D BR F1/1D",
+  "0DC8B0": "Map16 $116: TL E1/5D TR F1/5D BL F8/1C BR F8/1C",
+  "0DC8B8": "Map16 $117: TL E1/1D TR F1/1D BL F8/1C BR F8/1C",
+  "0DC8C0": "Map16 $118: TL F8/1C TR F8/1C BL E1/5D BR F1/5D",
+  "0DC8C8": "Map16 $119: TL F8/1C TR F2/1D BL F8/1C BR F3/1D",
+  "0DC8D0": "Map16 $11A: TL F2/1D TR F8/1C BL F3/1D BR F8/1C",
+  "0DC8D8": "Map16 $11B: TL F3/5D TR F8/1C BL F2/5D BR F8/1C",
+  "0DC8E0": "Map16 $11C: TL F8/1C TR F3/5D BL F8/1C BR F2/5D",
+  "0DC8E8": "Map16 $11D: TL DE/1D TR DE/1D BL F8/1C BR F8/1C",
+  "0DC8F0": "Map16 $11E: TL F8/1C TR F8/1C BL DE/5D BR DE/5D",
+  "0DC8F8": "Map16 $11F: TL DF/1D TR F8/1C BL DF/1D BR F8/1C",
+  "0DC900": "Map16 $120: TL F8/1C TR DF/9D BL F8/1C BR DF/9D",
+  "0DC908": "Map16 $121: TL F8/1C TR 7C/1C BL 7C/1C BR F8/1C",
+  "0DC910": "Map16 $122: TL 7D/08 TR F8/1C BL F8/1C BR 7D/08",
+  "0DC918": "Map16 $123: TL F8/1C TR 4C/1C BL F8/1C BR 4D/1C",
+  "0DC920": "Map16 $124: TL 4D/DC TR F8/1C BL 4C/DC BR F8/1C",
+  "0DC928": "Map16 $125: TL F8/1C TR F8/1C BL 4C/1C BR 4D/DC",
+  "0DC930": "Map16 $126: TL 4D/1C TR 4C/DC BL F8/1C BR F8/1C",
+  "0DC938": "Map16 $127: TL C3/35 TR D3/35 BL C4/35 BR D4/35",
+  "0DC940": "Map16 $128: TL C4/75 TR D4/75 BL C3/75 BR D3/75",
+  "0DC948": "Map16 $129: TL C3/2D TR D3/2D BL C4/2D BR D4/2D",
+  "0DC950": "Map16 $12A: TL C4/6D TR D4/6D BL C3/6D BR D3/6D",
+  "0DC958": "Map16 $12B: TL C3/39 TR D3/39 BL C4/39 BR D4/39",
+  "0DC960": "Map16 $12C: TL C4/79 TR D4/79 BL C3/79 BR D3/79",
+  "0DC968": "Map16 $12D: TL C3/3D TR D3/3D BL C4/3D BR D4/3D",
+  "0DC970": "Map16 $12E: TL C4/7D TR D4/7D BL C3/7D BR D3/7D",
+  "0DC978": "Map16 $12F: TL C5/09 TR C5/09 BL C5/49 BR C5/49",
+  "0DC980": "Map16 $130: TL F8/08 TR 53/09 BL F8/08 BR 55/09",
+  "0DC988": "Map16 $131: blank (all 00)",
+  "0DC990": "Map16 $132: blank (all 00)",
+  "0DC998": "Map16 $133: blank (all 00)",
+  "0DC9A0": "Map16 $134: blank (all 00)",
+  "0DC9A8": "Map16 $135: blank (all 00)",
+  "0DC9B0": "Map16 $136: blank (all 00)",
+  "0DC9B8": "Map16 $137: blank (all 00)",
+  "0DC9C0": "Map16 $138: blank (all 00)",
+  "0DC9C8": "Map16 $139: blank (all 00)",
+  "0DC9D0": "Map16 $13A: blank (all 00)",
+  "0DC9D8": "Map16 $13B: blank (all 00)",
+  "0DC9E0": "Map16 $13C: blank (all 00)",
+  "0DC9E8": "Map16 $13D: blank (all 00)",
+  "0DC9F0": "Map16 $13E: blank (all 00)",
+  "0DC9F8": "Map16 $13F: blank (all 00)",
+  "0DCA00": "Map16 $140: blank (all 00)",
+  "0DCA08": "Map16 $141: blank (all 00)",
+  "0DCA10": "Map16 $142: blank (all 00)",
+  "0DCA18": "Map16 $143: blank (all 00)",
+  "0DCA20": "Map16 $144: blank (all 00)",
+  "0DCA28": "Map16 $145: blank (all 00)",
+  "0DCA30": "Map16 $146: blank (all 00)",
+  "0DCA38": "Map16 $147: blank (all 00)",
+  "0DCA40": "Map16 $148: blank (all 00)",
+  "0DCA48": "Map16 $149: blank (all 00)",
+  "0DCA50": "Map16 $14A: blank (all 00)",
+  "0DCA58": "Map16 $14B: blank (all 00)",
+  "0DCA60": "Map16 $14C: blank (all 00)",
+  "0DCA68": "Map16 $14D: blank (all 00)",
+  "0DCA70": "Map16 $14E: blank (all 00)",
+  "0DCA78": "Map16 $14F: blank (all 00)",
+  "0DCA80": "Map16 $150: blank (all 00)",
+  "0DCA88": "Map16 $151: blank (all 00)",
+  "0DCA90": "Map16 $152: blank (all 00)",
+  "0DCA98": "Map16 $153: blank (all 00)",
+  "0DCAA0": "Map16 $154: blank (all 00)",
+  "0DCAA8": "Map16 $155: blank (all 00)",
+  "0DCAB0": "Map16 $156: blank (all 00)",
+  "0DCAB8": "Map16 $157: blank (all 00)",
+  "0DCAC0": "Map16 $158: blank (all 00)",
+  "0DCAC8": "Map16 $159: blank (all 00)",
+  "0DCAD0": "Map16 $15A: blank (all 00)",
+  "0DCAD8": "Map16 $15B: blank (all 00)",
+  "0DCAE0": "Map16 $15C: blank (all 00)",
+  "0DCAE8": "Map16 $15D: blank (all 00)",
+  "0DCAF0": "Map16 $15E: blank (all 00)",
+  "0DCAF8": "Map16 $15F: blank (all 00)",
+  "0DCB00": "Map16 $160: blank (all 00)",
+  "0DCB08": "Map16 $161: blank (all 00)",
+  "0DCB10": "Map16 $162: blank (all 00)",
+  "0DCB18": "Map16 $163: blank (all 00)",
+  "0DCB20": "Map16 $164: blank (all 00)",
+  "0DCB28": "Map16 $165: blank (all 00)",
+  "0DCB30": "Map16 $166: blank (all 00)",
+  "0DCB38": "Map16 $167: blank (all 00)",
+  "0DCB40": "Map16 $168: blank (all 00)",
+  "0DCB48": "Map16 $169: blank (all 00)",
+  "0DCB50": "Map16 $16A: blank (all 00)",
+  "0DCB58": "Map16 $16B: blank (all 00)",
+  "0DCB60": "Map16 $16C: blank (all 00)",
+  "0DCB68": "Map16 $16D: blank (all 00)",
+  "0DCB70": "Map16 $16E: blank (all 00)",
+  "0DCB78": "Map16 $16F: blank (all 00)",
+  "0DCB80": "Map16 $170: blank (all 00)",
+  "0DCB88": "Map16 $171: blank (all 00)",
+  "0DCB90": "Map16 $172: blank (all 00)",
+  "0DCB98": "Map16 $173: blank (all 00)",
+  "0DCBA0": "Map16 $174: blank (all 00)",
+  "0DCBA8": "Map16 $175: blank (all 00)",
+  "0DCBB0": "Map16 $176: blank (all 00)",
+  "0DCBB8": "Map16 $177: blank (all 00)",
+  "0DCBC0": "Map16 $178: blank (all 00)",
+  "0DCBC8": "Map16 $179: blank (all 00)",
+  "0DCBD0": "Map16 $17A: blank (all 00)",
+  "0DCBD8": "Map16 $17B: blank (all 00)",
+  "0DCBE0": "Map16 $17C: blank (all 00)",
+  "0DCBE8": "Map16 $17D: blank (all 00)",
+  "0DCBF0": "Map16 $17E: blank (all 00)",
+  "0DCBF8": "Map16 $17F: blank (all 00)",
+  "0DCC00": "Map16 $180: blank (all 00)",
+  "0DCC08": "Map16 $181: blank (all 00)",
+  "0DCC10": "Map16 $182: blank (all 00)",
+  "0DCC18": "Map16 $183: blank (all 00)",
+  "0DCC20": "Map16 $184: blank (all 00)",
+  "0DCC28": "Map16 $185: blank (all 00)",
+  "0DCC30": "Map16 $186: blank (all 00)",
+  "0DCC38": "Map16 $187: blank (all 00)",
+  "0DCC40": "Map16 $188: blank (all 00)",
+  "0DCC48": "Map16 $189: blank (all 00)",
+  "0DCC50": "Map16 $18A: blank (all 00)",
+  "0DCC58": "Map16 $18B: blank (all 00)",
+  "0DCC60": "Map16 $18C: blank (all 00)",
+  "0DCC68": "Map16 $18D: TL 80/15 TR 91/15 BL D6/15 BR D6/95",
+  "0DCC70": "Map16 $18E: TL D6/15 TR D6/95 BL D6/15 BR D6/95",
+  "0DCC78": "Map16 $18F: TL D6/15 TR D6/95 BL 80/55 BR 91/55",
+  "0DCC80": "Map16 $190: TL D5/15 TR C7/15 BL D6/15 BR D6/95",
+  "0DCC88": "Map16 $191: TL D6/15 TR D6/95 BL D5/55 BR C7/55",
+  "0DCC90": "Map16 $192: TL 4E/08 TR F8/1C BL 4E/08 BR F8/1C",
+  "0DCC98": "Map16 $193: TL 4E/48 TR F8/1C BL 4E/48 BR F8/1C",
+  "0DCCA0": "Map16 $194: TL 56/09 TR 58/09 BL 57/09 BR 5A/09",
+  "0DCCA8": "Map16 $195: blank (all 00)",
+  "0DCCB0": "Map16 $196: blank (all 00)",
+  "0DCCB8": "Map16 $197: TL F4/19 TR F6/19 BL F5/19 BR F7/19",
+  "0DCCC0": "Map16 $198: TL F8/19 TR F8/19 BL F9/19 BR F9/19",
+  "0DCCC8": "Map16 $199: TL F6/99 TR F4/99 BL F7/99 BR F5/99",
+  "0DCCD0": "Map16 $19A: TL FA/19 TR FD/19 BL FB/19 BR FE/19",
+  "0DCCD8": "Map16 $19B: TL FC/19 TR FF/19 BL FC/19 BR FF/19",
+  "0DCCE0": "Map16 $19C: TL FB/59 TR FE/59 BL FA/59 BR FD/59",
+  "0DCCE8": "Map16 $19D: TL CA/19 TR DA/19 BL CB/19 BR DB/19",
+  "0DCCF0": "Map16 $19E: TL CB/19 TR DB/19 BL CB/19 BR DB/19",
+  "0DCCF8": "Map16 $19F: TL CB/19 TR DB/19 BL CA/59 BR DA/59",
+  "0DCD00": "Map16 $1A0: TL C8/19 TR D8/19 BL C9/19 BR D9/19",
+  "0DCD08": "Map16 $1A1: TL D8/19 TR D8/19 BL D9/19 BR D9/19",
+  "0DCD10": "Map16 $1A2: TL D8/19 TR C8/99 BL D9/19 BR C9/99",
+  "0DCD18": "Map16 $1A3: TL E2/11 TR D7/11 BL E3/11 BR F9/1C",
+  "0DCD20": "Map16 $1A4: TL E4/11 TR F9/1C BL E5/11 BR EA/11",
+  "0DCD28": "Map16 $1A5: TL D7/11 TR D7/11 BL E6/11 BR E7/11",
+  "0DCD30": "Map16 $1A6: TL E6/51 TR E7/51 BL EA/11 BR EA/11",
+  "0DCD38": "Map16 $1A7: TL E9/11 TR E9/91 BL F9/1C BR F9/1C",
+  "0DCD40": "Map16 $1A8: TL F9/1C TR F9/1C BL EA/11 BR E8/11",
+  "0DCD48": "Map16 $1A9: TL D7/11 TR D7/11 BL F9/1C BR F9/1C",
+  "0DCD50": "Map16 $1AA: TL F9/1C TR F9/1C BL E8/91 BR EA/11",
+  "0DCD58": "Map16 $1AB: blank (all 00)",
+  "0DCD60": "Map16 $1AC: TL 20/14 TR 20/14 BL 21/14 BR 21/14",
+  "0DCD68": "Map16 $1AD: TL 22/14 TR 22/14 BL 23/14 BR 23/14",
+  "0DCD70": "Map16 $1AE: TL 26/14 TR 36/14 BL 26/54 BR 36/54",
+  "0DCD78": "Map16 $1AF: TL 26/18 TR 36/18 BL 26/58 BR 36/58",
+  "0DCD80": "Map16 $1B0: TL 26/1C TR 36/1C BL 26/5C BR 36/5C",
+  "0DCD88": "Map16 $1B1: TL 27/1C TR 37/1C BL 27/5C BR 37/5C",
+  "0DCD90": "Set 8-bit A and index",
+  "0DCD92": "X = object number [$5A]",
+  "0DCD94": "X = object-1 (object 0 never occurs)",
+  "0DCD95": "A = pointer table index",
+  "0DCD96": "Jump to the routine for this object (tileset 2 object table)",
+  "0DCD9A": "Object 01: Water (Blue) -> CODE_0DA8C3",
+  "0DCD9D": "Object 02: Invisible coin blocks -> CODE_0DA8C3",
+  "0DCDA0": "Object 03: Invisible note blocks -> CODE_0DA8C3",
+  "0DCDA3": "Object 04: Invisible POW coins -> CODE_0DA8C3",
+  "0DCDA6": "Object 05: Coins -> CODE_0DA8C3",
+  "0DCDA9": "Object 06: Walk-through dirt -> CODE_0DA8C3",
+  "0DCDAC": "Object 07: Water (Other color) -> CODE_0DA8C3",
+  "0DCDAF": "Object 08: Note blocks -> CODE_0DA8C3",
+  "0DCDB2": "Object 09: Turn blocks -> CODE_0DA8C3",
+  "0DCDB5": "Object 0A: Coin ? blocks -> CODE_0DA8C3",
+  "0DCDB8": "Object 0B: Throw blocks -> CODE_0DA8C3",
+  "0DCDBB": "Object 0C: Black piranha plants -> CODE_0DA8C3",
+  "0DCDBE": "Object 0D: Cement blocks -> CODE_0DA8C3",
+  "0DCDC1": "Object 0E: Brown blocks -> CODE_0DA8C3",
+  "0DCDC4": "Object 0F: Vertical pipes -> CODE_0DAA26",
+  "0DCDC7": "Object 10: Horizontal pipes -> CODE_0DAAB4",
+  "0DCDCA": "Object 11: Bullet shooter -> CODE_0DAB0D",
+  "0DCDCD": "Object 12: Slopes -> CODE_0DAB3E",
+  "0DCDD0": "Object 13: Ledge edges -> CODE_0DB075",
+  "0DCDD3": "Object 14: Ground ledge -> CODE_0DB1D4",
+  "0DCDD6": "Object 15: Midway/Goal point -> CODE_0DB224",
+  "0DCDD9": "Object 16: Blue coins -> ADDR_0DB336",
+  "0DCDDC": "Object 17: Rope/Clouds -> CODE_0DB3BD",
+  "0DCDDF": "Object 18: Water surface (ani) -> CODE_0DB3E3",
+  "0DCDE2": "Object 19: Water surface (not ani) -> CODE_0DB3E3",
+  "0DCDE5": "Object 1A: Lava surface (ani) -> CODE_0DB3E3",
+  "0DCDE8": "Object 1B: Net top edge -> CODE_0DB3E3",
+  "0DCDEB": "Object 1C: Donut bridge -> CODE_0DB42D",
+  "0DCDEE": "Object 1D: Net bottom edge -> CODE_0DB461",
+  "0DCDF1": "Object 1E: Net vertical edge -> CODE_0DB49E",
+  "0DCDF4": "Object 1F: Vert. Pipe/Bone/Log -> CODE_0DB51F",
+  "0DCDF7": "Object 20: Horiz. Pipe/Bone/Log -> CODE_0DB547",
+  "0DCDFA": "Object 21: Long ground ledge -> CODE_0DB1C8",
+  "0DCDFD": "Object 22: unused (reserved) -> CODE_0DB3E3",
+  "0DCE00": "Object 23: unused (reserved) -> CODE_0DB3E3",
+  "0DCE03": "Object 24: unused (reserved) -> CODE_0DB3E3",
+  "0DCE06": "Object 25: unused (reserved) -> CODE_0DB3E3",
+  "0DCE09": "Object 26: unused (reserved) -> CODE_0DB3E3",
+  "0DCE0C": "Object 27: unused (reserved) -> CODE_0DB3E3",
+  "0DCE0F": "Object 28: unused (reserved) -> CODE_0DB3E3",
+  "0DCE12": "Object 29: unused (reserved) -> CODE_0DB3E3",
+  "0DCE15": "Object 2A: unused (reserved) -> CODE_0DB3E3",
+  "0DCE18": "Object 2B: unused (reserved) -> CODE_0DB3E3",
+  "0DCE1B": "Object 2C: unused (reserved) -> CODE_0DB3E3",
+  "0DCE1E": "Object 2D: unused (reserved) -> CODE_0DB3E3",
+  "0DCE21": "Object 2E: placeholder (not tileset specific) -> CODE_0DB3E3",
+  "0DCE24": "Object 2F: placeholder (not tileset specific) -> CODE_0DB3E3",
+  "0DCE27": "Object 30: placeholder (not tileset specific) -> CODE_0DB3E3",
+  "0DCE2A": "Object 31: placeholder (not tileset specific) -> CODE_0DB3E3",
+  "0DCE2D": "Object 32: Log bridge -> CODE_0DD24E",
+  "0DCE30": "Object 33: Blue switch blocks -> CODE_0DB916",
+  "0DCE33": "Object 34: Red switch blocks -> CODE_0DB91E",
+  "0DCE36": "Object 35: Plants on columns -> CODE_0DD1D9",
+  "0DCE39": "Object 36: Horizontal conveyors -> ADDR_0DCEF2",
+  "0DCE3C": "Object 37: Diagonal conveyors -> CODE_0DC341",
+  "0DCE3F": "Object 38: Horizontal guide lines -> CODE_0DCF12",
+  "0DCE42": "Object 39: Vertical guide lines / vertical column -> CODE_0DCF33",
+  "0DCE45": "Object 3A: Normal/steep/ON/OFF guide lines -> CODE_0DCF53",
+  "0DCE48": "Object 3B: Very steep guide lines -> ADDR_0DD070",
+  "0DCE4B": "Object 3C: Mushroom ledge -> CODE_0DD103",
+  "0DCE4E": "Object 3D: Mushroom column -> CODE_0DD145",
+  "0DCE51": "Object 3E: Horizontal log -> ADDR_0DD182",
+  "0DCE54": "Object 3F: Vertical log -> ADDR_0DD1A5",
+  "0DCE57": "Large circle, Top left quarter, upper row: Map16 $07A,$07B",
+  "0DCE59": "  lower row: Map16 $07C,$025",
+  "0DCE5B": "Large circle, Top right quarter, upper row: Map16 $07E,$07F",
+  "0DCE5D": "  lower row: Map16 $025,$07D",
+  "0DCE5F": "Large circle, Bottom left quarter, upper row: Map16 $082,$025",
+  "0DCE61": "  lower row: Map16 $080,$081",
+  "0DCE63": "Large circle, Bottom right quarter, upper row: Map16 $025,$083",
+  "0DCE65": "  lower row: Map16 $084,$085",
+  "0DCE67": "Y = object start index in Map16 buffer",
+  "0DCE69": "\\",
+  "0DCE6B": "|",
+  "0DCE6C": "|",
+  "0DCE6E": "|",
+  "0DCE6F": "|",
+  "0DCE70": "/ X = (object-$4D)*4: 4 bytes per large circle quarter",
+  "0DCE71": "Save buffer pointer",
+  "0DCE74": "\\",
+  "0DCE77": "|",
+  "0DCE7B": "/ Place Map16 [circle table + X] (page 0), step right",
+  "0DCE7E": "\\",
+  "0DCE7F": "|",
+  "0DCE80": "|",
+  "0DCE82": "/ X++; loop until a row of 2 tiles is done",
+  "0DCE84": "Restore buffer pointer to row start",
+  "0DCE87": "Move pointer down one row",
+  "0DCE8A": "\\",
+  "0DCE8B": "|",
+  "0DCE8D": "/ Loop until all 4 tiles (2 rows) are done",
+  "0DCE8F": "Return",
+  "0DCE90": "Small circle quarters: Map16 $076,$077,$078,$079 (TL, TR, BL, BR)",
+  "0DCE94": "Y = object start index in Map16 buffer",
+  "0DCE96": "\\",
+  "0DCE98": "|",
+  "0DCE99": "|",
+  "0DCE9B": "/ X = object-$51 (0-3)",
+  "0DCE9C": "\\",
+  "0DCE9F": "|",
+  "0DCEA3": "/ Place Map16 $076-$079 [X] (page 0)",
+  "0DCEA5": "Return",
+  "0DCEA6": "Y = object start index in Map16 buffer",
+  "0DCEA8": "\\",
+  "0DCEAA": "|",
+  "0DCEAB": "|",
+  "0DCEAD": "/ X = object-$51 (unused here)",
+  "0DCEAE": "\\",
+  "0DCEB1": "|",
+  "0DCEB3": "/ Top tile Map16 $084 (page 0)",
+  "0DCEB6": "\\",
+  "0DCEB9": "|",
+  "0DCEBB": "/ Bottom tile Map16 $085",
+  "0DCEBD": "Return",
+  "0DCEBE": "Horizontal line guide end, upper tile: Map16 $096",
+  "0DCEBF": "Horizontal line guide end, lower tile: Map16 $097",
+  "0DCEC0": "Y = object start index in Map16 buffer",
+  "0DCEC2": "Dummy load of the object byte (unused)",
+  "0DCEC4": "X = 0",
+  "0DCEC6": "\\",
+  "0DCEC9": "|",
+  "0DCECD": "/ Place Map16 [$096+X] (page 0)",
+  "0DCECF": "\\",
+  "0DCED2": "/ Move down one row, X++",
+  "0DCED3": "\\",
+  "0DCED5": "/ Loop for 2 tiles",
+  "0DCED7": "Return",
+  "0DCED8": "Vertical line guide end: Map16 $098,$099",
+  "0DCEDA": "Y = object start index in Map16 buffer",
+  "0DCEDC": "Dummy load of the object byte (unused)",
+  "0DCEDE": "X = 0",
+  "0DCEE0": "\\",
+  "0DCEE3": "|",
+  "0DCEE7": "/ Place Map16 [$098+X] (page 0), step right",
+  "0DCEEA": "\\",
+  "0DCEEB": "|",
+  "0DCEED": "/ X++, loop for 2 tiles",
+  "0DCEEF": "Return",
+  "0DCEF0": "Horizontal conveyor tiles by type: Map16 $10C,$10D",
+  "0DCEF2": "Y = object start index in Map16 buffer",
+  "0DCEF4": "\\",
+  "0DCEF6": "|",
+  "0DCEF8": "/ $00 = width-1 = low nibble of [$59]",
+  "0DCEFA": "\\",
+  "0DCEFC": "|",
+  "0DCEFD": "|",
+  "0DCEFE": "|",
+  "0DCEFF": "|",
+  "0DCF00": "/ X = type = high nibble of [$59]",
+  "0DCF01": "\\",
+  "0DCF04": "|",
+  "0DCF08": "/ Place Map16 $10C/$10D [X] (page 1), step right",
+  "0DCF0B": "\\",
+  "0DCF0D": "/ Loop for width+1 tiles",
+  "0DCF0F": "Return",
+  "0DCF10": "Horizontal guide line tiles by type: Map16 $092,$093",
+  "0DCF12": "Y = object start index in Map16 buffer",
+  "0DCF14": "\\",
+  "0DCF16": "|",
+  "0DCF18": "/ $00 = width-1 = low nibble of [$59]",
+  "0DCF1A": "\\",
+  "0DCF1C": "|",
+  "0DCF1D": "|",
+  "0DCF1E": "|",
+  "0DCF1F": "|",
+  "0DCF20": "/ X = type = high nibble of [$59]",
+  "0DCF21": "\\",
+  "0DCF24": "|",
+  "0DCF28": "/ Place Map16 $092/$093 [X] (page 0), step right",
+  "0DCF2B": "\\",
+  "0DCF2D": "/ Loop for width+1 tiles",
+  "0DCF2F": "Return",
+  "0DCF30": "Vertical guide line tiles by type: Map16 $090,$091,$0A2",
+  "0DCF33": "Y = object start index in Map16 buffer",
+  "0DCF35": "\\",
+  "0DCF37": "|",
+  "0DCF39": "/ X = type = low nibble of [$59]",
+  "0DCF3A": "\\",
+  "0DCF3C": "|",
+  "0DCF3D": "|",
+  "0DCF3E": "|",
+  "0DCF3F": "|",
+  "0DCF40": "/ $00 = height-1 = high nibble of [$59]",
+  "0DCF42": "\\",
+  "0DCF45": "|",
+  "0DCF49": "/ Place Map16 $090/$091/$0A2 [X] (page 0)",
+  "0DCF4B": "Move pointer down one row",
+  "0DCF4E": "\\",
+  "0DCF50": "/ Loop for height+1 tiles",
+  "0DCF52": "Return",
+  "0DCF53": "\\",
+  "0DCF55": "|",
+  "0DCF57": "|",
+  "0DCF58": "/ X = guide line shape = low nibble of [$59]; run its routine",
+  "0DCF5C": "Shape 0: Normal slope left -> CODE_0DCF6E",
+  "0DCF5F": "Shape 1: Steep slope left -> CODE_0DCFB1",
+  "0DCF62": "Shape 2: Normal slope right -> ADDR_0DCFF0",
+  "0DCF65": "Shape 3: Steep slope right -> CODE_0DD034",
+  "0DCF68": "Shape 4: ON/OFF steep left slope -> CODE_0DCFB1",
+  "0DCF6B": "Shape 5: ON/OFF steep right slope -> CODE_0DD034",
+  "0DCF6E": "Y = object start index in Map16 buffer",
+  "0DCF70": "\\",
+  "0DCF72": "|",
+  "0DCF73": "|",
+  "0DCF74": "|",
+  "0DCF75": "|",
+  "0DCF76": "/ X = size (steps-1) = high nibble of [$59]",
+  "0DCF77": "Save buffer pointer",
+  "0DCF7A": "\\",
+  "0DCF7D": "|",
+  "0DCF7F": "/ Left tile Map16 $08C (page 0)",
+  "0DCF82": "\\",
+  "0DCF85": "|",
+  "0DCF87": "/ Right tile Map16 $08D",
+  "0DCF89": "Restore buffer pointer to row start",
+  "0DCF8C": "\\",
+  "0DCF8E": "|",
+  "0DCF8F": "|",
+  "0DCF91": "/ Y = index + $0E: one row down, two columns left",
+  "0DCF92": "\\",
+  "0DCF94": "/ Down a screen if the index carried",
+  "0DCF97": "\\",
+  "0DCF98": "|",
+  "0DCF9A": "|",
+  "0DCF9C": "/ Past the left edge of this screen?",
+  "0DCF9E": "\\",
+  "0DCF9F": "|",
+  "0DCFA0": "|",
+  "0DCFA2": "/ Yes: one more row down (undo wrap)",
+  "0DCFA3": "\\",
+  "0DCFA5": "/ Down a screen if the index carried",
+  "0DCFA8": "Move pointer back one screen",
+  "0DCFAB": "Save index",
+  "0DCFAD": "\\",
+  "0DCFAE": "/ Loop for size+1 steps",
+  "0DCFB0": "Return",
+  "0DCFB1": "\\",
+  "0DCFB3": "|",
+  "0DCFB5": "|",
+  "0DCFB7": "/ Tile = $086; $094 if this is the ON/OFF variant (X = 4)",
+  "0DCFB9": "$00 = tile",
+  "0DCFBB": "Y = object start index in Map16 buffer",
+  "0DCFBD": "\\",
+  "0DCFBF": "|",
+  "0DCFC0": "|",
+  "0DCFC1": "|",
+  "0DCFC2": "|",
+  "0DCFC3": "/ X = size (steps-1) = high nibble of [$59]",
+  "0DCFC4": "\\",
+  "0DCFC7": "|",
+  "0DCFC9": "/ Place tile [$00] (page 0)",
+  "0DCFCB": "\\",
+  "0DCFCD": "|",
+  "0DCFCE": "|",
+  "0DCFD0": "/ Y = index + $0F: one row down, one column left",
+  "0DCFD1": "\\",
+  "0DCFD3": "/ Down a screen if the index carried",
+  "0DCFD6": "\\",
+  "0DCFD7": "|",
+  "0DCFD9": "|",
+  "0DCFDB": "/ Past the left edge of this screen?",
+  "0DCFDD": "\\",
+  "0DCFDE": "|",
+  "0DCFDF": "|",
+  "0DCFE1": "/ Yes: one more row down (undo wrap)",
+  "0DCFE2": "\\",
+  "0DCFE4": "/ Down a screen if the index carried",
+  "0DCFE7": "Move pointer back one screen",
+  "0DCFEA": "Save index",
+  "0DCFEC": "\\",
+  "0DCFED": "/ Loop for size+1 steps",
+  "0DCFEF": "Return",
+  "0DCFF0": "Y = object start index in Map16 buffer",
+  "0DCFF2": "\\",
+  "0DCFF4": "|",
+  "0DCFF5": "|",
+  "0DCFF6": "|",
+  "0DCFF7": "|",
+  "0DCFF8": "/ X = size (steps-1) = high nibble of [$59]",
+  "0DCFF9": "Save buffer pointer",
+  "0DCFFC": "\\",
+  "0DCFFF": "|",
+  "0DD001": "/ Left tile Map16 $08E (page 0)",
+  "0DD004": "\\",
+  "0DD007": "|",
+  "0DD009": "/ Right tile Map16 $08F",
+  "0DD00B": "Restore pointer (redundant)",
+  "0DD00E": "\\",
+  "0DD010": "|",
+  "0DD011": "|",
+  "0DD013": "/ Y = index + $10: one row down",
+  "0DD014": "\\",
+  "0DD016": "/ Down a screen if the index carried",
+  "0DD019": "\\",
+  "0DD01A": "|",
+  "0DD01B": "|",
+  "0DD01D": "/ Y += 2: two columns right",
+  "0DD01E": "\\",
+  "0DD020": "|",
+  "0DD022": "/ Wrapped past the screen edge?",
+  "0DD024": "\\",
+  "0DD025": "|",
+  "0DD026": "/ Yes: undo the carry into the row nibble",
+  "0DD028": "\\",
+  "0DD02A": "/ Mask to the column within the new screen",
+  "0DD02B": "Move pointer forward one screen",
+  "0DD02E": "Save index",
+  "0DD030": "\\",
+  "0DD031": "/ Loop for size+1 steps",
+  "0DD033": "Return",
+  "0DD034": "\\",
+  "0DD036": "|",
+  "0DD038": "|",
+  "0DD03A": "/ Tile = $087; $095 if this is the ON/OFF variant (X = 5)",
+  "0DD03C": "$00 = tile",
+  "0DD03E": "Y = object start index in Map16 buffer",
+  "0DD040": "\\",
+  "0DD042": "|",
+  "0DD043": "|",
+  "0DD044": "|",
+  "0DD045": "|",
+  "0DD046": "/ X = size (steps-1) = high nibble of [$59]",
+  "0DD047": "\\",
+  "0DD04A": "|",
+  "0DD04C": "/ Place tile [$00] (page 0)",
+  "0DD04E": "\\",
+  "0DD050": "|",
+  "0DD051": "|",
+  "0DD053": "|",
+  "0DD054": "|",
+  "0DD056": "/ Move index one row down",
+  "0DD059": "\\",
+  "0DD05A": "|",
+  "0DD05B": "|",
+  "0DD05D": "|",
+  "0DD05E": "|",
+  "0DD060": "|",
+  "0DD062": "|",
+  "0DD063": "|",
+  "0DD064": "|",
+  "0DD066": "|",
+  "0DD067": "|",
+  "0DD06A": "/ Move index one column right, advancing a screen if it wraps",
+  "0DD06C": "\\",
+  "0DD06D": "/ Loop for size+1 steps",
+  "0DD06F": "Return",
+  "0DD070": "\\",
+  "0DD072": "|",
+  "0DD073": "|",
+  "0DD074": "|",
+  "0DD075": "|",
+  "0DD076": "/ Very steep guide line shape = high nibble of [$59]; run its routine"
+ }
+}

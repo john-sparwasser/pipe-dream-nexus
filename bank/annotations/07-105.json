@@ -1,0 +1,50 @@
+{
+ "bank": "07",
+ "sections": {
+  "LevelData078000": {
+   "name": "Level layer 1 object streams (overflow)",
+   "summary": [
+    "Overflow level layer-1 object streams for bank 06 levels (see Layer1Ptrs). Each stream: 5-byte primary header, then 3-byte objects",
+    "until $FF. Header: screens, level mode, sprite GFX, music, tileset. Object: byte1 [new scr|obj hi|Y], byte2 [obj lo|X], byte3 size/ext #.",
+    "Extended objects (object number 0) use byte3 as index into PtrsLong0DA10F; names shown are from that table (tileset-dependent entries may differ).",
+    "Eleven streams start at $8000, $8018, $801E, $802D, $804E, $8060, $807F, $8090, $809F, $80B1 and $80C3 (a vertical level of slopes)."
+   ]
+  }
+ },
+ "lines": {
+  "078000": "Hdr: 1 scr, mode $0F, sprite GFX 9, music 4, tileset 5; obj $33, Y=C X=1, size $03",
+  "078008": "obj $33, Y=E X=4, size $02; obj $33, Y=0 X=0, size $01; ext $82 Big bush 1 Y=4 X=0",
+  "078010": "obj $32, Y=9 X=0, size $1F; ext $80 Ghost house entrance Y=B X=6; End of list",
+  "078018": "Hdr: 1 scr, mode $0F, sprite GFX 9, music 4, tileset 5; End of list",
+  "07801E": "Hdr: 1 scr, mode $0E, sprite GFX 9, music 3, tileset 1; ext $82 Big bush 1 Y=4 X=0",
+  "078026": "obj $3B, Y=9 X=0, size $1F; ext $84 Castle entrance Y=B X=7; End of list",
+  "07802D": "Hdr: 1 scr, mode $00, sprite GFX 9, music 0, tileset 4; ext $85 Yoshi's house Y=E X=0",
+  "078035": "obj $30, Y=8 X=0, size $2F; ext $1D Red berry Y=0 X=2; ext $1D Red berry Y=0 X=6",
+  "07803D": "ext $1D Red berry Y=0 X=B; ext $1D Red berry Y=1 X=3; ext $1D Red berry Y=1 X=9",
+  "078045": "ext $1D Red berry Y=1 X=D; ext $1D Red berry Y=2 X=7",
+  "07804D": "End of list",
+  "07804E": "Hdr: 1 scr, mode $0E, sprite GFX 9, music 2, tileset 2; obj $3C, Y=8 X=0, size $05",
+  "078056": "obj $3C, Y=8 X=6, size $0A; obj $3D, Y=9 X=1, size $13; obj $3D, Y=9 X=7, size $19",
+  "07805E": "End of list; Hdr: 2 scr, mode $01, sprite GFX 7, music 4, tileset 5; obj $33, Y=C X=5, size $02",
+  "078066": "obj $33, Y=E X=9, size $01; ext $49 Ghost house exit Y=B X=0",
+  "07806E": "obj $15, Y=0 X=D, size $81; obj $32, Y=8 X=0, size $2F; new scr obj $33, Y=C X=1, size $02",
+  "078076": "obj $33, Y=C X=9, size $01; obj $33, Y=0 X=6, size $01; obj $32, Y=8 X=0, size $2F",
+  "07807E": "End of list; Hdr: 2 scr, mode $01, sprite GFX 7, music 4, tileset 5",
+  "078086": "ext $83 Big bush 2 Y=4 X=6; ext $82 Big bush 1 Y=3 X=C; new scr ext $82 Big bush 1 Y=3 X=6",
+  "07808E": "End of list",
+  "078090": "Hdr: 1 scr, mode $0E, sprite GFX 9, music 3, tileset 1; ext $82 Big bush 1 Y=4 X=0",
+  "078098": "obj $3B, Y=9 X=0, size $1F; ext $84 Castle entrance Y=B X=7; End of list",
+  "07809F": "Hdr: 1 scr, mode $0E, sprite GFX 9, music 2, tileset 6; obj $3C, Y=8 X=0, size $05",
+  "0780A7": "obj $3C, Y=8 X=6, size $0A; obj $3D, Y=9 X=1, size $13; obj $3D, Y=9 X=7, size $19",
+  "0780AF": "End of list",
+  "0780B1": "Hdr: 1 scr, mode $0E, sprite GFX 9, music 2, tileset 8; obj $3C, Y=8 X=0, size $05",
+  "0780B9": "obj $3C, Y=8 X=6, size $0A; obj $3D, Y=9 X=1, size $13; obj $3D, Y=9 X=7, size $19",
+  "0780C1": "End of list",
+  "0780C3": "Hdr: 2 scr, mode $0A, sprite GFX 1, music 3, tileset 3; ext $91 steep L slope Y=2 X=F",
+  "0780CB": "ext $92 steep R slope Y=3 X=F; $93 norm. L slope Y=4 X=F; $94 norm. R slope Y=6 X=F",
+  "0780D3": "ext $95 v.steep L slope Y=8 X=F; $96 v.steep R slope Y=9 X=F; $95 Y=A X=E",
+  "0780DB": "ext $96 v.steep R slope Y=B X=E; screen jump to 01",
+  "0780E3": "new scr obj $14, Y=0 X=3, size $2F; obj $14, Y=0 X=6, size $2F; obj $14, Y=0 X=9, size $1F",
+  "0780EB": "End of list"
+ }
+}

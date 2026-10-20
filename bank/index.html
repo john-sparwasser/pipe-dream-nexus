@@ -1,0 +1,23 @@
+<!DOCTYPE html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width"><title>SMW bank logs</title><link rel=stylesheet href="bank.css"><script defer src="bank.js"></script></head><body>
+<div id=header><a href="/">pipedream.nexus</a> &mdash; <a href="search.html">Search all banks</a> &mdash; <a href="#" onclick="toggleDark();return false;">Toggle dark mode</a></div>
+<div class=page>
+<h1>Super Mario World &ndash; choose a bank</h1>
+<p>The community <a href="https://www.smwcentral.net/?p=section&amp;a=details&amp;id=4352">SMWDisC</a> disassembly, split per bank and
+rendered as browsable logs in the style of <a href="https://patrickjohnston.org/bank/index.html">PJ's Super Metroid bank logs</a>.
+Every <code>JSR</code>/<code>JSL</code>/branch target and every named table is a link; each routine lists its callers; hardware
+registers show their name on hover. 3359 sections across 16 banks, 3359 with English names and summaries.</p>
+<p><code>$<a href="00.html">00</a></code> &ndash; Boot, main loop, NMI/IRQ, game-mode dispatch, DMA, SPC upload, controller, status bar, Mario state &amp; block interaction</p><p><code>$<a href="01.html">01</a></code> &ndash; Core sprite engine: main loop, status dispatch, init/main tables, shared sprite subroutines, most enemy mains</p><p><code>$<a href="02.html">02</a></code> &ndash; More sprite mains, generators, cluster/extended sprites, sprite spawning from level data</p><p><code>$<a href="03.html">03</a></code> &ndash; Sprite mains $A1&ndash;$C8, bosses (Reznor, Big Boo, Bowser), bank-local utility copies</p><p><code>$<a href="04.html">04</a></code> &ndash; Overworld engine: game mode 0E, player path movement, event/path reveal, level names, OW sprites</p><p><code>$<a href="05.html">05</a></code> &ndash; Level loading: header decode, object stream decode, layer 2/3, scroll commands, level pointer tables</p><p><code>$<a href="06.html">06</a></code> &ndash; Level Layer-1 object data (no code)</p><p><code>$<a href="07.html">07</a></code> &ndash; Overflow level data, sprite tweaker tables, InitSpriteTables, sine table, misc sprite support</p><p><code>$<a href="08.html">08</a></code> &ndash; Graphics (GFX00&ndash;GFX0F, 4bpp/3bpp tiles)</p><p><code>$<a href="09.html">09</a></code> &ndash; Graphics (GFX10&ndash;GFX1F)</p><p><code>$<a href="0A.html">0A</a></code> &ndash; Graphics (GFX20&ndash;GFX2F)</p><p><code>$<a href="0B.html">0B</a></code> &ndash; Graphics (GFX30&ndash;GFX31, Mario/Yoshi tiles)</p><p><code>$<a href="0C.html">0C</a></code> &ndash; OW Map16 definitions, cutscene/credits/enemy-parade engine, OW Layer-1 tilemaps</p><p><code>$<a href="0D.html">0D</a></code> &ndash; Map16 16&times;16 definitions, object draw-routine dispatch + tile-writing primitives, credits enemy names, freespace</p><p><code>$<a href="0E.html">0E</a></code> &ndash; Music data + SPC700 sound engine (uploaded to the APU at boot)</p><p><code>$<a href="0F.html">0F</a></code> &ndash; BRR sample data for the SPC700</p>
+<h2>Additional</h2>
+<ul>
+<li><a href="search.html">Search all banks</a> &ndash; one regex across every page</li>
+<li><a href="ram.html">RAM map</a> &ndash; every named RAM symbol, its address and who touches it</li>
+<li><a href="graph.html">Call graph</a> &ndash; interactive graph of the named routines (735 nodes, 53 communities)</li>
+<li>Notes: <a href="https://github.com/john-sparwasser/pipe-dream/blob/main/reference/smw-disasm/SYSTEM_NOTES.md">system</a>, <a href="https://github.com/john-sparwasser/pipe-dream/blob/main/reference/smw-disasm/SNES_HARDWARE_NOTES.md">SNES hardware</a>,
+<a href="https://github.com/john-sparwasser/pipe-dream/blob/main/reference/smw-disasm/LEVEL_PIPELINE_NOTES.md">level pipeline</a>, <a href="https://github.com/john-sparwasser/pipe-dream/blob/main/reference/smw-disasm/SPRITE_ENGINE_NOTES.md">sprite engine</a></li>
+<li><a href="https://github.com/john-sparwasser/pipe-dream/blob/main/reference/smw-disasm">Source bank_XX.asm files</a></li>
+</ul>
+<h2>Credits</h2>
+<p>SMWDisC was written on etherpad by Smallhacker, 1024, lolcats439, Roy, YoshiCookieZeus, Imamelia, Nicol Bolas, Buster Beetle,
+Gekko, Kernigh, Maxx, Edit1754, Alcaro and others; all.log by MikeyK250. English routine names, summaries and rewritten comments
+were produced with Claude and reviewed against the code. Super Mario World is &copy; Nintendo.</p>
+</div></body></html>
