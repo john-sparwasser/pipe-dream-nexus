@@ -1,0 +1,54 @@
+{
+ "bank": "0B",
+ "sections": {
+  "s0B8000": {
+   "name": "Graphics, part 1 of 8",
+   "summary": [
+    "Raw data (GFX30-GFX31 and Mario/Yoshi tiles); not code. No per-line comments."
+   ]
+  },
+  "s0B9000": {
+   "name": "Graphics, part 2 of 8",
+   "summary": [
+    "Raw data (GFX30-GFX31 and Mario/Yoshi tiles); not code. No per-line comments."
+   ]
+  },
+  "s0BA000": {
+   "name": "Graphics, part 3 of 8",
+   "summary": [
+    "Raw data (GFX30-GFX31 and Mario/Yoshi tiles); not code. No per-line comments."
+   ]
+  },
+  "s0BB000": {
+   "name": "Graphics, part 4 of 8",
+   "summary": [
+    "Raw data (GFX30-GFX31 and Mario/Yoshi tiles); not code. No per-line comments."
+   ]
+  },
+  "s0BC000": {
+   "name": "Graphics, part 5 of 8",
+   "summary": [
+    "Raw data (GFX30-GFX31 and Mario/Yoshi tiles); not code. No per-line comments."
+   ]
+  },
+  "s0BD000": {
+   "name": "Graphics, part 6 of 8",
+   "summary": [
+    "Raw data (GFX30-GFX31 and Mario/Yoshi tiles); not code. No per-line comments."
+   ]
+  },
+  "s0BE000": {
+   "name": "Graphics, part 7 of 8",
+   "summary": [
+    "Raw data (GFX30-GFX31 and Mario/Yoshi tiles); not code. No per-line comments."
+   ]
+  },
+  "s0BF000": {
+   "name": "Graphics, part 8 of 8",
+   "summary": [
+    "Raw data (GFX30-GFX31 and Mario/Yoshi tiles); not code. No per-line comments."
+   ]
+  }
+ },
+ "lines": {}
+}

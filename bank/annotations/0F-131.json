@@ -1,0 +1,54 @@
+{
+ "bank": "0F",
+ "sections": {
+  "s0F8000": {
+   "name": "Sample data, part 1 of 8",
+   "summary": [
+    "Raw data (BRR-encoded samples); not code. No per-line comments."
+   ]
+  },
+  "s0F9000": {
+   "name": "Sample data, part 2 of 8",
+   "summary": [
+    "Raw data (BRR-encoded samples); not code. No per-line comments."
+   ]
+  },
+  "s0FA000": {
+   "name": "Sample data, part 3 of 8",
+   "summary": [
+    "Raw data (BRR-encoded samples); not code. No per-line comments."
+   ]
+  },
+  "s0FB000": {
+   "name": "Sample data, part 4 of 8",
+   "summary": [
+    "Raw data (BRR-encoded samples); not code. No per-line comments."
+   ]
+  },
+  "s0FC000": {
+   "name": "Sample data, part 5 of 8",
+   "summary": [
+    "Raw data (BRR-encoded samples); not code. No per-line comments."
+   ]
+  },
+  "s0FD000": {
+   "name": "Sample data, part 6 of 8",
+   "summary": [
+    "Raw data (BRR-encoded samples); not code. No per-line comments."
+   ]
+  },
+  "s0FE000": {
+   "name": "Sample data, part 7 of 8",
+   "summary": [
+    "Raw data (BRR-encoded samples); not code. No per-line comments."
+   ]
+  },
+  "s0FF000": {
+   "name": "Sample data, part 8 of 8",
+   "summary": [
+    "Raw data (BRR-encoded samples); not code. No per-line comments."
+   ]
+  }
+ },
+ "lines": {}
+}

@@ -1,0 +1,54 @@
+{
+ "bank": "0A",
+ "sections": {
+  "s0A8000": {
+   "name": "Graphics, part 1 of 8",
+   "summary": [
+    "Raw data (GFX20-GFX2F); not code. No per-line comments."
+   ]
+  },
+  "s0A9000": {
+   "name": "Graphics, part 2 of 8",
+   "summary": [
+    "Raw data (GFX20-GFX2F); not code. No per-line comments."
+   ]
+  },
+  "s0AA000": {
+   "name": "Graphics, part 3 of 8",
+   "summary": [
+    "Raw data (GFX20-GFX2F); not code. No per-line comments."
+   ]
+  },
+  "s0AB000": {
+   "name": "Graphics, part 4 of 8",
+   "summary": [
+    "Raw data (GFX20-GFX2F); not code. No per-line comments."
+   ]
+  },
+  "s0AC000": {
+   "name": "Graphics, part 5 of 8",
+   "summary": [
+    "Raw data (GFX20-GFX2F); not code. No per-line comments."
+   ]
+  },
+  "s0AD000": {
+   "name": "Graphics, part 6 of 8",
+   "summary": [
+    "Raw data (GFX20-GFX2F); not code. No per-line comments."
+   ]
+  },
+  "s0AE000": {
+   "name": "Graphics, part 7 of 8",
+   "summary": [
+    "Raw data (GFX20-GFX2F); not code. No per-line comments."
+   ]
+  },
+  "s0AF000": {
+   "name": "Graphics, part 8 of 8",
+   "summary": [
+    "Raw data (GFX20-GFX2F); not code. No per-line comments."
+   ]
+  }
+ },
+ "lines": {}
+}

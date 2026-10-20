@@ -1,0 +1,54 @@
+{
+ "bank": "0E",
+ "sections": {
+  "s0E8000": {
+   "name": "Music data and SPC700 engine, part 1 of 8",
+   "summary": [
+    "Raw data (music sequences, SPC700 sound engine code); not code. No per-line comments."
+   ]
+  },
+  "s0E9000": {
+   "name": "Music data and SPC700 engine, part 2 of 8",
+   "summary": [
+    "Raw data (music sequences, SPC700 sound engine code); not code. No per-line comments."
+   ]
+  },
+  "s0EA000": {
+   "name": "Music data and SPC700 engine, part 3 of 8",
+   "summary": [
+    "Raw data (music sequences, SPC700 sound engine code); not code. No per-line comments."
+   ]
+  },
+  "s0EB000": {
+   "name": "Music data and SPC700 engine, part 4 of 8",
+   "summary": [
+    "Raw data (music sequences, SPC700 sound engine code); not code. No per-line comments."
+   ]
+  },
+  "s0EC000": {
+   "name": "Music data and SPC700 engine, part 5 of 8",
+   "summary": [
+    "Raw data (music sequences, SPC700 sound engine code); not code. No per-line comments."
+   ]
+  },
+  "s0ED000": {
+   "name": "Music data and SPC700 engine, part 6 of 8",
+   "summary": [
+    "Raw data (music sequences, SPC700 sound engine code); not code. No per-line comments."
+   ]
+  },
+  "s0EE000": {
+   "name": "Music data and SPC700 engine, part 7 of 8",
+   "summary": [
+    "Raw data (music sequences, SPC700 sound engine code); not code. No per-line comments."
+   ]
+  },
+  "s0EF000": {
+   "name": "Music data and SPC700 engine, part 8 of 8",
+   "summary": [
+    "Raw data (music sequences, SPC700 sound engine code); not code. No per-line comments."
+   ]
+  }
+ },
+ "lines": {}
+}

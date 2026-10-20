@@ -1,0 +1,28 @@
+*, *::before, *::after { box-sizing: border-box; }
+html, body { background: #fff; color: #000; height: 100%; margin: 0; }
+body { display: flex; flex-direction: column; padding: .5em; font: 13px/1.35 ui-monospace, Menlo, Consolas, monospace; }
+pre { margin: 0; padding: 0 1em; font: inherit; }
+a { color: #080; text-decoration: none; }
+a:hover { text-decoration: underline; }
+#header { display: flex; justify-content: center; align-items: center; gap: .5em; flex-wrap: wrap; height: 2em; font-family: system-ui, sans-serif; }
+#body { display: flex; flex: 1; min-height: 0; overflow: clip; }
+#left { width: 38vw; overflow: auto; border-right: 1px solid #888; }
+#right { flex: 1; min-width: 0; overflow: auto; }
+.page { max-width: 60em; margin: 0 auto; padding: 0 1em; font: 15px/1.5 system-ui, sans-serif; overflow: auto; }
+.page table { border-collapse: collapse; width: 100%; }
+.page td, .page th { text-align: left; vertical-align: top; padding: .2em .6em; border-bottom: 1px solid #ddd; }
+.c { color: #c00; }
+.op { color: #d70; }
+.d { color: #880; }
+.rom { color: #080; }
+.ram, a.ram { color: #088; }
+.l:target, tr:target, .hit { background: #ff0; }
+.inverted { filter: hue-rotate(180deg) invert(100%); }
+@media (prefers-color-scheme: dark) {
+  html { filter: hue-rotate(180deg) invert(100%); }
+  .inverted { filter: none; }
+}
+@media (max-width: 800px) {
+  #body { flex-direction: column; }
+  #left { width: auto; max-height: 30vh; border-right: 0; border-bottom: 1px solid #888; }
+}

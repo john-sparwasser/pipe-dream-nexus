@@ -13,3 +13,10 @@ public GitHub artifacts API for the newest CI build. Unauthenticated, so it is r
 node check.mjs     # platform detection + artifact picking
 npx serve .        # local preview
 ```
+
+`bank/` is the SMW disassembly rendered as per-bank pages (PJ's Super Metroid bank logs style):
+`bank/index.html`, one `bank/XX.html` per code bank, `bank/ram.html`. Generated, stdlib-only:
+
+```
+python3 bank/build.py [path/to/pipe-dream/reference/smw-disasm]   # default: ../pipe-dream/...
+```

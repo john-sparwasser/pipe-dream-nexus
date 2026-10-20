@@ -1,0 +1,2715 @@
+{
+ "bank": "0D",
+ "sections": {
+  "s0D8000": {
+   "name": "Map16 tile definitions (8 bytes per tile)",
+   "summary": [
+    "Map16 16x16 block definitions, 8 bytes each: four (8x8 character, property) pairs in the order top-left, bottom-left,",
+    "top-right, bottom-right. Property byte is YXPCCCTT (Y/X flip, priority, palette, GFX page).",
+    "The level loader (bank 05, via the bit mask at $05:81BB) copies the shared tiles from here and picks the tileset-specific",
+    "part from $0D8B70/$0DBC00/$0DC800/$0DD400/$0DE300 (TilesetMAP16Loc). So a row's Map16 number is not simply (addr-$8000)/8.",
+    "Each row below is decoded as chr/prop for the four quarters. $0DA0A0-$0DA0F8 is $FF padding."
+   ]
+  },
+  "PtrsLong0DA10F": {
+   "name": "Extended object $00 pointer: Screen exit",
+   "summary": [
+    "First of 3-byte (16-bit address + bank) pointers indexed by the extended object number [$59] ($00-$FF).",
+    "Used by ExtendedObjectLoader at $0DA10B through ExecutePtrLong. Entries $02-$10 are unused nulls."
+   ]
+  },
+  "PtrsLong0DA112": {
+   "name": "Extended object $01 pointer: Screen jump"
+  },
+  "PtrsLong0DA115": {
+   "name": "Unused. Extended object $02 pointer (null)"
+  },
+  "PtrsLong0DA118": {
+   "name": "Unused. Extended object $03 pointer (null)"
+  },
+  "PtrsLong0DA11B": {
+   "name": "Unused. Extended object $04 pointer (null)"
+  },
+  "PtrsLong0DA11E": {
+   "name": "Unused. Extended object $05 pointer (null)"
+  },
+  "PtrsLong0DA121": {
+   "name": "Unused. Extended object $06 pointer (null)"
+  },
+  "PtrsLong0DA124": {
+   "name": "Unused. Extended object $07 pointer (null)"
+  },
+  "PtrsLong0DA127": {
+   "name": "Unused. Extended object $08 pointer (null)"
+  },
+  "PtrsLong0DA12A": {
+   "name": "Unused. Extended object $09 pointer (null)"
+  },
+  "PtrsLong0DA12D": {
+   "name": "Unused. Extended object $0A pointer (null)"
+  },
+  "PtrsLong0DA130": {
+   "name": "Unused. Extended object $0B pointer (null)"
+  },
+  "PtrsLong0DA133": {
+   "name": "Unused. Extended object $0C pointer (null)"
+  },
+  "PtrsLong0DA136": {
+   "name": "Unused. Extended object $0D pointer (null)"
+  },
+  "PtrsLong0DA139": {
+   "name": "Unused. Extended object $0E pointer (null)"
+  },
+  "PtrsLong0DA13C": {
+   "name": "Unused. Extended object $0F pointer (null)"
+  },
+  "PtrsLong0DA13F": {
+   "name": "Extended object $10 pointer: Small door"
+  },
+  "PtrsLong0DA142": {
+   "name": "Extended object $11 pointer: Invisible ? block (1-UP)"
+  },
+  "PtrsLong0DA145": {
+   "name": "Extended object $12 pointer: Invisible note block"
+  },
+  "PtrsLong0DA148": {
+   "name": "Extended object $13 pointer: Top left corner edge tile 1"
+  },
+  "PtrsLong0DA14B": {
+   "name": "Extended object $14 pointer: Top right corner edge tile 1"
+  },
+  "PtrsLong0DA14E": {
+   "name": "Extended object $15 pointer: Small POW door"
+  },
+  "PtrsLong0DA151": {
+   "name": "Extended object $16 pointer: Invisible POW ? block"
+  },
+  "PtrsLong0DA154": {
+   "name": "Extended object $17 pointer: Green star block"
+  },
+  "PtrsLong0DA157": {
+   "name": "Extended object $18 pointer: 3-UP moon"
+  },
+  "PtrsLong0DA15A": {
+   "name": "Extended object $19 pointer: Invisible 1-UP #1"
+  },
+  "PtrsLong0DA15D": {
+   "name": "Extended object $1A pointer: Invisible 1-UP #2"
+  },
+  "PtrsLong0DA160": {
+   "name": "Extended object $1B pointer: Invisible 1-UP #3"
+  },
+  "PtrsLong0DA163": {
+   "name": "Extended object $1C pointer: Invisible 1-UP #4"
+  },
+  "PtrsLong0DA166": {
+   "name": "Extended object $1D pointer: Red berry"
+  },
+  "PtrsLong0DA169": {
+   "name": "Extended object $1E pointer: Pink berry"
+  },
+  "PtrsLong0DA16C": {
+   "name": "Extended object $1F pointer: Green berry"
+  },
+  "PtrsLong0DA16F": {
+   "name": "Extended object $20 pointer: Always turning block"
+  },
+  "PtrsLong0DA172": {
+   "name": "Extended object $21 pointer: Bottom right of midway point (unused)"
+  },
+  "PtrsLong0DA175": {
+   "name": "Extended object $22 pointer: Bottom right of midway point (unused)"
+  },
+  "PtrsLong0DA178": {
+   "name": "Extended object $23 pointer: Note block (flower/feather/star)"
+  },
+  "PtrsLong0DA17B": {
+   "name": "Extended object $24 pointer: ON/OFF block"
+  },
+  "PtrsLong0DA17E": {
+   "name": "Extended object $25 pointer: Direction coins ? block"
+  },
+  "PtrsLong0DA181": {
+   "name": "Extended object $26 pointer: Note block"
+  },
+  "PtrsLong0DA184": {
+   "name": "Extended object $27 pointer: Note block, bounce on all sides"
+  },
+  "PtrsLong0DA187": {
+   "name": "Extended object $28 pointer: Turn block (Flower)"
+  },
+  "PtrsLong0DA18A": {
+   "name": "Extended object $29 pointer: Turn block (Feather)"
+  },
+  "PtrsLong0DA18D": {
+   "name": "Extended object $2A pointer: Turn block (Star)"
+  },
+  "PtrsLong0DA190": {
+   "name": "Extended object $2B pointer: Turn block (Star 2/1-UP/Vine)"
+  },
+  "PtrsLong0DA193": {
+   "name": "Extended object $2C pointer: Turn block (Multiple coins)"
+  },
+  "PtrsLong0DA196": {
+   "name": "Extended object $2D pointer: Turn block (Coin)"
+  },
+  "PtrsLong0DA199": {
+   "name": "Extended object $2E pointer: Turn block (Nothing)"
+  },
+  "PtrsLong0DA19C": {
+   "name": "Extended object $2F pointer: Turn block (POW)"
+  },
+  "PtrsLong0DA19F": {
+   "name": "Extended object $30 pointer: ? block (Flower)"
+  },
+  "PtrsLong0DA1A2": {
+   "name": "Extended object $31 pointer: ? block (Feather)"
+  },
+  "PtrsLong0DA1A5": {
+   "name": "Extended object $32 pointer: ? block (Star)"
+  },
+  "PtrsLong0DA1A8": {
+   "name": "Extended object $33 pointer: ? block (Star 2)"
+  },
+  "PtrsLong0DA1AB": {
+   "name": "Extended object $34 pointer: ? block (Multiple coins)"
+  },
+  "PtrsLong0DA1AE": {
+   "name": "Extended object $35 pointer: ? block (Key/Wings/Balloon/Shell)"
+  },
+  "PtrsLong0DA1B1": {
+   "name": "Extended object $36 pointer: ? block (Yoshi)"
+  },
+  "PtrsLong0DA1B4": {
+   "name": "Extended object $37 pointer: ? block (Shell)"
+  },
+  "PtrsLong0DA1B7": {
+   "name": "Extended object $38 pointer: ? block (Shell)"
+  },
+  "PtrsLong0DA1BA": {
+   "name": "Extended object $39 pointer: Turn block, unbreakable (Feather)"
+  },
+  "PtrsLong0DA1BD": {
+   "name": "Extended object $3A pointer: Top left corner edge tile 2"
+  },
+  "PtrsLong0DA1C0": {
+   "name": "Extended object $3B pointer: Top right corner edge tile 2"
+  },
+  "PtrsLong0DA1C3": {
+   "name": "Extended object $3C pointer: Top left corner edge tile 3"
+  },
+  "PtrsLong0DA1C6": {
+   "name": "Extended object $3D pointer: Top right corner edge tile 3"
+  },
+  "PtrsLong0DA1C9": {
+   "name": "Extended object $3E pointer: Top left corner edge tile 4"
+  },
+  "PtrsLong0DA1CC": {
+   "name": "Extended object $3F pointer: Top right corner edge tile 4"
+  },
+  "PtrsLong0DA1CF": {
+   "name": "Extended object $40 pointer: Transculent block"
+  },
+  "PtrsLong0DA1D2": {
+   "name": "Extended object $41 pointer: Yoshi Coin"
+  },
+  "PtrsLong0DA1D5": {
+   "name": "Extended object $42 pointer: Top left slope"
+  },
+  "PtrsLong0DA1D8": {
+   "name": "Extended object $43 pointer: Top right slope"
+  },
+  "PtrsLong0DA1DB": {
+   "name": "Extended object $44 pointer: Purple triangle, left"
+  },
+  "PtrsLong0DA1DE": {
+   "name": "Extended object $45 pointer: Purple triangle, right"
+  },
+  "PtrsLong0DA1E1": {
+   "name": "Extended object $46 pointer: Midway point rope"
+  },
+  "PtrsLong0DA1E4": {
+   "name": "Extended object $47 pointer: Door"
+  },
+  "PtrsLong0DA1E7": {
+   "name": "Extended object $48 pointer: Invisible POW door"
+  },
+  "PtrsLong0DA1EA": {
+   "name": "Extended object $49 pointer: Ghost house exit"
+  },
+  "PtrsLong0DA1ED": {
+   "name": "Extended object $4A pointer: Climbing net door"
+  },
+  "PtrsLong0DA1F0": {
+   "name": "Extended object $4B pointer: Conveyor end tile 1"
+  },
+  "PtrsLong0DA1F3": {
+   "name": "Extended object $4C pointer: Conveyor end tile 2"
+  },
+  "PtrsLong0DA1F6": {
+   "name": "Extended object $4D pointer: Line guide, top left 1/4 large circle"
+  },
+  "PtrsLong0DA1F9": {
+   "name": "Extended object $4E pointer: Line guide, top right 1/4 large circle"
+  },
+  "PtrsLong0DA1FC": {
+   "name": "Extended object $4F pointer: Line guide, bottom left 1/4 large circle"
+  },
+  "PtrsLong0DA1FF": {
+   "name": "Extended object $50 pointer: Line guide, bottom right 1/4 large circle"
+  },
+  "PtrsLong0DA202": {
+   "name": "Extended object $51 pointer: Line guide, top left 1/4 small circle"
+  },
+  "PtrsLong0DA205": {
+   "name": "Extended object $52 pointer: Line guide, top right 1/4 small circle"
+  },
+  "PtrsLong0DA208": {
+   "name": "Extended object $53 pointer: Line guide, bottom left 1/4 small circle"
+  },
+  "PtrsLong0DA20B": {
+   "name": "Extended object $54 pointer: Line guide, bottom right 1/4 small circle"
+  },
+  "PtrsLong0DA20E": {
+   "name": "Extended object $55 pointer: Line guide end, for horizontal line"
+  },
+  "PtrsLong0DA211": {
+   "name": "Extended object $56 pointer: Line guide end, for vertical line"
+  },
+  "PtrsLong0DA214": {
+   "name": "Extended object $57 pointer: Switch palace bottom right corner tile"
+  },
+  "PtrsLong0DA217": {
+   "name": "Extended object $58 pointer: Switch palace bottom left corner tile"
+  },
+  "PtrsLong0DA21A": {
+   "name": "Extended object $59 pointer: Switch palace top right corner tile"
+  },
+  "PtrsLong0DA21D": {
+   "name": "Extended object $5A pointer: Switch palace top left corner tile"
+  },
+  "PtrsLong0DA220": {
+   "name": "Extended object $5B pointer: Bit of brick background tile 1"
+  },
+  "PtrsLong0DA223": {
+   "name": "Extended object $5C pointer: Bit of brick background tile 2"
+  },
+  "PtrsLong0DA226": {
+   "name": "Extended object $5D pointer: Bit of brick background tile 3"
+  },
+  "PtrsLong0DA229": {
+   "name": "Extended object $5E pointer: Bit of brick background tile 4"
+  },
+  "PtrsLong0DA22C": {
+   "name": "Extended object $5F pointer: Large background area"
+  },
+  "PtrsLong0DA22F": {
+   "name": "Extended object $60 pointer: Lava/mud top right corner edge"
+  },
+  "PtrsLong0DA232": {
+   "name": "Extended object $61 pointer: Ghost house clock"
+  },
+  "PtrsLong0DA235": {
+   "name": "Extended object $62 pointer: Ghost house top left to bottom right beam 1"
+  },
+  "PtrsLong0DA238": {
+   "name": "Extended object $63 pointer: Ghost house top right to bottom left beam 1"
+  },
+  "PtrsLong0DA23B": {
+   "name": "Extended object $64 pointer: Ghost house cobweb, top right"
+  },
+  "PtrsLong0DA23E": {
+   "name": "Extended object $65 pointer: Ghost house cobweb, top left"
+  },
+  "PtrsLong0DA241": {
+   "name": "Extended object $66 pointer: Ghost house top right to bottom left beam 2"
+  },
+  "PtrsLong0DA244": {
+   "name": "Extended object $67 pointer: Ghost house top left to bottom right beam 2"
+  },
+  "PtrsLong0DA247": {
+   "name": "Extended object $68 pointer: Cloud fringe, bottom and right edge"
+  },
+  "PtrsLong0DA24A": {
+   "name": "Extended object $69 pointer: Cloud fringe, bottom and left edge"
+  },
+  "PtrsLong0DA24D": {
+   "name": "Extended object $6A pointer: Cloud fringe, bottom right"
+  },
+  "PtrsLong0DA250": {
+   "name": "Extended object $6B pointer: Cloud fringe, bottom left"
+  },
+  "PtrsLong0DA253": {
+   "name": "Extended object $6C pointer: Cloud fringe on white, bottom and right edge"
+  },
+  "PtrsLong0DA256": {
+   "name": "Extended object $6D pointer: Cloud fringe on white, bottom and left edge"
+  },
+  "PtrsLong0DA259": {
+   "name": "Extended object $6E pointer: Cloud fringe on white, bottom right"
+  },
+  "PtrsLong0DA25C": {
+   "name": "Extended object $6F pointer: Cloud fringe on white, bottom left"
+  },
+  "PtrsLong0DA25F": {
+   "name": "Extended object $70 pointer: Bit of canvass 1"
+  },
+  "PtrsLong0DA262": {
+   "name": "Extended object $71 pointer: Canvass 1"
+  },
+  "PtrsLong0DA265": {
+   "name": "Extended object $72 pointer: Canvass 2"
+  },
+  "PtrsLong0DA268": {
+   "name": "Extended object $73 pointer: Canvass 3"
+  },
+  "PtrsLong0DA26B": {
+   "name": "Extended object $74 pointer: Canvass 4"
+  },
+  "PtrsLong0DA26E": {
+   "name": "Extended object $75 pointer: Canvass tile 1"
+  },
+  "PtrsLong0DA271": {
+   "name": "Extended object $76 pointer: Canvass tile 2"
+  },
+  "PtrsLong0DA274": {
+   "name": "Extended object $77 pointer: Canvass tile 3"
+  },
+  "PtrsLong0DA277": {
+   "name": "Extended object $78 pointer: Canvass tile 4"
+  },
+  "PtrsLong0DA27A": {
+   "name": "Extended object $79 pointer: Canvass tile 5"
+  },
+  "PtrsLong0DA27D": {
+   "name": "Extended object $7A pointer: Canvass tile 6"
+  },
+  "PtrsLong0DA280": {
+   "name": "Extended object $7B pointer: Canvass tile 7"
+  },
+  "PtrsLong0DA283": {
+   "name": "Extended object $7C pointer: Bit of canvas 2"
+  },
+  "PtrsLong0DA286": {
+   "name": "Extended object $7D pointer: Bit of canvas 3"
+  },
+  "PtrsLong0DA289": {
+   "name": "Extended object $7E pointer: Bit of canvas 4"
+  },
+  "PtrsLong0DA28C": {
+   "name": "Extended object $7F pointer: Torpedo launcher"
+  },
+  "PtrsLong0DA28F": {
+   "name": "Extended object $80 pointer: Ghost house entrance"
+  },
+  "PtrsLong0DA292": {
+   "name": "Extended object $81 pointer: Water weed"
+  },
+  "PtrsLong0DA295": {
+   "name": "Extended object $82 pointer: Big bush 1"
+  },
+  "PtrsLong0DA298": {
+   "name": "Extended object $83 pointer: Big bush 2"
+  },
+  "PtrsLong0DA29B": {
+   "name": "Extended object $84 pointer: Castle entrance"
+  },
+  "PtrsLong0DA29E": {
+   "name": "Extended object $85 pointer: Yoshi's house"
+  },
+  "PtrsLong0DA2A1": {
+   "name": "Extended object $86 pointer: Arrow sign"
+  },
+  "PtrsLong0DA2A4": {
+   "name": "Extended object $87 pointer: ! block, green"
+  },
+  "PtrsLong0DA2A7": {
+   "name": "Extended object $88 pointer: Tree branch, left"
+  },
+  "PtrsLong0DA2AA": {
+   "name": "Extended object $89 pointer: Tree branch, right"
+  },
+  "PtrsLong0DA2AD": {
+   "name": "Extended object $8A pointer: Switch, green"
+  },
+  "PtrsLong0DA2B0": {
+   "name": "Extended object $8B pointer: Switch, yellow"
+  },
+  "PtrsLong0DA2B3": {
+   "name": "Extended object $8C pointer: Switch, blue"
+  },
+  "PtrsLong0DA2B6": {
+   "name": "Extended object $8D pointer: Switch, red"
+  },
+  "PtrsLong0DA2B9": {
+   "name": "Extended object $8E pointer: ! block, yellow"
+  },
+  "PtrsLong0DA2BC": {
+   "name": "Extended object $8F pointer: Ghost house window"
+  },
+  "PtrsLong0DA2BF": {
+   "name": "Extended object $90 pointer: Boss door"
+  },
+  "PtrsLong0DA2C2": {
+   "name": "Extended object $91 pointer: Steep left slope (vert. lev.)"
+  },
+  "PtrsLong0DA2C5": {
+   "name": "Extended object $92 pointer: Steep right slope (vert. lev.)"
+  },
+  "PtrsLong0DA2C8": {
+   "name": "Extended object $93 pointer: Normal left slope (vert. lev.)"
+  },
+  "PtrsLong0DA2CB": {
+   "name": "Extended object $94 pointer: Normal right slope (vert. lev.)"
+  },
+  "PtrsLong0DA2CE": {
+   "name": "Extended object $95 pointer: Very steep left slope (vert. lev.)"
+  },
+  "PtrsLong0DA2D1": {
+   "name": "Extended object $96 pointer: Very steep right slope (vert. lev.)"
+  },
+  "PtrsLong0DA2D4": {
+   "name": "Extended object $97 pointer: Switch palace right and bottom edge tile"
+  },
+  "PtrsLong0DA2D7": {
+   "name": "Unused. Extended object $98 pointer (door code)"
+  },
+  "PtrsLong0DA2DA": {
+   "name": "Unused. Extended object $99 pointer (door code)"
+  },
+  "PtrsLong0DA2DD": {
+   "name": "Unused. Extended object $9A pointer (door code)"
+  },
+  "PtrsLong0DA2E0": {
+   "name": "Unused. Extended object $9B pointer (door code)"
+  },
+  "PtrsLong0DA2E3": {
+   "name": "Unused. Extended object $9C pointer (door code)"
+  },
+  "PtrsLong0DA2E6": {
+   "name": "Unused. Extended object $9D pointer (door code)"
+  },
+  "PtrsLong0DA2E9": {
+   "name": "Unused. Extended object $9E pointer (door code)"
+  },
+  "PtrsLong0DA2EC": {
+   "name": "Unused. Extended object $9F pointer (door code)"
+  },
+  "PtrsLong0DA2EF": {
+   "name": "Unused. Extended object $A0 pointer (door code)"
+  },
+  "PtrsLong0DA2F2": {
+   "name": "Unused. Extended object $A1 pointer (door code)"
+  },
+  "PtrsLong0DA2F5": {
+   "name": "Unused. Extended object $A2 pointer (door code)"
+  },
+  "PtrsLong0DA2F8": {
+   "name": "Unused. Extended object $A3 pointer (door code)"
+  },
+  "PtrsLong0DA2FB": {
+   "name": "Unused. Extended object $A4 pointer (door code)"
+  },
+  "PtrsLong0DA2FE": {
+   "name": "Unused. Extended object $A5 pointer (door code)"
+  },
+  "PtrsLong0DA301": {
+   "name": "Unused. Extended object $A6 pointer (door code)"
+  },
+  "PtrsLong0DA304": {
+   "name": "Unused. Extended object $A7 pointer (door code)"
+  },
+  "PtrsLong0DA307": {
+   "name": "Unused. Extended object $A8 pointer (door code)"
+  },
+  "PtrsLong0DA30A": {
+   "name": "Unused. Extended object $A9 pointer (door code)"
+  },
+  "PtrsLong0DA30D": {
+   "name": "Unused. Extended object $AA pointer (door code)"
+  },
+  "PtrsLong0DA310": {
+   "name": "Unused. Extended object $AB pointer (door code)"
+  },
+  "PtrsLong0DA313": {
+   "name": "Unused. Extended object $AC pointer (door code)"
+  },
+  "PtrsLong0DA316": {
+   "name": "Unused. Extended object $AD pointer (door code)"
+  },
+  "PtrsLong0DA319": {
+   "name": "Unused. Extended object $AE pointer (door code)"
+  },
+  "PtrsLong0DA31C": {
+   "name": "Unused. Extended object $AF pointer (door code)"
+  },
+  "PtrsLong0DA31F": {
+   "name": "Unused. Extended object $B0 pointer (door code)"
+  },
+  "PtrsLong0DA322": {
+   "name": "Unused. Extended object $B1 pointer (door code)"
+  },
+  "PtrsLong0DA325": {
+   "name": "Unused. Extended object $B2 pointer (door code)"
+  },
+  "PtrsLong0DA328": {
+   "name": "Unused. Extended object $B3 pointer (door code)"
+  },
+  "PtrsLong0DA32B": {
+   "name": "Unused. Extended object $B4 pointer (door code)"
+  },
+  "PtrsLong0DA32E": {
+   "name": "Unused. Extended object $B5 pointer (door code)"
+  },
+  "PtrsLong0DA331": {
+   "name": "Unused. Extended object $B6 pointer (door code)"
+  },
+  "PtrsLong0DA334": {
+   "name": "Unused. Extended object $B7 pointer (door code)"
+  },
+  "PtrsLong0DA337": {
+   "name": "Unused. Extended object $B8 pointer (door code)"
+  },
+  "PtrsLong0DA33A": {
+   "name": "Unused. Extended object $B9 pointer (door code)"
+  },
+  "PtrsLong0DA33D": {
+   "name": "Unused. Extended object $BA pointer (door code)"
+  },
+  "PtrsLong0DA340": {
+   "name": "Unused. Extended object $BB pointer (door code)"
+  },
+  "PtrsLong0DA343": {
+   "name": "Unused. Extended object $BC pointer (door code)"
+  },
+  "PtrsLong0DA346": {
+   "name": "Unused. Extended object $BD pointer (door code)"
+  },
+  "PtrsLong0DA349": {
+   "name": "Unused. Extended object $BE pointer (door code)"
+  },
+  "PtrsLong0DA34C": {
+   "name": "Unused. Extended object $BF pointer (door code)"
+  },
+  "PtrsLong0DA34F": {
+   "name": "Unused. Extended object $C0 pointer (door code)"
+  },
+  "PtrsLong0DA352": {
+   "name": "Unused. Extended object $C1 pointer (door code)"
+  },
+  "PtrsLong0DA355": {
+   "name": "Unused. Extended object $C2 pointer (door code)"
+  },
+  "PtrsLong0DA358": {
+   "name": "Unused. Extended object $C3 pointer (door code)"
+  },
+  "PtrsLong0DA35B": {
+   "name": "Unused. Extended object $C4 pointer (door code)"
+  },
+  "PtrsLong0DA35E": {
+   "name": "Unused. Extended object $C5 pointer (door code)"
+  },
+  "PtrsLong0DA361": {
+   "name": "Unused. Extended object $C6 pointer (door code)"
+  },
+  "PtrsLong0DA364": {
+   "name": "Unused. Extended object $C7 pointer (door code)"
+  },
+  "PtrsLong0DA367": {
+   "name": "Unused. Extended object $C8 pointer (door code)"
+  },
+  "PtrsLong0DA36A": {
+   "name": "Unused. Extended object $C9 pointer (door code)"
+  },
+  "PtrsLong0DA36D": {
+   "name": "Unused. Extended object $CA pointer (door code)"
+  },
+  "PtrsLong0DA370": {
+   "name": "Unused. Extended object $CB pointer (door code)"
+  },
+  "PtrsLong0DA373": {
+   "name": "Unused. Extended object $CC pointer (door code)"
+  },
+  "PtrsLong0DA376": {
+   "name": "Unused. Extended object $CD pointer (door code)"
+  },
+  "PtrsLong0DA379": {
+   "name": "Unused. Extended object $CE pointer (door code)"
+  },
+  "PtrsLong0DA37C": {
+   "name": "Unused. Extended object $CF pointer (door code)"
+  },
+  "PtrsLong0DA37F": {
+   "name": "Unused. Extended object $D0 pointer (door code)"
+  },
+  "PtrsLong0DA382": {
+   "name": "Unused. Extended object $D1 pointer (door code)"
+  },
+  "PtrsLong0DA385": {
+   "name": "Unused. Extended object $D2 pointer (door code)"
+  },
+  "PtrsLong0DA388": {
+   "name": "Unused. Extended object $D3 pointer (door code)"
+  },
+  "PtrsLong0DA38B": {
+   "name": "Unused. Extended object $D4 pointer (door code)"
+  },
+  "PtrsLong0DA38E": {
+   "name": "Unused. Extended object $D5 pointer (door code)"
+  },
+  "PtrsLong0DA391": {
+   "name": "Unused. Extended object $D6 pointer (door code)"
+  },
+  "PtrsLong0DA394": {
+   "name": "Unused. Extended object $D7 pointer (door code)"
+  },
+  "PtrsLong0DA397": {
+   "name": "Unused. Extended object $D8 pointer (door code)"
+  },
+  "PtrsLong0DA39A": {
+   "name": "Unused. Extended object $D9 pointer (door code)"
+  },
+  "PtrsLong0DA39D": {
+   "name": "Unused. Extended object $DA pointer (door code)"
+  },
+  "PtrsLong0DA3A0": {
+   "name": "Unused. Extended object $DB pointer (door code)"
+  },
+  "PtrsLong0DA3A3": {
+   "name": "Unused. Extended object $DC pointer (door code)"
+  },
+  "PtrsLong0DA3A6": {
+   "name": "Unused. Extended object $DD pointer (door code)"
+  },
+  "PtrsLong0DA3A9": {
+   "name": "Unused. Extended object $DE pointer (door code)"
+  },
+  "PtrsLong0DA3AC": {
+   "name": "Unused. Extended object $DF pointer (door code)"
+  },
+  "PtrsLong0DA3AF": {
+   "name": "Unused. Extended object $E0 pointer (door code)"
+  },
+  "PtrsLong0DA3B2": {
+   "name": "Unused. Extended object $E1 pointer (door code)"
+  },
+  "PtrsLong0DA3B5": {
+   "name": "Unused. Extended object $E2 pointer (door code)"
+  },
+  "PtrsLong0DA3B8": {
+   "name": "Unused. Extended object $E3 pointer (door code)"
+  },
+  "PtrsLong0DA3BB": {
+   "name": "Unused. Extended object $E4 pointer (door code)"
+  },
+  "PtrsLong0DA3BE": {
+   "name": "Unused. Extended object $E5 pointer (door code)"
+  },
+  "PtrsLong0DA3C1": {
+   "name": "Unused. Extended object $E6 pointer (door code)"
+  },
+  "PtrsLong0DA3C4": {
+   "name": "Unused. Extended object $E7 pointer (door code)"
+  },
+  "PtrsLong0DA3C7": {
+   "name": "Unused. Extended object $E8 pointer (door code)"
+  },
+  "PtrsLong0DA3CA": {
+   "name": "Unused. Extended object $E9 pointer (door code)"
+  },
+  "PtrsLong0DA3CD": {
+   "name": "Unused. Extended object $EA pointer (door code)"
+  },
+  "PtrsLong0DA3D0": {
+   "name": "Unused. Extended object $EB pointer (door code)"
+  },
+  "PtrsLong0DA3D3": {
+   "name": "Unused. Extended object $EC pointer (door code)"
+  },
+  "PtrsLong0DA3D6": {
+   "name": "Unused. Extended object $ED pointer (door code)"
+  },
+  "PtrsLong0DA3D9": {
+   "name": "Unused. Extended object $EE pointer (door code)"
+  },
+  "PtrsLong0DA3DC": {
+   "name": "Unused. Extended object $EF pointer (door code)"
+  },
+  "PtrsLong0DA3DF": {
+   "name": "Unused. Extended object $F0 pointer (door code)"
+  },
+  "PtrsLong0DA3E2": {
+   "name": "Unused. Extended object $F1 pointer (door code)"
+  },
+  "PtrsLong0DA3E5": {
+   "name": "Unused. Extended object $F2 pointer (door code)"
+  },
+  "PtrsLong0DA3E8": {
+   "name": "Unused. Extended object $F3 pointer (door code)"
+  },
+  "PtrsLong0DA3EB": {
+   "name": "Unused. Extended object $F4 pointer (door code)"
+  },
+  "PtrsLong0DA3EE": {
+   "name": "Unused. Extended object $F5 pointer (door code)"
+  },
+  "PtrsLong0DA3F1": {
+   "name": "Unused. Extended object $F6 pointer (door code)"
+  },
+  "PtrsLong0DA3F4": {
+   "name": "Unused. Extended object $F7 pointer (door code)"
+  },
+  "PtrsLong0DA3F7": {
+   "name": "Unused. Extended object $F8 pointer (door code)"
+  },
+  "PtrsLong0DA3FA": {
+   "name": "Unused. Extended object $F9 pointer (door code)"
+  },
+  "PtrsLong0DA3FD": {
+   "name": "Unused. Extended object $FA pointer (door code)"
+  },
+  "PtrsLong0DA400": {
+   "name": "Unused. Extended object $FB pointer (door code)"
+  },
+  "PtrsLong0DA403": {
+   "name": "Unused. Extended object $FC pointer (door code)"
+  },
+  "PtrsLong0DA406": {
+   "name": "Unused. Extended object $FD pointer (door code)"
+  },
+  "PtrsLong0DA409": {
+   "name": "Unused. Extended object $FE pointer (door code)"
+  },
+  "PtrsLong0DA40C": {
+   "name": "Load standard object by tileset",
+   "summary": [
+    "Last (unused) door pointer of the extended table, then the entry point (JSL) for standard level objects.",
+    "Dispatches on tileset [$1931] through the table at $0DA41E; the chosen routine then dispatches on the object number."
+   ]
+  },
+  "PtrsLong0DA41E": {
+   "name": "Tileset 0 object handler: Normal 1",
+   "summary": [
+    "First of 15 pointers indexed by tileset [$1931]; each runs that tileset's standard-object code."
+   ]
+  },
+  "PtrsLong0DA421": {
+   "name": "Tileset 1 object handler: Castle 1"
+  },
+  "PtrsLong0DA424": {
+   "name": "Tileset 2 object handler: Rope 1"
+  },
+  "PtrsLong0DA427": {
+   "name": "Tileset 3 object handler: Underground 1"
+  },
+  "PtrsLong0DA42A": {
+   "name": "Tileset 4 object handler: Switch Palace 1"
+  },
+  "PtrsLong0DA42D": {
+   "name": "Tileset 5 object handler: Ghost House 1"
+  },
+  "PtrsLong0DA430": {
+   "name": "Tileset 6 object handler: Rope 2"
+  },
+  "PtrsLong0DA433": {
+   "name": "Tileset 7 object handler: Normal 2"
+  },
+  "PtrsLong0DA436": {
+   "name": "Tileset 8 object handler: Rope 3"
+  },
+  "PtrsLong0DA439": {
+   "name": "Tileset 9 object handler: Underground 2"
+  },
+  "PtrsLong0DA43C": {
+   "name": "Tileset A object handler: Switch Palace 2"
+  },
+  "PtrsLong0DA43F": {
+   "name": "Tileset B object handler: Castle 2"
+  },
+  "PtrsLong0DA442": {
+   "name": "Tileset C object handler: Cloud/Forest"
+  },
+  "PtrsLong0DA445": {
+   "name": "Tileset D object handler: Ghost House 2"
+  },
+  "PtrsLong0DA448": {
+   "name": "Normal tileset: dispatch standard object",
+   "summary": [
+    "Tileset $E (Underground 3) pointer, then the handler used by the Normal and Cloud/Forest tilesets.",
+    "Uses [$5A]-1 as index into the standard object pointer table at $0DA455. Tileset $F is invalid (no entry)."
+   ]
+  },
+  "PtrsLong0DA455": {
+   "name": "Standard object $01 pointer: Water (Blue)",
+   "summary": [
+    "First of the standard object pointers for tilesets Normal/Cloud-Forest, indexed by [$5A]-1 (object $01 = entry 0)."
+   ]
+  },
+  "PtrsLong0DA458": {
+   "name": "Standard object $02 pointer: Invisible coin blocks"
+  },
+  "PtrsLong0DA45B": {
+   "name": "Standard object $03 pointer: Invisible note blocks"
+  },
+  "PtrsLong0DA45E": {
+   "name": "Standard object $04 pointer: Invisible POW coins"
+  },
+  "PtrsLong0DA461": {
+   "name": "Standard object $05 pointer: Coins"
+  },
+  "PtrsLong0DA464": {
+   "name": "Standard object $06 pointer: Walk-through dirt"
+  },
+  "PtrsLong0DA467": {
+   "name": "Standard object $07 pointer: Water (Other color)"
+  },
+  "PtrsLong0DA46A": {
+   "name": "Standard object $08 pointer: Note blocks"
+  },
+  "PtrsLong0DA46D": {
+   "name": "Standard object $09 pointer: Turn blocks"
+  },
+  "PtrsLong0DA470": {
+   "name": "Standard object $0A pointer: Coin ? blocks"
+  },
+  "PtrsLong0DA473": {
+   "name": "Standard object $0B pointer: Throw blocks"
+  },
+  "PtrsLong0DA476": {
+   "name": "Standard object $0C pointer: Black piranha plants"
+  },
+  "PtrsLong0DA479": {
+   "name": "Standard object $0D pointer: Cement blocks"
+  },
+  "PtrsLong0DA47C": {
+   "name": "Standard object $0E pointer: Brown blocks"
+  },
+  "PtrsLong0DA47F": {
+   "name": "Standard object $0F pointer: Vertical pipes"
+  },
+  "PtrsLong0DA482": {
+   "name": "Standard object $10 pointer: Horizontal pipes"
+  },
+  "PtrsLong0DA485": {
+   "name": "Standard object $11 pointer: Bullet shooter"
+  },
+  "PtrsLong0DA488": {
+   "name": "Standard object $12 pointer: Slopes"
+  },
+  "PtrsLong0DA48B": {
+   "name": "Standard object $13 pointer: Ledge edges"
+  },
+  "PtrsLong0DA48E": {
+   "name": "Standard object $14 pointer: Ground ledge"
+  },
+  "PtrsLong0DA491": {
+   "name": "Standard object $15 pointer: Midway/Goal point"
+  },
+  "PtrsLong0DA494": {
+   "name": "Standard object $16 pointer: Blue coins"
+  },
+  "PtrsLong0DA497": {
+   "name": "Standard object $17 pointer: Rope/Clouds"
+  },
+  "PtrsLong0DA49A": {
+   "name": "Standard object $18 pointer: Water surface (ani)"
+  },
+  "PtrsLong0DA49D": {
+   "name": "Standard object $19 pointer: Water surface (not ani)"
+  },
+  "PtrsLong0DA4A0": {
+   "name": "Standard object $1A pointer: Lava surface (ani)"
+  },
+  "PtrsLong0DA4A3": {
+   "name": "Standard object $1B pointer: Net top edge"
+  },
+  "PtrsLong0DA4A6": {
+   "name": "Standard object $1C pointer: Donut bridge"
+  },
+  "PtrsLong0DA4A9": {
+   "name": "Standard object $1D pointer: Net bottom edge"
+  },
+  "PtrsLong0DA4AC": {
+   "name": "Standard object $1E pointer: Net vertical edge"
+  },
+  "PtrsLong0DA4AF": {
+   "name": "Standard object $1F pointer: Vert. Pipe/Bone/Log"
+  },
+  "PtrsLong0DA4B2": {
+   "name": "Standard object $20 pointer: Horiz. Pipe/Bone/Log"
+  },
+  "PtrsLong0DA4B5": {
+   "name": "Standard object $21 pointer: Long ground ledge"
+  },
+  "PtrsLong0DA4B8": {
+   "name": "Unused. Standard object $22 pointer"
+  },
+  "PtrsLong0DA4BB": {
+   "name": "Unused. Standard object $23 pointer"
+  },
+  "PtrsLong0DA4BE": {
+   "name": "Unused. Standard object $24 pointer"
+  },
+  "PtrsLong0DA4C1": {
+   "name": "Unused. Standard object $25 pointer"
+  },
+  "PtrsLong0DA4C4": {
+   "name": "Unused. Standard object $26 pointer"
+  },
+  "PtrsLong0DA4C7": {
+   "name": "Unused. Standard object $27 pointer"
+  },
+  "PtrsLong0DA4CA": {
+   "name": "Unused. Standard object $28 pointer"
+  },
+  "PtrsLong0DA4CD": {
+   "name": "Unused. Standard object $29 pointer"
+  },
+  "PtrsLong0DA4D0": {
+   "name": "Unused. Standard object $2A pointer"
+  },
+  "PtrsLong0DA4D3": {
+   "name": "Unused. Standard object $2B pointer"
+  },
+  "PtrsLong0DA4D6": {
+   "name": "Unused. Standard object $2C pointer"
+  },
+  "PtrsLong0DA4D9": {
+   "name": "Unused. Standard object $2D pointer"
+  },
+  "PtrsLong0DA4DC": {
+   "name": "Standard object $2E pointer"
+  },
+  "PtrsLong0DA4DF": {
+   "name": "Standard object $2F pointer"
+  },
+  "PtrsLong0DA4E2": {
+   "name": "Standard object $30 pointer: Ice blue vertical pipe"
+  },
+  "PtrsLong0DA4E5": {
+   "name": "Standard object $31 pointer: Ice blue turn tiles"
+  },
+  "PtrsLong0DA4E8": {
+   "name": "Standard object $32 pointer: Blue switch blocks"
+  },
+  "PtrsLong0DA4EB": {
+   "name": "Standard object $33 pointer: Forest tree top"
+  },
+  "PtrsLong0DA4EE": {
+   "name": "Standard object $34 pointer: Solid left/right and top edge (forest)"
+  },
+  "PtrsLong0DA4F1": {
+   "name": "Standard object $35 pointer: Ledge (forest)"
+  },
+  "PtrsLong0DA4F4": {
+   "name": "Standard object $36 pointer: Large tree trunk (forest)"
+  },
+  "PtrsLong0DA4F7": {
+   "name": "Standard object $37 pointer: Small tree trunk (forest)"
+  },
+  "PtrsLong0DA4FA": {
+   "name": "Standard object $38 pointer: Red switch blocks"
+  },
+  "PtrsLong0DA4FD": {
+   "name": "Standard object $39 pointer: Right facing diagonal pipe"
+  },
+  "PtrsLong0DA500": {
+   "name": "Standard object $3A pointer: Left facing diagonal ledge"
+  },
+  "PtrsLong0DA503": {
+   "name": "Standard object $3B pointer: Right facing diagonal ledge"
+  },
+  "PtrsLong0DA506": {
+   "name": "Standard object $3C pointer: Arch ledge"
+  },
+  "PtrsLong0DA509": {
+   "name": "Standard object $3D pointer: Top cloud fringe"
+  },
+  "PtrsLong0DA50C": {
+   "name": "Standard object $3E pointer: Left/right cloud fringe"
+  },
+  "PtrsLong0DA50F": {
+   "name": "Bushes pointer; screen exit and jump objects",
+   "summary": [
+    "Last standard object pointer (bushes 1 through 5), followed by the two extended object routines at index $00 and $01.",
+    "Screen exit (CODE_0DA512): reads the destination screen byte from the level data, stores it in $19B8,X (X = screen), water flag in $19D8,X,",
+    "and the secondary-exit flag in $1B93. Screen jump (CODE_0DA53D): sets the current screen number [$1928]/[$1BA1] from the object's screen."
+   ]
+  },
+  "s0DA100": {
+   "name": "Load extended object",
+   "summary": [
+    "Entry point (JSL) for extended level objects. Takes the extended object number in [$59] as index into the pointer table at $0DA10F.",
+    "Parameters: [$59]: extended object number. Quirk: redundant SEP #$30 and a JSR wrapper around a JSL dispatch."
+   ]
+  },
+  "s0DA548": {
+   "name": "Table: Map16 tile numbers for single-tile objects",
+   "summary": [
+    "Indexed by extended object number minus $10. Gives the Map16 tile (low byte) written by CODE_0DA57B.",
+    "Indexes from $13 up use the high Map16 page ($100+)."
+   ]
+  },
+  "s0DA57B": {
+   "name": "Draw single-tile extended objects",
+   "summary": [
+    "Writes one Map16 tile for extended objects $10 and up (doors, invisible blocks, berries, turn blocks, ? blocks, corner edges, ...).",
+    "Skips the invisible 1UP and 3-UP moon if already collected in this level, and replaces item-memory objects that were already hit by a used block.",
+    "Parameters: X: extended object number; Y/[$57]: tile position in the level buffer. Writes through [$6B],Y.",
+    "CODE_0DA64D: generates the green star block by entering the middle of the routine with index $32."
+   ]
+  },
+  "s0DA652": {
+   "name": "Table: small slope tiles"
+  },
+  "s0DA656": {
+   "name": "Draw small slopes (unused objects)",
+   "summary": [
+    "Draws a two-tile-wide small slope for extended objects $42/$43: left tile then right tile.",
+    "Parameters: X: extended object number ($42 or $43); Y/[$57]: position."
+   ]
+  },
+  "s0DA671": {
+   "name": "Table: purple triangle top tiles"
+  },
+  "s0DA673": {
+   "name": "Draw triangles, midway point and pointer helpers",
+   "summary": [
+    "Purple triangle (extended objects $44/$45): top tile from table, bottom tile always $EB.",
+    "Midway point (CODE_0DA68E): draws the midway rope tiles unless the midway flag is already set.",
+    "CODE_0DA6B1/CODE_0DA6BA: save and restore the level data pointer ($6B/$6C -> $04/$05) and the current screen number."
+   ]
+  },
+  "s0DA6CD": {
+   "name": "Table: door tiles"
+  },
+  "s0DA6D1": {
+   "name": "Draw two-tile-high door",
+   "summary": [
+    "Extended objects $47 and up: writes a top tile and, one row below, a bottom tile from the tables at $0DA6CD/$0DA6CF.",
+    "Also reached by the unused objects $98-$FF, which index past the table and draw garbage."
+   ]
+  },
+  "s0DA6EE": {
+   "name": "Table: big bush 1 Map16 tiles (9 bytes per row)"
+  }
+ },
+ "lines": {
+  "0D8000": "TL $70/$1C BL $72/$1C TR $71/$1C BR $73/$1C",
+  "0D8008": "TL $C5/$09 BL $FB/$08 TR $C5/$09 BR $FB/$08",
+  "0D8010": "TL $FD/$1C BL $FD/$1C TR $FD/$1C BR $FD/$1C",
+  "0D8018": "TL $FB/$08 BL $FB/$08 TR $FB/$08 BR $FB/$08",
+  "0D8020": "TL $4C/$2C BL $4E/$2C TR $4D/$2C BR $4F/$2C",
+  "0D8028": "TL $FC/$2C BL $FC/$2C TR $FC/$2C BR $FC/$2C",
+  "0D8030": "TL $87/$14 BL $88/$54 TR $88/$14 BR $87/$54",
+  "0D8038": "TL $89/$1C BL $8A/$1C TR $92/$1C BR $82/$1C",
+  "0D8040": "TL $92/$1C BL $82/$1C TR $92/$1C BR $82/$1C",
+  "0D8048": "TL $92/$1C BL $82/$1C TR $89/$5C BR $8A/$5C",
+  "0D8050": "TL $8A/$1C BL $8A/$1C TR $82/$1C BR $82/$1C",
+  "0D8058": "TL $82/$1C BL $82/$1C TR $82/$1C BR $82/$1C",
+  "0D8060": "TL $82/$1C BL $82/$1C TR $8A/$5C BR $8A/$5C",
+  "0D8068": "TL $8A/$1C BL $89/$9C TR $82/$1C BR $92/$9C",
+  "0D8070": "TL $82/$1C BL $92/$9C TR $82/$1C BR $92/$9C",
+  "0D8078": "TL $82/$1C BL $92/$9C TR $8A/$5C BR $89/$DC",
+  "0D8080": "TL $82/$1C BL $82/$1C TR $82/$1C BR $BA/$9C",
+  "0D8088": "TL $82/$1C BL $AB/$1C TR $82/$1C BR $AB/$1C",
+  "0D8090": "TL $82/$1C BL $BA/$DC TR $82/$1C BR $82/$1C",
+  "0D8098": "TL $82/$1C BL $82/$1C TR $AA/$1C BR $AA/$1C",
+  "0D80A0": "TL $F8/$1C BL $F8/$1C TR $F8/$1C BR $F8/$1C",
+  "0D80A8": "TL $AA/$5C BL $AA/$5C TR $82/$1C BR $82/$1C",
+  "0D80B0": "TL $82/$1C BL $82/$1C TR $BA/$1C BR $82/$1C",
+  "0D80B8": "TL $AB/$9C BL $82/$1C TR $AB/$9C BR $82/$1C",
+  "0D80C0": "TL $BA/$5C BL $82/$1C TR $82/$1C BR $82/$1C",
+  "0D80C8": "TL $82/$1C BL $82/$1C TR $82/$1C BR $9A/$DC",
+  "0D80D0": "TL $82/$1C BL $9A/$9C TR $82/$1C BR $82/$1C",
+  "0D80D8": "TL $82/$1C BL $82/$1C TR $9A/$5C BR $82/$1C",
+  "0D80E0": "TL $9A/$1C BL $82/$1C TR $82/$1C BR $82/$1C",
+  "0D80E8": "TL $F8/$10 BL $F8/$10 TR $F8/$10 BR $F8/$10",
+  "0D80F0": "TL $F8/$10 BL $F8/$10 TR $F8/$10 BR $F8/$10",
+  "0D80F8": "TL $85/$18 BL $95/$18 TR $86/$18 BR $96/$18",
+  "0D8100": "TL $95/$18 BL $95/$18 TR $96/$18 BR $96/$18",
+  "0D8108": "TL $F8/$18 BL $F8/$18 TR $F8/$18 BR $F8/$18",
+  "0D8110": "TL $F8/$10 BL $F8/$10 TR $F8/$10 BR $F8/$10",
+  "0D8118": "TL $F8/$10 BL $F8/$10 TR $F8/$10 BR $F8/$10",
+  "0D8120": "TL $F8/$10 BL $F8/$10 TR $F8/$10 BR $F8/$10",
+  "0D8128": "TL $F8/$10 BL $F8/$10 TR $F8/$10 BR $F8/$10",
+  "0D8130": "TL $F8/$10 BL $0C/$10 TR $F8/$10 BR $0C/$50",
+  "0D8138": "TL $50/$10 BL $52/$10 TR $51/$10 BR $53/$10",
+  "0D8140": "TL $52/$10 BL $52/$10 TR $53/$10 BR $53/$10",
+  "0D8148": "TL $78/$18 BL $7A/$18 TR $79/$18 BR $7B/$18",
+  "0D8150": "TL $54/$18 BL $56/$18 TR $55/$18 BR $57/$18",
+  "0D8158": "TL $6C/$18 BL $6E/$18 TR $6D/$18 BR $6F/$18",
+  "0D8160": "TL $6C/$1C BL $6E/$1C TR $6D/$1C BR $6F/$1C",
+  "0D8168": "TL $08/$18 BL $18/$18 TR $09/$18 BR $19/$18",
+  "0D8170": "TL $28/$18 BL $38/$18 TR $29/$18 BR $39/$18",
+  "0D8178": "TL $F8/$08 BL $F8/$08 TR $74/$10 BR $75/$10",
+  "0D8180": "TL $F8/$08 BL $F8/$08 TR $75/$10 BR $75/$10",
+  "0D8188": "TL $F8/$08 BL $F8/$08 TR $75/$10 BR $77/$10",
+  "0D8190": "TL $74/$3C BL $75/$3C TR $F8/$18 BR $F8/$18",
+  "0D8198": "TL $75/$3C BL $75/$3C TR $F8/$18 BR $F8/$18",
+  "0D81A0": "TL $75/$3C BL $77/$3C TR $F8/$18 BR $F8/$18",
+  "0D81A8": "TL $F8/$1C BL $F8/$1C TR $76/$10 BR $75/$10",
+  "0D81B0": "TL $F8/$18 BL $F8/$18 TR $75/$3C BR $77/$3C",
+  "0D81B8": "TL $F8/$18 BL $F8/$18 TR $75/$3C BR $77/$3C",
+  "0D81C0": "TL $98/$1C BL $F8/$08 TR $98/$1C BR $F8/$08",
+  "0D81C8": "TL $A0/$10 BL $A2/$10 TR $A1/$10 BR $A3/$10",
+  "0D81D0": "TL $A2/$10 BL $A2/$10 TR $A3/$10 BR $A3/$10",
+  "0D81D8": "TL $A2/$10 BL $A4/$10 TR $A3/$10 BR $A5/$10",
+  "0D81E0": "TL $A0/$3C BL $A2/$3C TR $A1/$3C BR $A3/$3C",
+  "0D81E8": "TL $A2/$3C BL $A2/$3C TR $A3/$3C BR $A3/$3C",
+  "0D81F0": "TL $A2/$3C BL $A4/$3C TR $A3/$3C BR $A5/$3C",
+  "0D81F8": "TL $94/$09 BL $92/$09 TR $95/$09 BR $93/$09",
+  "0D8200": "TL $C0/$09 BL $D0/$09 TR $95/$09 BR $93/$09",
+  "0D8208": "TL $94/$09 BL $92/$09 TR $C0/$49 BR $D0/$49",
+  "0D8210": "TL $85/$09 BL $92/$09 TR $95/$09 BR $93/$09",
+  "0D8218": "TL $94/$09 BL $92/$09 TR $85/$49 BR $93/$09",
+  "0D8220": "TL $92/$89 BL $94/$89 TR $93/$89 BR $95/$89",
+  "0D8228": "TL $80/$08 BL $90/$08 TR $81/$08 BR $91/$08",
+  "0D8230": "TL $80/$0C BL $90/$0C TR $81/$0C BR $91/$0C",
+  "0D8238": "TL $80/$10 BL $90/$10 TR $81/$10 BR $91/$10",
+  "0D8240": "TL $EA/$18 BL $EC/$18 TR $EB/$18 BR $ED/$18",
+  "0D8248": "TL $FE/$14 BL $FE/$14 TR $FE/$14 BR $FE/$14",
+  "0D8250": "TL $FD/$14 BL $FD/$14 TR $FD/$14 BR $FD/$14",
+  "0D8258": "TL $F8/$14 BL $B0/$14 TR $F8/$14 BR $B1/$14",
+  "0D8260": "TL $F8/$14 BL $C1/$14 TR $F8/$14 BR $C2/$14",
+  "0D8268": "TL $B0/$14 BL $FE/$14 TR $B1/$14 BR $FE/$14",
+  "0D8270": "TL $A6/$14 BL $B6/$14 TR $A7/$14 BR $B7/$14",
+  "0D8278": "TL $B5/$14 BL $B5/$94 TR $FD/$14 BR $FD/$14",
+  "0D8280": "TL $FE/$14 BL $B2/$14 TR $FE/$14 BR $B3/$14",
+  "0D8288": "TL $B2/$14 BL $FD/$14 TR $B3/$14 BR $FD/$14",
+  "0D8290": "TL $FE/$14 BL $FE/$14 TR $E7/$14 BR $D0/$54",
+  "0D8298": "TL $C5/$14 BL $FE/$14 TR $C6/$14 BR $D6/$14",
+  "0D82A0": "TL $F8/$14 BL $F8/$14 TR $C0/$14 BR $D0/$14",
+  "0D82A8": "TL $FE/$14 BL $FE/$14 TR $C0/$14 BR $D0/$14",
+  "0D82B0": "TL $FD/$14 BL $FD/$14 TR $E7/$54 BR $D0/$54",
+  "0D82B8": "TL $C0/$14 BL $D0/$14 TR $FE/$14 BR $FE/$14",
+  "0D82C0": "TL $C0/$14 BL $D0/$14 TR $FE/$14 BR $FE/$14",
+  "0D82C8": "TL $E7/$54 BL $D0/$14 TR $FE/$14 BR $FE/$14",
+  "0D82D0": "TL $A4/$14 BL $B4/$14 TR $A5/$14 BR $FE/$14",
+  "0D82D8": "TL $E8/$14 BL $F3/$14 TR $E9/$14 BR $FE/$14",
+  "0D82E0": "TL $D1/$14 BL $F1/$14 TR $D2/$14 BR $FE/$14",
+  "0D82E8": "TL $E6/$14 BL $F5/$14 TR $F8/$14 BR $F8/$14",
+  "0D82F0": "TL $E5/$14 BL $F5/$14 TR $FE/$14 BR $FE/$14",
+  "0D82F8": "TL $E7/$14 BL $D0/$54 TR $FD/$14 BR $FD/$14",
+  "0D8300": "TL $FD/$14 BL $FD/$14 TR $E6/$14 BR $F5/$14",
+  "0D8308": "TL $FD/$14 BL $FD/$14 TR $E5/$14 BR $F5/$14",
+  "0D8310": "TL $FD/$14 BL $FD/$14 TR $E5/$14 BR $F5/$14",
+  "0D8318": "TL $C3/$14 BL $FD/$14 TR $A7/$14 BR $B7/$14",
+  "0D8320": "TL $E1/$14 BL $FD/$14 TR $E2/$14 BR $F2/$14",
+  "0D8328": "TL $E3/$14 BL $FD/$14 TR $E4/$14 BR $F4/$14",
+  "0D8330": "TL $F8/$1C BL $0E/$1C TR $F8/$1C BR $0F/$1C",
+  "0D8338": "TL $F8/$1C BL $8C/$1C TR $F8/$1C BR $F8/$1C",
+  "0D8340": "TL $1E/$1C BL $93/$14 TR $1F/$1C BR $D5/$1C",
+  "0D8348": "TL $9C/$1C BL $F8/$1C TR $F8/$1C BR $94/$14",
+  "0D8350": "TL $2D/$14 BL $2D/$94 TR $2D/$54 BR $2D/$D4",
+  "0D8358": "TL $2D/$18 BL $2D/$98 TR $2D/$58 BR $2D/$D8",
+  "0D8360": "TL $2D/$1C BL $2D/$9C TR $2D/$5C BR $2D/$DC",
+  "0D8368": "TL $3D/$1C BL $3D/$9C TR $3D/$5C BR $3D/$DC",
+  "0D8370": "TL $BB/$18 BL $F0/$18 TR $8D/$18 BR $9D/$18",
+  "0D8378": "TL $F8/$10 BL $F8/$10 TR $F8/$10 BR $F8/$10",
+  "0D8380": "TL $F8/$10 BL $F8/$10 TR $F8/$10 BR $F8/$10",
+  "0D8388": "TL $F8/$10 BL $F8/$10 TR $F8/$10 BR $F8/$10",
+  "0D8390": "TL $F8/$10 BL $F8/$10 TR $F8/$10 BR $F8/$10",
+  "0D8398": "TL $82/$09 BL $92/$09 TR $83/$09 BR $93/$09",
+  "0D83A0": "TL $81/$09 BL $D0/$09 TR $83/$09 BR $93/$09",
+  "0D83A8": "TL $8D/$09 BL $D0/$09 TR $83/$09 BR $93/$09",
+  "0D83B0": "TL $82/$09 BL $92/$09 TR $81/$49 BR $D0/$49",
+  "0D83B8": "TL $82/$09 BL $92/$09 TR $8D/$49 BR $D0/$49",
+  "0D83C0": "TL $0D/$18 BL $F8/$08 TR $0D/$18 BR $F8/$08",
+  "0D83C8": "TL $2C/$1C BL $3C/$1C TR $2C/$5C BR $3C/$5C",
+  "0D83D0": "TL $64/$10 BL $66/$10 TR $65/$10 BR $67/$10",
+  "0D83D8": "TL $DA/$1C BL $DC/$1C TR $DB/$1C BR $DD/$1C",
+  "0D83E0": "TL $64/$10 BL $66/$10 TR $65/$10 BR $67/$10",
+  "0D83E8": "TL $60/$18 BL $62/$18 TR $61/$18 BR $63/$18",
+  "0D83F0": "TL $64/$10 BL $66/$10 TR $65/$10 BR $67/$10",
+  "0D83F8": "TL $64/$10 BL $66/$10 TR $65/$10 BR $67/$10",
+  "0D8400": "TL $68/$18 BL $6A/$18 TR $69/$18 BR $6B/$18",
+  "0D8408": "TL $68/$18 BL $6A/$18 TR $69/$18 BR $6B/$18",
+  "0D8410": "TL $68/$18 BL $6A/$18 TR $69/$18 BR $6B/$18",
+  "0D8418": "TL $68/$18 BL $6A/$18 TR $69/$18 BR $6B/$18",
+  "0D8420": "TL $68/$18 BL $6A/$18 TR $69/$18 BR $6B/$18",
+  "0D8428": "TL $68/$18 BL $6A/$18 TR $69/$18 BR $6B/$18",
+  "0D8430": "TL $68/$18 BL $6A/$18 TR $69/$18 BR $6B/$18",
+  "0D8438": "TL $06/$18 BL $16/$18 TR $07/$18 BR $17/$18",
+  "0D8440": "TL $60/$18 BL $62/$18 TR $61/$18 BR $63/$18",
+  "0D8448": "TL $60/$18 BL $62/$18 TR $61/$18 BR $63/$18",
+  "0D8450": "TL $60/$18 BL $62/$18 TR $61/$18 BR $63/$18",
+  "0D8458": "TL $60/$18 BL $62/$18 TR $61/$18 BR $63/$18",
+  "0D8460": "TL $60/$18 BL $62/$18 TR $61/$18 BR $63/$18",
+  "0D8468": "TL $60/$18 BL $62/$18 TR $61/$18 BR $63/$18",
+  "0D8470": "TL $60/$18 BL $62/$18 TR $61/$18 BR $63/$18",
+  "0D8478": "TL $60/$18 BL $62/$18 TR $61/$18 BR $63/$18",
+  "0D8480": "TL $60/$18 BL $62/$18 TR $61/$18 BR $63/$18",
+  "0D8488": "TL $60/$18 BL $62/$18 TR $61/$18 BR $63/$18",
+  "0D8490": "TL $06/$18 BL $16/$18 TR $07/$18 BR $17/$18",
+  "0D8498": "TL $06/$18 BL $16/$18 TR $07/$18 BR $17/$18",
+  "0D84A0": "TL $06/$18 BL $16/$18 TR $07/$18 BR $17/$18",
+  "0D84A8": "TL $8E/$10 BL $9E/$10 TR $8F/$10 BR $9F/$10",
+  "0D84B0": "TL $BE/$14 BL $F6/$14 TR $D7/$14 BR $F7/$14",
+  "0D84B8": "TL $68/$1C BL $6A/$1C TR $69/$1C BR $6B/$1C",
+  "0D84C0": "TL $5C/$18 BL $5E/$18 TR $5D/$18 BR $5F/$18",
+  "0D84C8": "TL $30/$10 BL $32/$10 TR $31/$10 BR $33/$10",
+  "0D84D0": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D84D8": "TL $58/$18 BL $5A/$18 TR $59/$18 BR $5B/$18",
+  "0D84E0": "TL $00/$14 BL $10/$14 TR $01/$14 BR $11/$14",
+  "0D84E8": "TL $02/$14 BL $12/$14 TR $03/$14 BR $13/$14",
+  "0D84F0": "TL $20/$14 BL $20/$14 TR $21/$14 BR $21/$14",
+  "0D84F8": "TL $22/$14 BL $22/$14 TR $23/$14 BR $23/$14",
+  "0D8500": "TL $00/$14 BL $10/$14 TR $01/$14 BR $11/$14",
+  "0D8508": "TL $02/$14 BL $12/$14 TR $03/$14 BR $13/$14",
+  "0D8510": "TL $00/$14 BL $10/$14 TR $01/$14 BR $11/$14",
+  "0D8518": "TL $02/$14 BL $12/$14 TR $03/$14 BR $13/$14",
+  "0D8520": "TL $04/$14 BL $14/$14 TR $05/$14 BR $15/$14",
+  "0D8528": "TL $24/$14 BL $34/$14 TR $25/$14 BR $35/$14",
+  "0D8530": "TL $2E/$14 BL $3E/$14 TR $2E/$14 BR $3E/$14",
+  "0D8538": "TL $2F/$14 BL $3F/$14 TR $2F/$14 BR $3F/$14",
+  "0D8540": "TL $24/$14 BL $34/$14 TR $25/$14 BR $35/$14",
+  "0D8548": "TL $06/$18 BL $16/$18 TR $07/$18 BR $17/$18",
+  "0D8550": "TL $0A/$10 BL $1A/$10 TR $0A/$50 BR $1A/$50",
+  "0D8558": "TL $2A/$10 BL $3A/$10 TR $2B/$10 BR $3B/$10",
+  "0D8560": "TL $83/$10 BL $83/$10 TR $84/$10 BR $84/$10",
+  "0D8568": "TL $1C/$98 BL $1C/$18 TR $1C/$D8 BR $1C/$58",
+  "0D8570": "TL $80/$09 BL $90/$09 TR $83/$09 BR $93/$09",
+  "0D8578": "TL $91/$09 BL $90/$09 TR $83/$09 BR $93/$09",
+  "0D8580": "TL $D7/$09 BL $90/$09 TR $83/$09 BR $93/$09",
+  "0D8588": "TL $82/$09 BL $92/$09 TR $80/$49 BR $90/$49",
+  "0D8590": "TL $82/$09 BL $92/$09 TR $91/$49 BR $90/$49",
+  "0D8598": "TL $82/$09 BL $92/$09 TR $D7/$49 BR $90/$49",
+  "0D85A0": "TL $84/$09 BL $90/$09 TR $95/$09 BR $93/$09",
+  "0D85A8": "TL $94/$09 BL $92/$09 TR $84/$49 BR $90/$49",
+  "0D85B0": "TL $90/$89 BL $80/$89 TR $93/$89 BR $83/$89",
+  "0D85B8": "TL $92/$89 BL $82/$89 TR $93/$89 BR $83/$89",
+  "0D85C0": "TL $92/$89 BL $82/$89 TR $90/$C9 BR $80/$C9",
+  "0D85C8": "TL $90/$89 BL $84/$89 TR $93/$89 BR $95/$89",
+  "0D85D0": "TL $92/$89 BL $94/$89 TR $90/$C9 BR $84/$C9",
+  "0D85D8": "TL $F8/$10 BL $F8/$10 TR $F8/$10 BR $F8/$10",
+  "0D85E0": "TL $F8/$08 BL $B4/$09 TR $F8/$08 BR $B5/$09",
+  "0D85E8": "TL $94/$09 BL $A9/$09 TR $95/$09 BR $AA/$09",
+  "0D85F0": "TL $C0/$09 BL $BE/$09 TR $95/$09 BR $AA/$09",
+  "0D85F8": "TL $C5/$09 BL $CC/$09 TR $C5/$09 BR $CD/$09",
+  "0D8600": "TL $FB/$08 BL $CC/$09 TR $FB/$08 BR $CD/$09",
+  "0D8608": "TL $F8/$08 BL $B6/$09 TR $F8/$08 BR $B7/$09",
+  "0D8610": "TL $94/$09 BL $AB/$09 TR $95/$09 BR $AC/$09",
+  "0D8618": "TL $C0/$09 BL $AF/$09 TR $95/$09 BR $AC/$09",
+  "0D8620": "TL $C5/$09 BL $CE/$09 TR $C5/$09 BR $CF/$09",
+  "0D8628": "TL $FB/$08 BL $CE/$09 TR $FB/$08 BR $CF/$09",
+  "0D8630": "TL $B4/$09 BL $B8/$09 TR $B5/$09 BR $B9/$09",
+  "0D8638": "TL $ED/$09 BL $B8/$09 TR $EE/$09 BR $B9/$09",
+  "0D8640": "TL $EF/$09 BL $B8/$09 TR $EE/$09 BR $B9/$09",
+  "0D8648": "TL $C6/$09 BL $B8/$09 TR $C7/$09 BR $B9/$09",
+  "0D8650": "TL $CC/$09 BL $B8/$09 TR $CD/$09 BR $B9/$09",
+  "0D8658": "TL $A4/$09 BL $BA/$09 TR $A5/$09 BR $93/$09",
+  "0D8660": "TL $BB/$09 BL $BA/$09 TR $BC/$09 BR $93/$09",
+  "0D8668": "TL $BF/$09 BL $BA/$09 TR $BC/$09 BR $93/$09",
+  "0D8670": "TL $C8/$09 BL $BA/$09 TR $A5/$09 BR $93/$09",
+  "0D8678": "TL $CA/$09 BL $BA/$09 TR $A5/$09 BR $93/$09",
+  "0D8680": "TL $A5/$49 BL $92/$09 TR $A4/$49 BR $BA/$49",
+  "0D8688": "TL $BC/$49 BL $92/$09 TR $BB/$49 BR $BA/$49",
+  "0D8690": "TL $BC/$49 BL $93/$49 TR $BF/$49 BR $BA/$49",
+  "0D8698": "TL $A5/$49 BL $92/$09 TR $C8/$49 BR $BA/$49",
+  "0D86A0": "TL $A5/$49 BL $92/$09 TR $CA/$49 BR $BA/$49",
+  "0D86A8": "TL $B5/$49 BL $B9/$49 TR $B4/$49 BR $B8/$49",
+  "0D86B0": "TL $EE/$49 BL $B9/$49 TR $ED/$49 BR $B8/$49",
+  "0D86B8": "TL $EE/$49 BL $B9/$49 TR $EF/$49 BR $B8/$49",
+  "0D86C0": "TL $C7/$49 BL $B9/$49 TR $C6/$49 BR $B8/$49",
+  "0D86C8": "TL $CD/$49 BL $B9/$49 TR $CC/$49 BR $B8/$49",
+  "0D86D0": "TL $F8/$08 BL $B7/$49 TR $F8/$08 BR $B6/$49",
+  "0D86D8": "TL $94/$09 BL $AC/$49 TR $95/$09 BR $AB/$49",
+  "0D86E0": "TL $94/$09 BL $AC/$49 TR $C0/$49 BR $AF/$49",
+  "0D86E8": "TL $C5/$09 BL $CF/$49 TR $C5/$09 BR $CE/$49",
+  "0D86F0": "TL $FB/$08 BL $CF/$49 TR $FB/$08 BR $CE/$49",
+  "0D86F8": "TL $F8/$08 BL $B5/$49 TR $F8/$08 BR $B4/$49",
+  "0D8700": "TL $94/$09 BL $AA/$49 TR $95/$09 BR $A9/$49",
+  "0D8708": "TL $94/$09 BL $AA/$49 TR $C0/$49 BR $BE/$49",
+  "0D8710": "TL $C5/$09 BL $CD/$49 TR $C5/$09 BR $CC/$49",
+  "0D8718": "TL $FB/$08 BL $CD/$49 TR $FB/$08 BR $CC/$49",
+  "0D8720": "TL $F8/$08 BL $9B/$09 TR $F8/$08 BR $9C/$09",
+  "0D8728": "TL $94/$09 BL $A0/$09 TR $95/$09 BR $B1/$09",
+  "0D8730": "TL $C0/$09 BL $8F/$09 TR $95/$09 BR $B1/$09",
+  "0D8738": "TL $C5/$09 BL $D5/$09 TR $C5/$09 BR $D6/$09",
+  "0D8740": "TL $FB/$08 BL $D5/$09 TR $FB/$08 BR $D6/$09",
+  "0D8748": "TL $9B/$09 BL $9D/$09 TR $8E/$09 BR $9E/$09",
+  "0D8750": "TL $EC/$09 BL $9D/$09 TR $A1/$09 BR $9E/$09",
+  "0D8758": "TL $EB/$09 BL $9D/$09 TR $A1/$09 BR $9E/$09",
+  "0D8760": "TL $CA/$09 BL $9D/$09 TR $CB/$09 BR $9E/$09",
+  "0D8768": "TL $D5/$09 BL $9D/$09 TR $D6/$09 BR $9E/$09",
+  "0D8770": "TL $8E/$49 BL $9E/$49 TR $9B/$49 BR $9D/$49",
+  "0D8778": "TL $A1/$49 BL $9E/$49 TR $EC/$49 BR $9D/$49",
+  "0D8780": "TL $A1/$49 BL $9E/$49 TR $EB/$49 BR $9D/$49",
+  "0D8788": "TL $CB/$49 BL $9E/$49 TR $CA/$49 BR $9D/$49",
+  "0D8790": "TL $D6/$49 BL $9E/$49 TR $D5/$49 BR $9D/$49",
+  "0D8798": "TL $F8/$08 BL $9C/$49 TR $F8/$08 BR $9B/$49",
+  "0D87A0": "TL $94/$09 BL $B1/$49 TR $95/$09 BR $A0/$49",
+  "0D87A8": "TL $94/$09 BL $B1/$49 TR $C0/$49 BR $8F/$49",
+  "0D87B0": "TL $C5/$09 BL $D6/$49 TR $C5/$09 BR $D5/$49",
+  "0D87B8": "TL $FB/$08 BL $D6/$49 TR $FB/$08 BR $D5/$49",
+  "0D87C0": "TL $F8/$08 BL $96/$09 TR $87/$09 BR $97/$09",
+  "0D87C8": "TL $94/$09 BL $88/$09 TR $89/$09 BR $97/$09",
+  "0D87D0": "TL $C0/$09 BL $98/$09 TR $89/$09 BR $97/$09",
+  "0D87D8": "TL $C5/$09 BL $D8/$09 TR $C9/$09 BR $97/$09",
+  "0D87E0": "TL $FB/$08 BL $D8/$09 TR $D8/$09 BR $97/$09",
+  "0D87E8": "TL $87/$49 BL $97/$49 TR $F8/$08 BR $96/$49",
+  "0D87F0": "TL $89/$49 BL $97/$49 TR $95/$09 BR $88/$49",
+  "0D87F8": "TL $89/$49 BL $97/$49 TR $C0/$49 BR $98/$49",
+  "0D8800": "TL $C9/$49 BL $97/$49 TR $C5/$09 BR $D8/$49",
+  "0D8808": "TL $D8/$49 BL $97/$49 TR $FB/$08 BR $D8/$49",
+  "0D8810": "TL $DE/$1C BL $EE/$1C TR $DF/$1C BR $EF/$1C",
+  "0D8818": "TL $DF/$5C BL $EF/$5C TR $DE/$5C BR $EE/$5C",
+  "0D8820": "TL $C1/$09 BL $D1/$09 TR $C2/$09 BR $D2/$09",
+  "0D8828": "TL $C2/$49 BL $D2/$49 TR $C1/$49 BR $D1/$49",
+  "0D8830": "TL $A4/$09 BL $BA/$09 TR $BD/$09 BR $D0/$49",
+  "0D8838": "TL $BB/$09 BL $BA/$09 TR $AD/$09 BR $D0/$49",
+  "0D8840": "TL $BD/$49 BL $D0/$09 TR $A4/$49 BR $BA/$49",
+  "0D8848": "TL $AD/$49 BL $D0/$09 TR $BB/$49 BR $BA/$49",
+  "0D8850": "TL $9B/$09 BL $9D/$09 TR $A3/$09 BR $B2/$09",
+  "0D8858": "TL $EC/$09 BL $9D/$09 TR $A2/$09 BR $B2/$09",
+  "0D8860": "TL $A3/$49 BL $B2/$49 TR $9B/$49 BR $9D/$49",
+  "0D8868": "TL $A2/$49 BL $B2/$49 TR $EC/$49 BR $9D/$49",
+  "0D8870": "TL $F8/$08 BL $96/$09 TR $8A/$09 BR $9A/$09",
+  "0D8878": "TL $94/$09 BL $88/$09 TR $99/$09 BR $9A/$09",
+  "0D8880": "TL $8A/$49 BL $9A/$49 TR $F8/$08 BR $96/$49",
+  "0D8888": "TL $99/$49 BL $9A/$49 TR $95/$09 BR $88/$49",
+  "0D8890": "TL $96/$89 BL $F8/$08 TR $97/$89 BR $87/$89",
+  "0D8898": "TL $97/$C9 BL $87/$C9 TR $96/$C9 BR $F8/$08",
+  "0D88A0": "TL $9B/$89 BL $F8/$08 TR $9C/$89 BR $F8/$08",
+  "0D88A8": "TL $9D/$89 BL $9B/$89 TR $9E/$89 BR $8E/$89",
+  "0D88B0": "TL $9E/$C9 BL $8E/$C9 TR $9D/$C9 BR $9B/$C9",
+  "0D88B8": "TL $9C/$C9 BL $F8/$08 TR $9B/$C9 BR $F8/$08",
+  "0D88C0": "TL $F8/$08 BL $F8/$08 TR $C1/$09 BR $D1/$09",
+  "0D88C8": "TL $C1/$09 BL $D1/$09 TR $C2/$09 BR $D2/$09",
+  "0D88D0": "TL $C1/$49 BL $D1/$49 TR $F8/$08 BR $F8/$08",
+  "0D88D8": "TL $C2/$49 BL $D2/$49 TR $C1/$49 BR $D1/$49",
+  "0D88E0": "TL $F8/$1C BL $44/$08 TR $44/$08 BR $45/$08",
+  "0D88E8": "TL $48/$48 BL $49/$48 TR $F8/$1C BR $48/$48",
+  "0D88F0": "TL $44/$48 BL $45/$48 TR $F8/$1C BR $44/$48",
+  "0D88F8": "TL $F8/$1C BL $48/$08 TR $48/$08 BR $49/$08",
+  "0D8900": "TL $F8/$2C BL $4C/$2C TR $F8/$2C BR $4D/$2C",
+  "0D8908": "TL $4C/$2C BL $4E/$2C TR $4D/$2C BR $4F/$2C",
+  "0D8910": "TL $41/$6C BL $43/$6C TR $40/$6C BR $42/$6C",
+  "0D8918": "TL $F8/$2C BL $41/$6C TR $F8/$2C BR $40/$6C",
+  "0D8920": "TL $F8/$2C BL $44/$2C TR $44/$2C BR $45/$2C",
+  "0D8928": "TL $46/$6C BL $47/$6C TR $F8/$2C BR $46/$6C",
+  "0D8930": "TL $A6/$09 BL $92/$09 TR $A7/$09 BR $93/$09",
+  "0D8938": "TL $AE/$09 BL $D0/$09 TR $A7/$09 BR $93/$09",
+  "0D8940": "TL $A8/$09 BL $92/$09 TR $95/$09 BR $93/$09",
+  "0D8948": "TL $94/$09 BL $92/$09 TR $A8/$49 BR $93/$09",
+  "0D8950": "TL $A7/$49 BL $92/$09 TR $A6/$49 BR $93/$09",
+  "0D8958": "TL $A7/$49 BL $92/$09 TR $AE/$49 BR $D0/$49",
+  "0D8960": "TL $8C/$09 BL $92/$09 TR $B3/$09 BR $93/$09",
+  "0D8968": "TL $9F/$09 BL $D0/$09 TR $B3/$09 BR $93/$09",
+  "0D8970": "TL $B3/$49 BL $92/$09 TR $8C/$49 BR $93/$09",
+  "0D8978": "TL $B3/$49 BL $92/$09 TR $9F/$49 BR $D0/$49",
+  "0D8980": "TL $86/$09 BL $92/$09 TR $95/$09 BR $93/$09",
+  "0D8988": "TL $8B/$09 BL $D0/$09 TR $95/$09 BR $93/$09",
+  "0D8990": "TL $94/$09 BL $92/$09 TR $86/$49 BR $93/$09",
+  "0D8998": "TL $94/$09 BL $92/$09 TR $8B/$49 BR $D0/$49",
+  "0D89A0": "TL $94/$09 BL $92/$09 TR $95/$09 BR $93/$09",
+  "0D89A8": "TL $C0/$09 BL $D0/$09 TR $95/$09 BR $93/$09",
+  "0D89B0": "TL $94/$09 BL $92/$09 TR $C0/$49 BR $D0/$49",
+  "0D89B8": "TL $86/$09 BL $92/$09 TR $C0/$49 BR $D0/$49",
+  "0D89C0": "TL $C0/$09 BL $D0/$09 TR $86/$49 BR $93/$49",
+  "0D89C8": "TL $82/$09 BL $92/$09 TR $83/$09 BR $93/$09",
+  "0D89D0": "TL $92/$89 BL $86/$89 TR $93/$89 BR $95/$89",
+  "0D89D8": "TL $92/$89 BL $94/$89 TR $93/$89 BR $86/$C9",
+  "0D89E0": "TL $92/$89 BL $8C/$89 TR $93/$89 BR $B3/$89",
+  "0D89E8": "TL $92/$89 BL $B3/$C9 TR $93/$89 BR $8C/$C9",
+  "0D89F0": "TL $92/$89 BL $94/$89 TR $93/$89 BR $95/$89",
+  "0D89F8": "TL $C2/$09 BL $D2/$09 TR $95/$09 BR $93/$09",
+  "0D8A00": "TL $94/$09 BL $92/$09 TR $C2/$49 BR $D2/$49",
+  "0D8A08": "TL $45/$08 BL $47/$08 TR $47/$08 BR $92/$09",
+  "0D8A10": "TL $4B/$48 BL $92/$49 TR $49/$48 BR $4B/$48",
+  "0D8A18": "TL $47/$48 BL $92/$49 TR $45/$48 BR $47/$48",
+  "0D8A20": "TL $49/$08 BL $4B/$08 TR $4B/$08 BR $92/$09",
+  "0D8A28": "TL $C2/$09 BL $F8/$08 TR $93/$09 BR $D1/$C9",
+  "0D8A30": "TL $F3/$09 BL $93/$09 TR $93/$09 BR $B0/$C9",
+  "0D8A38": "TL $94/$09 BL $D1/$89 TR $C2/$49 BR $F8/$08",
+  "0D8A40": "TL $94/$09 BL $B0/$89 TR $F3/$49 BR $93/$09",
+  "0D8A48": "TL $4E/$2C BL $FB/$2C TR $4F/$2C BR $FB/$2C",
+  "0D8A50": "TL $43/$6C BL $FB/$2C TR $42/$6C BR $FB/$2C",
+  "0D8A58": "TL $45/$2C BL $FB/$2C TR $FB/$2C BR $FB/$2C",
+  "0D8A60": "TL $FB/$2C BL $FB/$2C TR $47/$6C BR $FB/$2C",
+  "0D8A68": "TL $FB/$2C BL $FB/$2C TR $FB/$2C BR $FB/$2C",
+  "0D8A70": "TL $F8/$08 BL $AC/$14 TR $A8/$14 BR $AD/$14",
+  "0D8A78": "TL $A9/$14 BL $AE/$14 TR $F8/$08 BR $AF/$14",
+  "0D8A80": "TL $BF/$14 BL $CB/$14 TR $F8/$08 BR $CC/$14",
+  "0D8A88": "TL $F8/$08 BL $B8/$14 TR $B8/$14 BR $B9/$14",
+  "0D8A90": "TL $B9/$14 BL $C8/$14 TR $BC/$14 BR $FF/$14",
+  "0D8A98": "TL $BD/$14 BL $C9/$14 TR $CD/$14 BR $CA/$14",
+  "0D8AA0": "TL $B9/$14 BL $C8/$14 TR $C8/$14 BR $FF/$14",
+  "0D8AA8": "TL $D3/$14 BL $C4/$14 TR $D4/$14 BR $F8/$08",
+  "0D8AB0": "TL $00/$0C BL $10/$0C TR $01/$0C BR $11/$0C",
+  "0D8AB8": "TL $02/$0C BL $12/$0C TR $03/$0C BR $13/$0C",
+  "0D8AC0": "TL $20/$0C BL $20/$0C TR $21/$0C BR $21/$0C",
+  "0D8AC8": "TL $22/$0C BL $22/$0C TR $23/$0C BR $23/$0C",
+  "0D8AD0": "TL $00/$0C BL $10/$0C TR $01/$0C BR $11/$0C",
+  "0D8AD8": "TL $02/$0C BL $12/$0C TR $03/$0C BR $13/$0C",
+  "0D8AE0": "TL $00/$0C BL $10/$0C TR $01/$0C BR $11/$0C",
+  "0D8AE8": "TL $02/$0C BL $12/$0C TR $03/$0C BR $13/$0C",
+  "0D8AF0": "TL $00/$18 BL $10/$18 TR $01/$18 BR $11/$18",
+  "0D8AF8": "TL $02/$18 BL $12/$18 TR $03/$18 BR $13/$18",
+  "0D8B00": "TL $20/$18 BL $20/$18 TR $21/$18 BR $21/$18",
+  "0D8B08": "TL $22/$18 BL $22/$18 TR $23/$18 BR $23/$18",
+  "0D8B10": "TL $00/$18 BL $10/$18 TR $01/$18 BR $11/$18",
+  "0D8B18": "TL $02/$18 BL $12/$18 TR $03/$18 BR $13/$18",
+  "0D8B20": "TL $00/$18 BL $10/$18 TR $01/$18 BR $11/$18",
+  "0D8B28": "TL $02/$18 BL $12/$18 TR $03/$18 BR $13/$18",
+  "0D8B30": "TL $00/$1C BL $10/$1C TR $01/$1C BR $11/$1C",
+  "0D8B38": "TL $02/$1C BL $12/$1C TR $03/$1C BR $13/$1C",
+  "0D8B40": "TL $20/$1C BL $20/$1C TR $21/$1C BR $21/$1C",
+  "0D8B48": "TL $22/$1C BL $22/$1C TR $23/$1C BR $23/$1C",
+  "0D8B50": "TL $00/$1C BL $10/$1C TR $01/$1C BR $11/$1C",
+  "0D8B58": "TL $02/$1C BL $12/$1C TR $03/$1C BR $13/$1C",
+  "0D8B60": "TL $00/$1C BL $10/$1C TR $01/$1C BR $11/$1C",
+  "0D8B68": "TL $02/$1C BL $12/$1C TR $03/$1C BR $13/$1C",
+  "0D8B70": "TL $C5/$15 BL $CC/$15 TR $C6/$15 BR $CD/$15",
+  "0D8B78": "TL $C7/$15 BL $FF/$14 TR $C8/$15 BR $D5/$15",
+  "0D8B80": "TL $C6/$15 BL $D6/$15 TR $CA/$15 BR $FF/$14",
+  "0D8B88": "TL $C9/$15 BL $D6/$15 TR $C7/$15 BR $CF/$15",
+  "0D8B90": "TL $C7/$15 BL $CE/$15 TR $C8/$15 BR $D5/$15",
+  "0D8B98": "TL $C7/$15 BL $FF/$14 TR $C6/$15 BR $CF/$15",
+  "0D8BA0": "TL $C7/$15 BL $D6/$15 TR $CB/$15 BR $D7/$15",
+  "0D8BA8": "TL $F8/$14 BL $C5/$35 TR $F8/$14 BR $C6/$35",
+  "0D8BB0": "TL $F8/$14 BL $C7/$35 TR $F8/$14 BR $C8/$35",
+  "0D8BB8": "TL $F8/$14 BL $C6/$35 TR $F8/$14 BR $CA/$35",
+  "0D8BC0": "TL $F8/$14 BL $C9/$35 TR $F8/$14 BR $C7/$35",
+  "0D8BC8": "TL $F8/$14 BL $C7/$35 TR $F8/$14 BR $C8/$35",
+  "0D8BD0": "TL $F8/$14 BL $C7/$35 TR $F8/$14 BR $C6/$35",
+  "0D8BD8": "TL $F8/$14 BL $C7/$35 TR $F8/$14 BR $CB/$35",
+  "0D8BE0": "TL $DC/$0D BL $DC/$0D TR $DD/$0D BR $DD/$0D",
+  "0D8BE8": "TL $DE/$0D BL $E2/$0D TR $DF/$0D BR $F8/$14",
+  "0D8BF0": "TL $E0/$0D BL $F8/$14 TR $E1/$0D BR $E3/$0D",
+  "0D8BF8": "TL $F8/$14 BL $F8/$14 TR $E4/$0D BR $E4/$0D",
+  "0D8C00": "TL $E7/$09 BL $EA/$09 TR $E8/$09 BR $F0/$09",
+  "0D8C08": "TL $E8/$09 BL $F0/$09 TR $E9/$09 BR $F1/$09",
+  "0D8C10": "TL $E8/$09 BL $F0/$09 TR $E7/$49 BR $EA/$49",
+  "0D8C18": "TL $CA/$14 BL $D6/$14 TR $CB/$14 BR $D6/$15",
+  "0D8C20": "TL $CC/$14 BL $FF/$14 TR $CD/$14 BR $D5/$15",
+  "0D8C28": "TL $CB/$14 BL $CF/$15 TR $CF/$14 BR $FF/$14",
+  "0D8C30": "TL $CE/$14 BL $FF/$15 TR $CC/$14 BR $D6/$15",
+  "0D8C38": "TL $CC/$14 BL $CF/$15 TR $CD/$14 BR $D5/$15",
+  "0D8C40": "TL $CC/$14 BL $FF/$14 TR $C8/$14 BR $D6/$15",
+  "0D8C48": "TL $CC/$14 BL $CE/$15 TR $D5/$14 BR $D7/$14",
+  "0D8C50": "TL $F8/$08 BL $F8/$08 TR $C7/$09 BR $D7/$09",
+  "0D8C58": "TL $C7/$49 BL $D7/$49 TR $F8/$08 BR $F8/$08",
+  "0D8C60": "TL $F8/$08 BL $C5/$09 TR $C7/$09 BR $C9/$09",
+  "0D8C68": "TL $C7/$49 BL $C9/$49 TR $F8/$08 BR $C5/$49",
+  "0D8C70": "TL $F8/$08 BL $C5/$09 TR $F8/$08 BR $C6/$09",
+  "0D8C78": "TL $F8/$08 BL $F8/$08 TR $F8/$08 BR $D7/$09",
+  "0D8C80": "TL $F8/$08 BL $D7/$49 TR $F8/$08 BR $F8/$08",
+  "0D8C88": "TL $F8/$08 BL $F8/$08 TR $F8/$08 BR $C6/$09",
+  "0D8C90": "TL $F8/$08 BL $C5/$09 TR $F8/$08 BR $F8/$08",
+  "0D8C98": "TL $92/$09 BL $94/$09 TR $C8/$09 BR $D8/$09",
+  "0D8CA0": "TL $C8/$49 BL $D8/$49 TR $93/$09 BR $95/$09",
+  "0D8CA8": "TL $92/$09 BL $D5/$09 TR $C8/$09 BR $D9/$09",
+  "0D8CB0": "TL $C8/$49 BL $D9/$49 TR $93/$09 BR $D6/$09",
+  "0D8CB8": "TL $92/$09 BL $D5/$09 TR $93/$09 BR $D6/$09",
+  "0D8CC0": "TL $92/$09 BL $94/$09 TR $93/$09 BR $D8/$09",
+  "0D8CC8": "TL $92/$09 BL $D8/$49 TR $93/$09 BR $95/$09",
+  "0D8CD0": "TL $92/$09 BL $94/$09 TR $92/$09 BR $D6/$09",
+  "0D8CD8": "TL $92/$09 BL $D5/$09 TR $93/$09 BR $95/$09",
+  "0D8CE0": "TL $C1/$09 BL $93/$09 TR $F8/$08 BR $D1/$09",
+  "0D8CE8": "TL $F2/$09 BL $93/$09 TR $94/$09 BR $B0/$09",
+  "0D8CF0": "TL $D1/$C9 BL $F8/$08 TR $93/$09 BR $D1/$C9",
+  "0D8CF8": "TL $B0/$C9 BL $93/$09 TR $93/$09 BR $B0/$C9",
+  "0D8D00": "TL $D2/$C9 BL $DC/$09 TR $93/$09 BR $B0/$C9",
+  "0D8D08": "TL $D1/$09 BL $93/$09 TR $F8/$08 BR $D1/$09",
+  "0D8D10": "TL $B0/$09 BL $93/$09 TR $93/$09 BR $B0/$09",
+  "0D8D18": "TL $B0/$09 BL $93/$09 TR $C0/$49 BR $D2/$09",
+  "0D8D20": "TL $F8/$08 BL $D1/$49 TR $D1/$49 BR $95/$09",
+  "0D8D28": "TL $94/$09 BL $B0/$49 TR $B0/$49 BR $95/$09",
+  "0D8D30": "TL $C0/$09 BL $D2/$49 TR $B0/$49 BR $95/$09",
+  "0D8D38": "TL $94/$09 BL $D1/$89 TR $D1/$89 BR $F8/$08",
+  "0D8D40": "TL $94/$09 BL $B0/$89 TR $B0/$89 BR $95/$09",
+  "0D8D48": "TL $94/$09 BL $B0/$89 TR $D2/$89 BR $D0/$49",
+  "0D8D50": "TL $F8/$08 BL $D1/$49 TR $C1/$49 BR $95/$09",
+  "0D8D58": "TL $94/$09 BL $B0/$49 TR $F2/$49 BR $95/$09",
+  "0D8D60": "TL $E4/$09 BL $E5/$09 TR $FF/$08 BR $E6/$09",
+  "0D8D68": "TL $E7/$09 BL $E8/$09 TR $FF/$08 BR $E9/$09",
+  "0D8D70": "TL $FF/$08 BL $84/$09 TR $FF/$08 BR $FF/$08",
+  "0D8D78": "TL $FF/$08 BL $FF/$08 TR $FF/$08 BR $FF/$08",
+  "0D8D80": "TL $FF/$08 BL $FF/$08 TR $FF/$08 BR $84/$49",
+  "0D8D88": "TL $FF/$08 BL $E6/$49 TR $E4/$49 BR $E5/$49",
+  "0D8D90": "TL $FF/$08 BL $E9/$49 TR $E7/$49 BR $B0/$09",
+  "0D8D98": "TL $CD/$09 BL $DD/$09 TR $DD/$89 BR $CD/$89",
+  "0D8DA0": "TL $C1/$29 BL $D1/$29 TR $C2/$29 BR $D2/$29",
+  "0D8DA8": "TL $F2/$29 BL $E2/$29 TR $C3/$29 BR $D3/$29",
+  "0D8DB0": "TL $E1/$29 BL $F1/$29 TR $E2/$29 BR $F2/$29",
+  "0D8DB8": "TL $C2/$29 BL $D2/$29 TR $E3/$29 BR $F3/$29",
+  "0D8DC0": "TL $E1/$29 BL $F1/$29 TR $E3/$29 BR $F3/$29",
+  "0D8DC8": "TL $C1/$29 BL $D1/$29 TR $C3/$29 BR $D3/$29",
+  "0D8DD0": "TL $E1/$09 BL $F1/$09 TR $E3/$09 BR $F3/$09",
+  "0D8DD8": "TL $C1/$09 BL $D1/$09 TR $C3/$09 BR $D3/$09",
+  "0D8DE0": "TL $C4/$09 BL $D4/$09 TR $AF/$09 BR $BF/$09",
+  "0D8DE8": "TL $AF/$49 BL $BF/$49 TR $C4/$49 BR $D4/$49",
+  "0D8DF0": "TL $F8/$08 BL $EA/$09 TR $F8/$08 BR $91/$09",
+  "0D8DF8": "TL $F0/$09 BL $F0/$09 TR $DD/$89 BR $CD/$89",
+  "0D8E00": "TL $CD/$09 BL $DD/$09 TR $F0/$49 BR $F0/$49",
+  "0D8E08": "TL $C3/$09 BL $D3/$09 TR $C3/$49 BR $D3/$49",
+  "0D8E10": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8E18": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8E20": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8E28": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8E30": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8E38": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8E40": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8E48": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8E50": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8E58": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8E60": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8E68": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8E70": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8E78": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8E80": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8E88": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8E90": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8E98": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8EA0": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8EA8": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8EB0": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8EB8": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8EC0": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8EC8": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8ED0": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8ED8": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8EE0": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8EE8": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8EF0": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8EF8": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F00": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F08": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F10": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F18": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F20": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F28": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F30": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F38": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F40": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F48": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F50": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F58": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F60": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F68": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F70": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F78": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F80": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F88": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F90": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8F98": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8FA0": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8FA8": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8FB0": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8FB8": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8FC0": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8FC8": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8FD0": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D8FD8": "TL $D8/$0D BL $DA/$0D TR $D9/$0D BR $DB/$0D",
+  "0D8FE0": "TL $D9/$0D BL $DA/$0D TR $D9/$0D BR $DB/$0D",
+  "0D8FE8": "TL $D9/$0D BL $DA/$0D TR $D8/$4D BR $DB/$0D",
+  "0D8FF0": "TL $D9/$0D BL $E5/$0D TR $D9/$0D BR $E5/$0D",
+  "0D8FF8": "TL $C1/$29 BL $D1/$29 TR $C2/$29 BR $D2/$29",
+  "0D9000": "TL $F2/$29 BL $E2/$29 TR $C3/$29 BR $D3/$29",
+  "0D9008": "TL $E1/$29 BL $F1/$29 TR $E3/$29 BR $F3/$29",
+  "0D9010": "TL $CC/$09 BL $DC/$09 TR $CB/$09 BR $DB/$09",
+  "0D9018": "TL $CA/$09 BL $E0/$09 TR $CB/$09 BR $DB/$09",
+  "0D9020": "TL $CC/$09 BL $DC/$09 TR $CA/$49 BR $E0/$49",
+  "0D9028": "TL $F4/$15 BL $F6/$15 TR $F5/$15 BR $F7/$15",
+  "0D9030": "TL $F8/$15 BL $F8/$15 TR $F9/$15 BR $F9/$15",
+  "0D9038": "TL $F6/$95 BL $F4/$95 TR $F7/$95 BR $F5/$95",
+  "0D9040": "TL $FA/$19 BL $FD/$19 TR $FB/$19 BR $FE/$19",
+  "0D9048": "TL $FC/$19 BL $FF/$19 TR $FC/$19 BR $FF/$19",
+  "0D9050": "TL $FB/$59 BL $FE/$59 TR $FA/$59 BR $FD/$59",
+  "0D9058": "TL $FF/$14 BL $CD/$14 TR $CD/$14 BR $CE/$14",
+  "0D9060": "TL $CE/$14 BL $D8/$14 TR $CF/$14 BR $D9/$14",
+  "0D9068": "TL $CE/$14 BL $D8/$14 TR $D8/$14 BR $D9/$14",
+  "0D9070": "TL $D9/$14 BL $E0/$14 TR $E0/$14 BR $F8/$08",
+  "0D9078": "TL $DD/$C9 BL $CD/$C9 TR $DA/$49 BR $DA/$C9",
+  "0D9080": "TL $CB/$49 BL $DB/$49 TR $CA/$49 BR $DA/$49",
+  "0D9088": "TL $CA/$09 BL $DA/$09 TR $CB/$09 BR $DB/$09",
+  "0D9090": "TL $DA/$09 BL $DA/$89 TR $DD/$89 BR $CD/$89",
+  "0D9098": "TL $00/$10 BL $10/$10 TR $01/$10 BR $11/$10",
+  "0D90A0": "TL $02/$10 BL $12/$10 TR $03/$10 BR $13/$10",
+  "0D90A8": "TL $20/$10 BL $20/$10 TR $21/$10 BR $21/$10",
+  "0D90B0": "TL $22/$10 BL $22/$10 TR $23/$10 BR $23/$10",
+  "0D90B8": "TL $06/$10 BL $16/$10 TR $07/$10 BR $17/$10",
+  "0D90C0": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D90C8": "TL $00/$00 BL $00/$00 TR $00/$00 BR $00/$00",
+  "0D90D0": "TL $20/$14 BL $20/$14 TR $21/$14 BR $21/$14",
+  "0D90D8": "TL $22/$14 BL $22/$14 TR $23/$14 BR $23/$14",
+  "0D90E0": "TL $26/$14 BL $36/$14 TR $26/$54 BR $36/$54",
+  "0D90E8": "TL $26/$18 BL $36/$18 TR $26/$58 BR $36/$58",
+  "0D90F0": "TL $26/$1C BL $36/$1C TR $26/$5C BR $36/$5C",
+  "0D90F8": "TL $27/$1C BL $37/$1C TR $27/$5C BR $37/$5C",
+  "0D9100": "TL $F8/$00 BL $F8/$00 TR $F8/$00 BR $F8/$00",
+  "0D9108": "TL $53/$01 BL $54/$01 TR $F9/$00 BR $55/$01",
+  "0D9110": "TL $F9/$00 BL $55/$01 TR $F9/$00 BR $55/$01",
+  "0D9118": "TL $F9/$00 BL $55/$01 TR $53/$41 BR $56/$01",
+  "0D9120": "TL $F8/$00 BL $06/$01 TR $00/$01 BR $07/$01",
+  "0D9128": "TL $01/$01 BL $FC/$00 TR $02/$01 BR $FC/$00",
+  "0D9130": "TL $03/$01 BL $FC/$00 TR $04/$01 BR $08/$01",
+  "0D9138": "TL $05/$01 BL $09/$01 TR $F8/$00 BR $0A/$01",
+  "0D9140": "TL $0B/$01 BL $0E/$01 TR $FC/$00 BR $FC/$00",
+  "0D9148": "TL $FC/$00 BL $FC/$00 TR $FC/$00 BR $FC/$00",
+  "0D9150": "TL $0C/$01 BL $0F/$01 TR $0D/$01 BR $10/$01",
+  "0D9158": "TL $11/$01 BL $11/$01 TR $FC/$00 BR $FC/$00",
+  "0D9160": "TL $14/$01 BL $14/$81 TR $FC/$00 BR $FC/$00",
+  "0D9168": "TL $12/$01 BL $12/$01 TR $13/$01 BR $13/$01",
+  "0D9170": "TL $FC/$00 BL $FC/$00 TR $14/$01 BR $14/$81",
+  "0D9178": "TL $F8/$00 BL $27/$01 TR $23/$01 BR $FF/$00",
+  "0D9180": "TL $24/$01 BL $FF/$00 TR $25/$01 BR $FF/$00",
+  "0D9188": "TL $26/$01 BL $28/$01 TR $F8/$00 BR $29/$01",
+  "0D9190": "TL $2A/$01 BL $2D/$01 TR $FF/$00 BR $FF/$00",
+  "0D9198": "TL $FF/$00 BL $FF/$00 TR $30/$01 BR $30/$81",
+  "0D91A0": "TL $2B/$01 BL $2E/$01 TR $2C/$01 BR $2F/$01",
+  "0D91A8": "TL $18/$05 BL $FC/$04 TR $19/$05 BR $08/$05",
+  "0D91B0": "TL $1A/$05 BL $1D/$05 TR $FF/$04 BR $1E/$05",
+  "0D91B8": "TL $F9/$00 BL $55/$01 TR $57/$41 BR $59/$01",
+  "0D91C0": "TL $2E/$01 BL $2E/$01 TR $2F/$01 BR $2F/$01",
+  "0D91C8": "TL $0C/$05 BL $0F/$05 TR $20/$05 BR $22/$05",
+  "0D91D0": "TL $FF/$04 BL $1B/$05 TR $15/$05 BR $1C/$05",
+  "0D91D8": "TL $16/$05 BL $FC/$04 TR $17/$05 BR $FC/$04",
+  "0D91E0": "TL $18/$01 BL $FC/$00 TR $19/$01 BR $08/$01",
+  "0D91E8": "TL $1A/$01 BL $1D/$01 TR $FF/$00 BR $1E/$01",
+  "0D91F0": "TL $1F/$05 BL $21/$05 TR $FC/$04 BR $FC/$04",
+  "0D91F8": "TL $0C/$01 BL $0F/$01 TR $20/$01 BR $22/$01",
+  "0D9200": "TL $16/$01 BL $FC/$00 TR $17/$01 BR $FC/$00",
+  "0D9208": "TL $44/$05 BL $46/$05 TR $45/$05 BR $F9/$04",
+  "0D9210": "TL $F9/$00 BL $F9/$00 TR $F9/$00 BR $F9/$00",
+  "0D9218": "TL $45/$45 BL $F9/$04 TR $44/$45 BR $46/$45",
+  "0D9220": "TL $4D/$01 BL $4F/$01 TR $3D/$01 BR $50/$01",
+  "0D9228": "TL $3D/$01 BL $41/$01 TR $3D/$01 BR $41/$01",
+  "0D9230": "TL $3D/$01 BL $51/$01 TR $4E/$01 BR $52/$01",
+  "0D9238": "TL $2D/$01 BL $2D/$01 TR $FF/$00 BR $FF/$00",
+  "0D9240": "TL $FF/$00 BL $FF/$00 TR $FF/$00 BR $FF/$00",
+  "0D9248": "TL $2D/$01 BL $2D/$01 TR $30/$01 BR $30/$81",
+  "0D9250": "TL $FF/$00 BL $1B/$01 TR $15/$01 BR $1C/$01",
+  "0D9258": "TL $1F/$01 BL $21/$01 TR $FC/$00 BR $FC/$00",
+  "0D9260": "TL $57/$01 BL $58/$01 TR $F9/$00 BR $55/$01",
+  "0D9268": "TL $39/$01 BL $3B/$01 TR $3A/$01 BR $F9/$00",
+  "0D9270": "TL $3C/$01 BL $3F/$01 TR $3D/$01 BR $40/$01",
+  "0D9278": "TL $5B/$01 BL $F8/$00 TR $5C/$01 BR $F8/$00",
+  "0D9280": "TL $5C/$01 BL $F8/$00 TR $5C/$01 BR $F8/$00",
+  "0D9288": "TL $5C/$01 BL $F8/$00 TR $5D/$01 BR $F8/$00",
+  "0D9290": "TL $44/$01 BL $5A/$01 TR $50/$01 BR $5A/$01",
+  "0D9298": "TL $F8/$00 BL $F8/$00 TR $44/$00 BR $46/$00",
+  "0D92A0": "TL $F8/$00 BL $F8/$00 TR $44/$01 BR $5A/$01",
+  "0D92A8": "TL $50/$01 BL $4B/$01 TR $5A/$01 BR $5A/$01",
+  "0D92B0": "TL $F8/$00 BL $F8/$00 TR $45/$00 BR $47/$00",
+  "0D92B8": "TL $F8/$00 BL $F8/$00 TR $5A/$01 BR $5A/$01",
+  "0D92C0": "TL $5A/$01 BL $5A/$01 TR $5A/$01 BR $4B/$01",
+  "0D92C8": "TL $48/$01 BL $48/$01 TR $5A/$01 BR $4B/$01",
+  "0D92D0": "TL $5A/$01 BL $5A/$01 TR $51/$01 BR $5A/$01",
+  "0D92D8": "TL $45/$01 BL $5A/$01 TR $F8/$00 BR $F8/$00",
+  "0D92E0": "TL $0F/$05 BL $F8/$00 TR $1F/$05 BR $F8/$00",
+  "0D92E8": "TL $4B/$01 BL $F8/$00 TR $F8/$00 BR $F8/$00",
+  "0D92F0": "TL $5A/$01 BL $5A/$01 TR $F8/$00 BR $F8/$00",
+  "0D92F8": "TL $F8/$00 BL $F8/$00 TR $44/$04 BR $46/$04",
+  "0D9300": "TL $4B/$01 BL $48/$01 TR $48/$01 BR $4B/$01",
+  "0D9308": "TL $4B/$01 BL $F8/$00 TR $48/$01 BR $4B/$01",
+  "0D9310": "TL $44/$04 BL $46/$04 TR $F8/$00 BR $F8/$00",
+  "0D9318": "TL $F8/$00 BL $F8/$00 TR $45/$04 BR $47/$04",
+  "0D9320": "TL $45/$04 BL $47/$04 TR $F8/$00 BR $F8/$00",
+  "0D9328": "TL $48/$01 BL $4B/$01 TR $4B/$01 BR $F8/$00",
+  "0D9330": "TL $40/$01 BL $59/$01 TR $54/$01 BR $5A/$01",
+  "0D9338": "TL $4D/$01 BL $59/$01 TR $41/$01 BR $5A/$01",
+  "0D9340": "TL $F8/$00 BL $F8/$00 TR $45/$04 BR $46/$04",
+  "0D9348": "TL $59/$01 BL $59/$01 TR $5A/$01 BR $5A/$01",
+  "0D9350": "TL $F8/$00 BL $F8/$00 TR $F8/$00 BR $4D/$01",
+  "0D9358": "TL $59/$01 BL $4F/$01 TR $57/$01 BR $59/$01",
+  "0D9360": "TL $54/$01 BL $5A/$01 TR $F8/$00 BR $F8/$00",
+  "0D9368": "TL $59/$01 BL $59/$01 TR $4D/$01 BR $59/$01",
+  "0D9370": "TL $41/$01 BL $5A/$01 TR $F8/$00 BR $F8/$00",
+  "0D9378": "TL $F8/$00 BL $F8/$00 TR $59/$01 BR $59/$01",
+  "0D9380": "TL $5A/$01 BL $5A/$01 TR $59/$01 BR $59/$01",
+  "0D9388": "TL $F8/$00 BL $F8/$00 TR $40/$01 BR $59/$01",
+  "0D9390": "TL $54/$01 BL $5A/$01 TR $59/$01 BR $59/$01",
+  "0D9398": "TL $F8/$00 BL $F8/$00 TR $59/$01 BR $46/$01",
+  "0D93A0": "TL $57/$01 BL $59/$01 TR $54/$01 BR $5A/$01",
+  "0D93A8": "TL $5A/$01 BL $4D/$01 TR $F8/$00 BR $41/$01",
+  "0D93B0": "TL $54/$01 BL $5A/$01 TR $5A/$01 BR $5A/$01",
+  "0D93B8": "TL $51/$01 BL $5A/$01 TR $53/$01 BR $5A/$01",
+  "0D93C0": "TL $F8/$00 BL $F8/$00 TR $4A/$01 BR $F8/$00",
+  "0D93C8": "TL $5A/$01 BL $5A/$01 TR $57/$01 BR $59/$01",
+  "0D93D0": "TL $54/$01 BL $5A/$01 TR $4B/$01 BR $F8/$00",
+  "0D93D8": "TL $5A/$01 BL $5A/$01 TR $5A/$01 BR $52/$01",
+  "0D93E0": "TL $5A/$01 BL $50/$01 TR $49/$01 BR $5A/$01",
+  "0D93E8": "TL $F8/$00 BL $4B/$01 TR $4B/$01 BR $48/$01",
+  "0D93F0": "TL $5A/$01 BL $51/$01 TR $5A/$01 BR $53/$01",
+  "0D93F8": "TL $F8/$00 BL $F8/$00 TR $5A/$01 BR $4B/$01",
+  "0D9400": "TL $3A/$11 BL $3A/$91 TR $3B/$11 BR $54/$11",
+  "0D9408": "TL $54/$91 BL $54/$11 TR $3A/$51 BR $3A/$D1",
+  "0D9410": "TL $F8/$00 BL $00/$01 TR $F8/$00 BR $00/$41",
+  "0D9418": "TL $32/$11 BL $34/$11 TR $33/$11 BR $F9/$00",
+  "0D9420": "TL $F8/$00 BL $01/$01 TR $01/$01 BR $02/$01",
+  "0D9428": "TL $02/$01 BL $FA/$00 TR $02/$41 BR $FA/$00",
+  "0D9430": "TL $01/$41 BL $02/$41 TR $F8/$00 BR $01/$41",
+  "0D9438": "TL $F8/$00 BL $1F/$01 TR $F8/$00 BR $1F/$41",
+  "0D9440": "TL $2E/$11 BL $F9/$00 TR $F9/$00 BR $F9/$00",
+  "0D9448": "TL $02/$01 BL $FA/$00 TR $FA/$00 BR $FA/$00",
+  "0D9450": "TL $52/$01 BL $FA/$00 TR $FA/$00 BR $FA/$00",
+  "0D9458": "TL $FA/$00 BL $FA/$00 TR $02/$41 BR $FA/$00",
+  "0D9460": "TL $F8/$00 BL $20/$01 TR $F8/$00 BR $21/$01",
+  "0D9468": "TL $20/$01 BL $22/$01 TR $21/$01 BR $FD/$00",
+  "0D9470": "TL $22/$01 BL $FD/$00 TR $22/$41 BR $FD/$00",
+  "0D9478": "TL $21/$41 BL $FD/$00 TR $20/$41 BR $22/$41",
+  "0D9480": "TL $F8/$00 BL $21/$41 TR $F8/$00 BR $20/$41",
+  "0D9488": "TL $32/$11 BL $38/$11 TR $33/$11 BR $F9/$00",
+  "0D9490": "TL $FA/$00 BL $FA/$00 TR $FA/$00 BR $FA/$00",
+  "0D9498": "TL $FA/$00 BL $52/$01 TR $52/$01 BR $FA/$00",
+  "0D94A0": "TL $06/$41 BL $02/$41 TR $FD/$00 BR $06/$41",
+  "0D94A8": "TL $51/$01 BL $FD/$00 TR $FD/$00 BR $51/$01",
+  "0D94B0": "TL $FD/$00 BL $FD/$00 TR $FD/$00 BR $FD/$00",
+  "0D94B8": "TL $51/$01 BL $FD/$00 TR $FD/$00 BR $FD/$00",
+  "0D94C0": "TL $FD/$00 BL $FD/$00 TR $22/$41 BR $FD/$00",
+  "0D94C8": "TL $2B/$41 BL $FD/$00 TR $2A/$41 BR $22/$41",
+  "0D94D0": "TL $F9/$00 BL $2B/$41 TR $F9/$00 BR $2A/$41",
+  "0D94D8": "TL $33/$51 BL $F9/$00 TR $32/$51 BR $34/$51",
+  "0D94E0": "TL $F9/$00 BL $F9/$00 TR $2E/$51 BR $F9/$00",
+  "0D94E8": "TL $F8/$00 BL $35/$11 TR $F8/$00 BR $36/$11",
+  "0D94F0": "TL $35/$11 BL $2E/$11 TR $36/$11 BR $F9/$00",
+  "0D94F8": "TL $36/$51 BL $F9/$00 TR $35/$51 BR $2E/$51",
+  "0D9500": "TL $F8/$00 BL $36/$51 TR $F8/$00 BR $35/$51",
+  "0D9508": "TL $2C/$11 BL $39/$11 TR $2D/$11 BR $F9/$00",
+  "0D9510": "TL $F9/$00 BL $30/$11 TR $F9/$00 BR $31/$11",
+  "0D9518": "TL $2C/$11 BL $2F/$11 TR $2D/$11 BR $F9/$00",
+  "0D9520": "TL $31/$51 BL $F9/$00 TR $30/$51 BR $2E/$51",
+  "0D9528": "TL $F9/$00 BL $31/$51 TR $F9/$00 BR $30/$51",
+  "0D9530": "TL $2D/$51 BL $F9/$00 TR $2C/$51 BR $2F/$51",
+  "0D9538": "TL $2D/$51 BL $F9/$00 TR $2C/$51 BR $39/$51",
+  "0D9540": "TL $30/$11 BL $2E/$11 TR $31/$11 BR $F9/$00",
+  "0D9548": "TL $22/$01 BL $FD/$00 TR $FD/$00 BR $FD/$00",
+  "0D9550": "TL $FD/$00 BL $05/$01 TR $FD/$00 BR $05/$41",
+  "0D9558": "TL $F8/$00 BL $13/$01 TR $F8/$00 BR $14/$01",
+  "0D9560": "TL $FD/$00 BL $06/$01 TR $06/$01 BR $02/$01",
+  "0D9568": "TL $FD/$00 BL $1A/$01 TR $FD/$00 BR $1B/$01",
+  "0D9570": "TL $1A/$01 BL $15/$01 TR $1B/$01 BR $FA/$00",
+  "0D9578": "TL $15/$01 BL $FA/$00 TR $FA/$00 BR $FA/$00",
+  "0D9580": "TL $FD/$00 BL $28/$41 TR $FD/$00 BR $27/$41",
+  "0D9588": "TL $04/$41 BL $02/$41 TR $FA/$00 BR $04/$41",
+  "0D9590": "TL $FA/$00 BL $24/$01 TR $FA/$00 BR $25/$01",
+  "0D9598": "TL $24/$01 BL $22/$01 TR $25/$01 BR $FD/$00",
+  "0D95A0": "TL $F8/$00 BL $12/$01 TR $F8/$00 BR $12/$41",
+  "0D95A8": "TL $13/$01 BL $15/$01 TR $14/$01 BR $FA/$00",
+  "0D95B0": "TL $14/$41 BL $FA/$00 TR $13/$41 BR $15/$41",
+  "0D95B8": "TL $F8/$00 BL $14/$41 TR $F8/$00 BR $13/$41",
+  "0D95C0": "TL $FA/$00 BL $FA/$00 TR $15/$41 BR $FA/$00",
+  "0D95C8": "TL $28/$41 BL $FD/$00 TR $27/$41 BR $22/$41",
+  "0D95D0": "TL $F8/$00 BL $3E/$01 TR $3E/$01 BR $FE/$00",
+  "0D95D8": "TL $49/$01 BL $46/$01 TR $43/$01 BR $FC/$00",
+  "0D95E0": "TL $3D/$41 BL $FC/$00 TR $F8/$00 BR $3D/$41",
+  "0D95E8": "TL $33/$51 BL $F9/$00 TR $32/$51 BR $38/$51",
+  "0D95F0": "TL $FE/$00 BL $FE/$00 TR $FE/$00 BR $FE/$00",
+  "0D95F8": "TL $FE/$00 BL $41/$01 TR $41/$01 BR $FC/$00",
+  "0D9600": "TL $F9/$00 BL $50/$01 TR $50/$01 BR $FE/$00",
+  "0D9608": "TL $46/$01 BL $46/$01 TR $FC/$00 BR $FC/$00",
+  "0D9610": "TL $41/$41 BL $FC/$00 TR $FE/$00 BR $41/$41",
+  "0D9618": "TL $FC/$00 BL $3F/$01 TR $3F/$01 BR $FA/$00",
+  "0D9620": "TL $42/$01 BL $FA/$00 TR $42/$01 BR $FA/$00",
+  "0D9628": "TL $42/$01 BL $FA/$00 TR $48/$41 BR $45/$41",
+  "0D9630": "TL $44/$01 BL $FE/$00 TR $4A/$41 BR $47/$41",
+  "0D9638": "TL $4F/$41 BL $FC/$00 TR $F9/$00 BR $4F/$41",
+  "0D9640": "TL $47/$01 BL $47/$01 TR $FE/$00 BR $FE/$00",
+  "0D9648": "TL $FC/$00 BL $FC/$00 TR $46/$41 BR $46/$41",
+  "0D9650": "TL $FA/$00 BL $FA/$00 TR $45/$41 BR $45/$41",
+  "0D9658": "TL $FE/$00 BL $44/$81 TR $FE/$00 BR $44/$81",
+  "0D9660": "TL $3F/$41 BL $FA/$00 TR $FC/$00 BR $3F/$41",
+  "0D9668": "TL $FC/$00 BL $43/$81 TR $FC/$00 BR $43/$81",
+  "0D9670": "TL $FC/$00 BL $43/$81 TR $46/$41 BR $49/$C1",
+  "0D9678": "TL $FA/$00 BL $3F/$C1 TR $3F/$C1 BR $FC/$00",
+  "0D9680": "TL $FC/$00 BL $41/$C1 TR $41/$C1 BR $FE/$00",
+  "0D9688": "TL $FA/$00 BL $4B/$01 TR $4B/$01 BR $FA/$00",
+  "0D9690": "TL $FA/$00 BL $40/$C1 TR $40/$C1 BR $FE/$00",
+  "0D9698": "TL $4C/$81 BL $FC/$00 TR $FC/$00 BR $4C/$81",
+  "0D96A0": "TL $41/$41 BL $FC/$00 TR $FE/$40 BR $41/$41",
+  "0D96A8": "TL $4B/$81 BL $FA/$00 TR $FA/$00 BR $4B/$81",
+  "0D96B0": "TL $3F/$81 BL $FC/$00 TR $FA/$00 BR $3F/$81",
+  "0D96B8": "TL $FE/$00 BL $40/$01 TR $40/$01 BR $FA/$00",
+  "0D96C0": "TL $41/$81 BL $FE/$00 TR $FC/$00 BR $41/$81",
+  "0D96C8": "TL $FA/$00 BL $42/$81 TR $45/$41 BR $48/$C1",
+  "0D96D0": "TL $FA/$00 BL $42/$81 TR $FA/$00 BR $42/$81",
+  "0D96D8": "TL $FA/$00 BL $40/$C1 TR $40/$C1 BR $FE/$C0",
+  "0D96E0": "TL $FE/$00 BL $4D/$01 TR $4D/$01 BR $FE/$00",
+  "0D96E8": "TL $43/$01 BL $FC/$00 TR $43/$01 BR $FC/$00",
+  "0D96F0": "TL $43/$01 BL $FC/$00 TR $49/$41 BR $46/$41",
+  "0D96F8": "TL $FE/$00 BL $FE/$00 TR $47/$41 BR $47/$41",
+  "0D9700": "TL $40/$41 BL $FA/$00 TR $FE/$00 BR $40/$41",
+  "0D9708": "TL $45/$01 BL $45/$01 TR $FA/$00 BR $FA/$00",
+  "0D9710": "TL $4E/$41 BL $FA/$00 TR $F9/$00 BR $4E/$41",
+  "0D9718": "TL $FA/$00 BL $3C/$C1 TR $3C/$C1 BR $F8/$00",
+  "0D9720": "TL $44/$01 BL $FE/$00 TR $44/$01 BR $FE/$00",
+  "0D9728": "TL $FA/$00 BL $4E/$C1 TR $4E/$C1 BR $F9/$00",
+  "0D9730": "TL $FE/$00 BL $FE/$00 TR $5A/$01 BR $5A/$01",
+  "0D9738": "TL $7C/$01 BL $5B/$01 TR $79/$01 BR $FE/$00",
+  "0D9740": "TL $5B/$01 BL $5B/$01 TR $FE/$00 BR $FE/$00",
+  "0D9748": "TL $78/$01 BL $FE/$00 TR $79/$01 BR $FE/$00",
+  "0D9750": "TL $78/$01 BL $FE/$00 TR $7B/$01 BR $5A/$01",
+  "0D9758": "TL $FE/$00 BL $FE/$00 TR $78/$01 BR $FE/$00",
+  "0D9760": "TL $79/$01 BL $78/$01 TR $5A/$01 BR $7B/$01",
+  "0D9768": "TL $5B/$01 BL $7C/$01 TR $78/$01 BR $79/$01",
+  "0D9770": "TL $79/$01 BL $FE/$00 TR $FE/$00 BR $FE/$00",
+  "0D9778": "TL $40/$00 BL $42/$00 TR $41/$00 BR $43/$00",
+  "0D9780": "TL $64/$01 BL $66/$01 TR $65/$01 BR $67/$01",
+  "0D9788": "TL $FE/$00 BL $68/$41 TR $5E/$01 BR $60/$01",
+  "0D9790": "TL $FE/$00 BL $61/$01 TR $FE/$00 BR $62/$01",
+  "0D9798": "TL $5F/$01 BL $63/$01 TR $FE/$00 BR $68/$01",
+  "0D97A0": "TL $FE/$00 BL $69/$01 TR $FE/$00 BR $69/$41",
+  "0D97A8": "TL $6B/$41 BL $6E/$41 TR $6A/$41 BR $6C/$01",
+  "0D97B0": "TL $FE/$00 BL $6D/$01 TR $FE/$00 BR $6D/$41",
+  "0D97B8": "TL $6A/$01 BL $6C/$41 TR $6B/$01 BR $6E/$01",
+  "0D97C0": "TL $FC/$00 BL $6F/$01 TR $FC/$00 BR $6F/$41",
+  "0D97C8": "TL $70/$01 BL $72/$01 TR $71/$01 BR $73/$01",
+  "0D97D0": "TL $74/$01 BL $76/$01 TR $75/$01 BR $77/$01",
+  "0D97D8": "TL $0A/$41 BL $0B/$41 TR $F8/$00 BR $0A/$41",
+  "0D97E0": "TL $F9/$00 BL $07/$01 TR $F9/$00 BR $07/$41",
+  "0D97E8": "TL $FD/$00 BL $FD/$00 TR $0B/$41 BR $FD/$00",
+  "0D97F0": "TL $11/$41 BL $0B/$41 TR $F9/$00 BR $11/$41",
+  "0D97F8": "TL $F9/$00 BL $08/$01 TR $08/$01 BR $02/$01",
+  "0D9800": "TL $08/$41 BL $02/$41 TR $F9/$00 BR $08/$41",
+  "0D9808": "TL $F9/$00 BL $11/$01 TR $11/$01 BR $0B/$01",
+  "0D9810": "TL $0B/$01 BL $FD/$00 TR $FD/$00 BR $FD/$00",
+  "0D9818": "TL $FA/$00 BL $17/$01 TR $FA/$00 BR $18/$01",
+  "0D9820": "TL $17/$01 BL $15/$01 TR $18/$01 BR $FA/$00",
+  "0D9828": "TL $F8/$00 BL $09/$01 TR $F8/$00 BR $09/$41",
+  "0D9830": "TL $F8/$00 BL $33/$51 TR $F8/$00 BR $32/$51",
+  "0D9838": "TL $F8/$00 BL $0A/$01 TR $0A/$01 BR $0B/$01",
+  "0D9840": "TL $0B/$01 BL $FD/$00 TR $0B/$41 BR $FD/$00",
+  "0D9848": "TL $F9/$00 BL $F9/$00 TR $34/$51 BR $2E/$51",
+  "0D9850": "TL $FD/$00 BL $26/$01 TR $FD/$00 BR $26/$41",
+  "0D9858": "TL $FD/$00 BL $27/$01 TR $FD/$00 BR $28/$01",
+  "0D9860": "TL $27/$01 BL $22/$01 TR $28/$01 BR $FD/$00",
+  "0D9868": "TL $FD/$00 BL $19/$01 TR $FD/$00 BR $19/$41",
+  "0D9870": "TL $15/$01 BL $FA/$00 TR $15/$41 BR $FA/$00",
+  "0D9878": "TL $1B/$41 BL $FA/$00 TR $1A/$41 BR $15/$41",
+  "0D9880": "TL $FD/$00 BL $1B/$41 TR $FD/$00 BR $1A/$41",
+  "0D9888": "TL $7D/$01 BL $7D/$81 TR $7D/$41 BR $7D/$C1",
+  "0D9890": "TL $4F/$00 BL $F8/$00 TR $F8/$00 BR $F8/$00",
+  "0D9898": "TL $F8/$00 BL $F8/$00 TR $F8/$00 BR $4E/$00",
+  "0D98A0": "TL $4C/$00 BL $4C/$80 TR $4C/$40 BR $4C/$C0",
+  "0D98A8": "TL $4D/$00 BL $4D/$80 TR $4D/$40 BR $4D/$C0",
+  "0D98B0": "TL $4D/$01 BL $FA/$00 TR $4E/$01 BR $FA/$00",
+  "0D98B8": "TL $4F/$01 BL $FA/$00 TR $50/$01 BR $FA/$00",
+  "0D98C0": "TL $51/$01 BL $FA/$00 TR $52/$01 BR $FA/$00",
+  "0D98C8": "TL $FF/$FF BL $FF/$FF TR $FF/$FF BR $FF/$FF",
+  "0D98D0": "TL $FF/$FF BL $FF/$FF TR $FF/$FF BR $FF/$FF",
+  "0D98D8": "TL $FF/$FF BL $FF/$FF TR $FF/$FF BR $FF/$FF",
+  "0D98E0": "TL $FF/$FF BL $FF/$FF TR $FF/$FF BR $FF/$FF",
+  "0D98E8": "TL $FF/$FF BL $FF/$FF TR $FF/$FF BR $FF/$FF",
+  "0D98F0": "TL $FF/$FF BL $FF/$FF TR $FF/$FF BR $FF/$FF",
+  "0D98F8": "TL $FF/$FF BL $FF/$FF TR $FF/$FF BR $FF/$FF",
+  "0D9900": "TL $FD/$04 BL $FD/$04 TR $06/$05 BR $07/$05",
+  "0D9908": "TL $00/$05 BL $00/$05 TR $00/$45 BR $00/$45",
+  "0D9910": "TL $00/$05 BL $00/$05 TR $72/$04 BR $FF/$04",
+  "0D9918": "TL $00/$05 BL $00/$05 TR $FF/$04 BR $FF/$04",
+  "0D9920": "TL $FF/$04 BL $FF/$04 TR $00/$05 BR $00/$05",
+  "0D9928": "TL $FF/$04 BL $FF/$04 TR $0E/$45 BR $00/$45",
+  "0D9930": "TL $FF/$04 BL $FF/$04 TR $00/$45 BR $00/$45",
+  "0D9938": "TL $10/$05 BL $10/$05 TR $10/$45 BR $10/$45",
+  "0D9940": "TL $FA/$04 BL $FA/$04 TR $10/$05 BR $10/$05",
+  "0D9948": "TL $00/$05 BL $1B/$05 TR $00/$45 BR $1B/$45",
+  "0D9950": "TL $FF/$04 BL $05/$45 TR $0B/$45 BR $0C/$45",
+  "0D9958": "TL $FF/$04 BL $72/$04 TR $00/$45 BR $00/$45",
+  "0D9960": "TL $FD/$04 BL $FD/$04 TR $00/$05 BR $00/$05",
+  "0D9968": "TL $FD/$04 BL $FD/$04 TR $FD/$04 BR $FD/$04",
+  "0D9970": "TL $01/$05 BL $03/$05 TR $02/$05 BR $04/$05",
+  "0D9978": "TL $FF/$04 BL $FF/$04 TR $0B/$05 BR $0C/$05",
+  "0D9980": "TL $FF/$04 BL $05/$05 TR $00/$45 BR $00/$45",
+  "0D9988": "TL $73/$04 BL $FA/$04 TR $10/$05 BR $10/$05",
+  "0D9990": "TL $0E/$05 BL $00/$05 TR $FF/$04 BR $FF/$04",
+  "0D9998": "TL $00/$45 BL $00/$45 TR $FF/$04 BR $FF/$04",
+  "0D99A0": "TL $02/$45 BL $04/$45 TR $01/$45 BR $03/$45",
+  "0D99A8": "TL $00/$05 BL $1C/$05 TR $00/$45 BR $1C/$45",
+  "0D99B0": "TL $00/$05 BL $00/$05 TR $FF/$04 BR $05/$45",
+  "0D99B8": "TL $0B/$45 BL $0C/$45 TR $FF/$04 BR $FF/$04",
+  "0D99C0": "TL $00/$45 BL $00/$45 TR $FD/$04 BR $FD/$04",
+  "0D99C8": "TL $FD/$04 BL $18/$05 TR $FD/$04 BR $18/$45",
+  "0D99D0": "TL $FD/$04 BL $13/$05 TR $FD/$04 BR $FD/$04",
+  "0D99D8": "TL $FF/$04 BL $FF/$04 TR $72/$04 BR $FF/$04",
+  "0D99E0": "TL $10/$05 BL $1D/$05 TR $10/$45 BR $1D/$45",
+  "0D99E8": "TL $06/$45 BL $07/$45 TR $FD/$04 BR $FD/$04",
+  "0D99F0": "TL $71/$04 BL $71/$84 TR $71/$44 BR $71/$C4",
+  "0D99F8": "TL $10/$05 BL $10/$05 TR $FD/$04 BR $FD/$04",
+  "0D9A00": "TL $0B/$05 BL $0C/$05 TR $FF/$04 BR $05/$05",
+  "0D9A08": "TL $FA/$04 BL $FA/$04 TR $FA/$04 BR $FA/$04",
+  "0D9A10": "TL $70/$04 BL $70/$84 TR $70/$44 BR $70/$C4",
+  "0D9A18": "TL $FD/$04 BL $FD/$04 TR $FD/$04 BR $13/$45",
+  "0D9A20": "TL $FA/$04 BL $19/$C5 TR $10/$05 BR $13/$85",
+  "0D9A28": "TL $FD/$04 BL $18/$05 TR $10/$45 BR $1A/$45",
+  "0D9A30": "TL $FF/$04 BL $FF/$04 TR $FF/$04 BR $FF/$04",
+  "0D9A38": "TL $FF/$04 BL $05/$05 TR $FF/$04 BR $FF/$04",
+  "0D9A40": "TL $FD/$04 BL $FD/$04 TR $10/$45 BR $10/$45",
+  "0D9A48": "TL $FF/$04 BL $05/$45 TR $06/$45 BR $07/$45",
+  "0D9A50": "TL $18/$85 BL $FD/$04 TR $18/$C5 BR $FD/$04",
+  "0D9A58": "TL $13/$85 BL $FD/$04 TR $FD/$04 BR $FD/$04",
+  "0D9A60": "TL $13/$45 BL $10/$45 TR $19/$05 BR $FA/$04",
+  "0D9A68": "TL $1A/$85 BL $10/$05 TR $18/$C5 BR $FD/$04",
+  "0D9A70": "TL $15/$05 BL $16/$05 TR $FD/$04 BR $13/$05",
+  "0D9A78": "TL $10/$45 BL $10/$45 TR $FA/$04 BR $73/$04",
+  "0D9A80": "TL $FA/$04 BL $FA/$04 TR $15/$05 BR $16/$05",
+  "0D9A88": "TL $FD/$04 BL $13/$05 TR $10/$45 BR $10/$45",
+  "0D9A90": "TL $10/$45 BL $19/$05 TR $FA/$04 BR $FA/$04",
+  "0D9A98": "TL $10/$05 BL $1A/$05 TR $FD/$04 BR $18/$45",
+  "0D9AA0": "TL $1C/$85 BL $00/$05 TR $1C/$C5 BR $00/$45",
+  "0D9AA8": "TL $1D/$85 BL $10/$05 TR $1D/$C5 BR $10/$45",
+  "0D9AB0": "TL $FD/$04 BL $FD/$04 TR $13/$C5 BR $FD/$04",
+  "0D9AB8": "TL $16/$C5 BL $15/$C5 TR $FA/$04 BR $FA/$04",
+  "0D9AC0": "TL $FA/$04 BL $FA/$04 TR $19/$C5 BR $10/$05",
+  "0D9AC8": "TL $13/$85 BL $FD/$04 TR $10/$45 BR $10/$45",
+  "0D9AD0": "TL $07/$C5 BL $06/$C5 TR $FD/$04 BR $FD/$04",
+  "0D9AD8": "TL $07/$85 BL $06/$85 TR $05/$85 BR $FF/$04",
+  "0D9AE0": "TL $10/$05 BL $10/$05 TR $FD/$04 BR $13/$45",
+  "0D9AE8": "TL $15/$45 BL $16/$45 TR $FA/$04 BR $FA/$04",
+  "0D9AF0": "TL $10/$45 BL $13/$C5 TR $FA/$04 BR $19/$85",
+  "0D9AF8": "TL $16/$85 BL $15/$85 TR $13/$85 BR $FD/$04",
+  "0D9B00": "TL $FD/$04 BL $FD/$04 TR $07/$85 BR $06/$85",
+  "0D9B08": "TL $FA/$04 BL $FA/$04 TR $16/$85 BR $15/$85",
+  "0D9B10": "TL $04/$C5 BL $02/$C5 TR $03/$C5 BR $01/$C5",
+  "0D9B18": "TL $FF/$04 BL $FF/$04 TR $05/$C5 BR $FF/$04",
+  "0D9B20": "TL $03/$85 BL $01/$85 TR $04/$85 BR $02/$85",
+  "0D9B28": "TL $1B/$85 BL $00/$05 TR $1B/$C5 BR $00/$45",
+  "0D9B30": "TL $00/$05 BL $0E/$85 TR $FF/$04 BR $FF/$04",
+  "0D9B38": "TL $FF/$04 BL $FF/$04 TR $0C/$85 BR $0B/$85",
+  "0D9B40": "TL $10/$05 BL $10/$05 TR $13/$C5 BR $FD/$04",
+  "0D9B48": "TL $FF/$04 BL $FF/$04 TR $00/$45 BR $0E/$C5",
+  "0D9B50": "TL $05/$85 BL $FF/$04 TR $00/$45 BR $00/$45",
+  "0D9B58": "TL $0C/$C5 BL $0B/$C5 TR $FF/$04 BR $FF/$04",
+  "0D9B60": "TL $0C/$85 BL $0B/$85 TR $05/$85 BR $FF/$04",
+  "0D9B68": "TL $00/$05 BL $00/$05 TR $05/$C5 BR $FF/$04",
+  "0D9B70": "TL $05/$C5 BL $FF/$04 TR $0C/$C5 BR $0B/$C5",
+  "0D9B78": "TL $05/$C5 BL $FF/$04 TR $07/$C5 BR $06/$C5",
+  "0D9B80": "TL $05/$85 BL $FF/$04 TR $FF/$04 BR $FF/$04",
+  "0D9B88": "TL $FF/$04 BL $FF/$04 TR $FF/$04 BR $05/$45",
+  "0D9B90": "TL $18/$85 BL $FD/$04 TR $1A/$C5 BR $10/$45",
+  "0D9B98": "TL $06/$05 BL $07/$05 TR $FF/$04 BR $05/$05",
+  "0D9BA0": "TL $10/$45 BL $10/$45 TR $FA/$04 BR $FA/$04",
+  "0D9BA8": "TL $19/$45 BL $FA/$04 TR $13/$05 BR $10/$05",
+  "0D9BB0": "TL $FA/$04 BL $1D/$85 TR $FA/$04 BR $1D/$C5",
+  "0D9BB8": "TL $19/$05 BL $FA/$04 TR $FA/$04 BR $FA/$04",
+  "0D9BC0": "TL $19/$85 BL $13/$C5 TR $FA/$04 BR $19/$85",
+  "0D9BC8": "TL $F8/$00 BL $F8/$00 TR $F8/$00 BR $F8/$00",
+  "0D9BD0": "TL $3A/$11 BL $3A/$91 TR $3B/$11 BR $54/$11",
+  "0D9BD8": "TL $54/$91 BL $54/$11 TR $3A/$51 BR $3A/$D1",
+  "0D9BE0": "TL $64/$01 BL $74/$01 TR $65/$01 BR $FD/$00",
+  "0D9BE8": "TL $65/$41 BL $FD/$00 TR $64/$41 BR $74/$41",
+  "0D9BF0": "TL $75/$01 BL $FD/$00 TR $FD/$00 BR $FD/$00",
+  "0D9BF8": "TL $FD/$00 BL $FD/$00 TR $75/$41 BR $FD/$00",
+  "0D9C00": "TL $FD/$00 BL $FD/$00 TR $FD/$00 BR $FD/$00",
+  "0D9C08": "TL $FD/$00 BL $FD/$00 TR $FD/$00 BR $75/$C1",
+  "0D9C10": "TL $FD/$00 BL $75/$81 TR $FD/$00 BR $FD/$00",
+  "0D9C18": "TL $FD/$00 BL $59/$01 TR $59/$01 BR $59/$41",
+  "0D9C20": "TL $FD/$00 BL $65/$C1 TR $74/$C1 BR $64/$C1",
+  "0D9C28": "TL $74/$81 BL $64/$81 TR $FD/$00 BR $65/$81",
+  "0D9C30": "TL $59/$41 BL $59/$01 TR $FD/$00 BR $59/$41",
+  "0D9C38": "TL $66/$01 BL $76/$01 TR $67/$01 BR $FC/$00",
+  "0D9C40": "TL $67/$41 BL $FC/$00 TR $66/$41 BR $76/$41",
+  "0D9C48": "TL $77/$01 BL $FC/$00 TR $FC/$00 BR $FC/$00",
+  "0D9C50": "TL $FC/$00 BL $FC/$00 TR $77/$41 BR $FC/$00",
+  "0D9C58": "TL $FC/$00 BL $FC/$00 TR $FC/$00 BR $FC/$00",
+  "0D9C60": "TL $6E/$01 BL $7E/$01 TR $6F/$01 BR $7F/$01",
+  "0D9C68": "TL $6F/$41 BL $7F/$41 TR $6E/$41 BR $7E/$41",
+  "0D9C70": "TL $FC/$00 BL $77/$81 TR $FC/$00 BR $FC/$00",
+  "0D9C78": "TL $FC/$00 BL $FC/$00 TR $FC/$00 BR $77/$C1",
+  "0D9C80": "TL $68/$01 BL $78/$01 TR $69/$01 BR $FB/$00",
+  "0D9C88": "TL $69/$41 BL $FB/$00 TR $68/$41 BR $78/$41",
+  "0D9C90": "TL $76/$81 BL $66/$81 TR $FC/$00 BR $67/$81",
+  "0D9C98": "TL $FC/$00 BL $67/$C1 TR $76/$C1 BR $66/$C1",
+  "0D9CA0": "TL $79/$01 BL $FB/$00 TR $FB/$00 BR $FB/$00",
+  "0D9CA8": "TL $FB/$00 BL $FB/$00 TR $79/$41 BR $FB/$00",
+  "0D9CB0": "TL $70/$01 BL $72/$01 TR $71/$01 BR $73/$01",
+  "0D9CB8": "TL $FB/$00 BL $FB/$00 TR $FB/$00 BR $FB/$00",
+  "0D9CC0": "TL $78/$81 BL $68/$81 TR $FB/$00 BR $69/$81",
+  "0D9CC8": "TL $FB/$00 BL $79/$81 TR $FB/$00 BR $FB/$00",
+  "0D9CD0": "TL $FB/$00 BL $FB/$00 TR $FB/$00 BR $79/$C1",
+  "0D9CD8": "TL $FB/$00 BL $69/$C1 TR $78/$C1 BR $68/$C1",
+  "0D9CE0": "TL $71/$41 BL $73/$41 TR $70/$41 BR $72/$41",
+  "0D9CE8": "TL $6A/$01 BL $7A/$01 TR $6B/$01 BR $FA/$00",
+  "0D9CF0": "TL $6B/$41 BL $FA/$00 TR $6A/$41 BR $7A/$41",
+  "0D9CF8": "TL $7B/$01 BL $FA/$00 TR $FA/$00 BR $FA/$00",
+  "0D9D00": "TL $FA/$00 BL $FA/$00 TR $7B/$41 BR $FA/$00",
+  "0D9D08": "TL $6C/$01 BL $7C/$01 TR $6D/$01 BR $7D/$01",
+  "0D9D10": "TL $6D/$41 BL $7D/$41 TR $6C/$41 BR $7C/$41",
+  "0D9D18": "TL $FA/$00 BL $FA/$00 TR $FA/$00 BR $FA/$00",
+  "0D9D20": "TL $7A/$81 BL $6A/$81 TR $FA/$00 BR $6B/$81",
+  "0D9D28": "TL $FA/$00 BL $7B/$81 TR $FA/$00 BR $FA/$00",
+  "0D9D30": "TL $FA/$00 BL $FA/$00 TR $FA/$00 BR $7B/$C1",
+  "0D9D38": "TL $FA/$00 BL $6B/$C1 TR $7A/$C1 BR $6A/$C1",
+  "0D9D40": "TL $35/$41 BL $35/$41 TR $35/$01 BR $35/$01",
+  "0D9D48": "TL $2D/$41 BL $FA/$40 TR $2C/$41 BR $FA/$40",
+  "0D9D50": "TL $2D/$41 BL $2C/$41 TR $2C/$41 BR $2D/$41",
+  "0D9D58": "TL $34/$41 BL $33/$41 TR $34/$01 BR $33/$01",
+  "0D9D60": "TL $2D/$41 BL $2C/$41 TR $2C/$41 BR $FA/$40",
+  "0D9D68": "TL $FA/$40 BL $FA/$40 TR $FA/$40 BR $2D/$41",
+  "0D9D70": "TL $2D/$41 BL $2C/$41 TR $2C/$41 BR $22/$01",
+  "0D9D78": "TL $2D/$41 BL $23/$01 TR $2C/$41 BR $2D/$41",
+  "0D9D80": "TL $22/$01 BL $2C/$41 TR $23/$01 BR $22/$01",
+  "0D9D88": "TL $3A/$41 BL $39/$41 TR $3A/$01 BR $39/$01",
+  "0D9D90": "TL $22/$01 BL $2C/$41 TR $23/$01 BR $2D/$41",
+  "0D9D98": "TL $2D/$41 BL $FA/$40 TR $2C/$41 BR $2D/$41",
+  "0D9DA0": "TL $38/$01 BL $23/$01 TR $21/$01 BR $22/$01",
+  "0D9DA8": "TL $43/$41 BL $2F/$41 TR $43/$01 BR $2F/$01",
+  "0D9DB0": "TL $38/$01 BL $21/$01 TR $21/$01 BR $22/$01",
+  "0D9DB8": "TL $22/$01 BL $23/$01 TR $23/$01 BR $2D/$41",
+  "0D9DC0": "TL $2B/$01 BL $2B/$81 TR $2B/$01 BR $2B/$81",
+  "0D9DC8": "TL $2A/$01 BL $2A/$81 TR $29/$01 BR $29/$81",
+  "0D9DD0": "TL $28/$01 BL $28/$81 TR $27/$01 BR $27/$81",
+  "0D9DD8": "TL $26/$01 BL $26/$81 TR $25/$01 BR $25/$81",
+  "0D9DE0": "TL $24/$01 BL $24/$81 TR $36/$01 BR $36/$81",
+  "0D9DE8": "TL $2E/$41 BL $37/$41 TR $2E/$01 BR $37/$01",
+  "0D9DF0": "TL $36/$01 BL $36/$81 TR $24/$01 BR $24/$81",
+  "0D9DF8": "TL $25/$01 BL $25/$81 TR $26/$01 BR $26/$81",
+  "0D9E00": "TL $27/$01 BL $27/$81 TR $28/$01 BR $28/$81",
+  "0D9E08": "TL $29/$01 BL $29/$81 TR $2A/$01 BR $2A/$81",
+  "0D9E10": "TL $22/$01 BL $23/$01 TR $23/$01 BR $38/$01",
+  "0D9E18": "TL $38/$01 BL $21/$01 TR $21/$01 BR $1E/$01",
+  "0D9E20": "TL $1E/$01 BL $1F/$01 TR $1F/$01 BR $1E/$01",
+  "0D9E28": "TL $4C/$00 BL $4E/$00 TR $4C/$40 BR $4E/$40",
+  "0D9E30": "TL $1E/$01 BL $1F/$01 TR $1F/$01 BR $38/$01",
+  "0D9E38": "TL $22/$01 BL $23/$01 TR $23/$01 BR $2C/$41",
+  "0D9E40": "TL $37/$41 BL $2E/$41 TR $37/$01 BR $2E/$01",
+  "0D9E48": "TL $FA/$40 BL $2C/$41 TR $FA/$40 BR $FA/$40",
+  "0D9E50": "TL $2F/$41 BL $43/$41 TR $2F/$01 BR $43/$01",
+  "0D9E58": "TL $1E/$01 BL $21/$01 TR $1F/$01 BR $38/$01",
+  "0D9E60": "TL $22/$01 BL $23/$01 TR $23/$01 BR $22/$01",
+  "0D9E68": "TL $40/$01 BL $3B/$01 TR $41/$01 BR $44/$81",
+  "0D9E70": "TL $42/$01 BL $44/$81 TR $40/$41 BR $3B/$01",
+  "0D9E78": "TL $22/$01 BL $21/$01 TR $23/$01 BR $38/$01",
+  "0D9E80": "TL $39/$41 BL $3A/$41 TR $39/$01 BR $3A/$01",
+  "0D9E88": "TL $22/$01 BL $21/$01 TR $23/$01 BR $22/$01",
+  "0D9E90": "TL $38/$01 BL $21/$01 TR $21/$01 BR $38/$01",
+  "0D9E98": "TL $3C/$41 BL $3C/$01 TR $44/$41 BR $44/$81",
+  "0D9EA0": "TL $44/$41 BL $44/$81 TR $3C/$01 BR $3C/$41",
+  "0D9EA8": "TL $33/$41 BL $34/$41 TR $33/$01 BR $34/$01",
+  "0D9EB0": "TL $38/$01 BL $23/$01 TR $21/$01 BR $38/$01",
+  "0D9EB8": "TL $FA/$40 BL $FA/$40 TR $FA/$40 BR $FA/$40",
+  "0D9EC0": "TL $3D/$01 BL $40/$01 TR $44/$41 BR $41/$01",
+  "0D9EC8": "TL $44/$41 BL $42/$01 TR $3D/$01 BR $40/$41",
+  "0D9ED0": "TL $FA/$40 BL $2C/$41 TR $FA/$40 BR $2D/$41",
+  "0D9ED8": "TL $2D/$41 BL $23/$01 TR $2C/$41 BR $22/$01",
+  "0D9EE0": "TL $38/$01 BL $1F/$01 TR $21/$01 BR $38/$01",
+  "0D9EE8": "TL $38/$01 BL $1F/$01 TR $21/$01 BR $1E/$01",
+  "0D9EF0": "TL $1E/$01 BL $21/$01 TR $1F/$01 BR $1E/$01",
+  "0D9EF8": "TL $5E/$01 BL $7A/$01 TR $5F/$01 BR $7B/$01",
+  "0D9F00": "TL $5E/$01 BL $6E/$01 TR $5F/$01 BR $6F/$01",
+  "0D9F08": "TL $67/$41 BL $77/$41 TR $66/$41 BR $76/$41",
+  "0D9F10": "TL $66/$01 BL $76/$01 TR $67/$01 BR $77/$01",
+  "0D9F18": "TL $64/$01 BL $74/$01 TR $5F/$01 BR $6F/$01",
+  "0D9F20": "TL $7A/$81 BL $5E/$81 TR $7B/$81 BR $5F/$81",
+  "0D9F28": "TL $6E/$81 BL $5E/$81 TR $6F/$81 BR $5F/$81",
+  "0D9F30": "TL $74/$81 BL $64/$81 TR $6F/$81 BR $5F/$81",
+  "0D9F38": "TL $5A/$01 BL $6A/$01 TR $5B/$01 BR $6B/$01",
+  "0D9F40": "TL $67/$41 BL $77/$41 TR $66/$41 BR $53/$01",
+  "0D9F48": "TL $5A/$01 BL $54/$01 TR $5B/$01 BR $6B/$01",
+  "0D9F50": "TL $6A/$81 BL $5A/$81 TR $6B/$81 BR $5B/$81",
+  "0D9F58": "TL $54/$81 BL $5A/$81 TR $6B/$81 BR $5B/$81",
+  "0D9F60": "TL $64/$01 BL $6E/$01 TR $65/$01 BR $6F/$01",
+  "0D9F68": "TL $64/$01 BL $74/$01 TR $65/$01 BR $6F/$01",
+  "0D9F70": "TL $57/$C1 BL $79/$C1 TR $56/$C1 BR $78/$C1",
+  "0D9F78": "TL $66/$01 BL $53/$41 TR $67/$01 BR $77/$01",
+  "0D9F80": "TL $69/$C1 BL $59/$C1 TR $68/$C1 BR $58/$C1",
+  "0D9F88": "TL $58/$01 BL $68/$01 TR $59/$01 BR $69/$01",
+  "0D9F90": "TL $78/$01 BL $56/$01 TR $79/$01 BR $57/$01",
+  "0D9F98": "TL $5C/$01 BL $6C/$01 TR $5D/$01 BR $6D/$01",
+  "0D9FA0": "TL $7C/$01 BL $6E/$01 TR $7D/$01 BR $6F/$01",
+  "0D9FA8": "TL $F8/$00 BL $55/$01 TR $F8/$00 BR $F8/$00",
+  "0D9FB0": "TL $6E/$81 BL $7C/$81 TR $6F/$81 BR $7D/$81",
+  "0D9FB8": "TL $6C/$81 BL $5C/$81 TR $6D/$81 BR $5D/$81",
+  "0D9FC0": "TL $F5/$45 BL $FC/$05 TR $F5/$01 BR $FD/$01",
+  "0D9FC8": "TL $F5/$41 BL $FD/$01 TR $F6/$01 BR $F8/$01",
+  "0D9FD0": "TL $F4/$01 BL $F7/$01 TR $F5/$01 BR $FC/$01",
+  "0D9FD8": "TL $F5/$41 BL $FC/$01 TR $F5/$01 BR $FD/$01",
+  "0D9FE0": "TL $FE/$85 BL $FF/$05 TR $FF/$81 BR $FE/$41",
+  "0D9FE8": "TL $FE/$01 BL $FF/$01 TR $F8/$01 BR $F8/$81",
+  "0D9FF0": "TL $F7/$01 BL $F7/$81 TR $FE/$41 BR $FF/$81",
+  "0D9FF8": "TL $FE/$81 BL $FF/$01 TR $FF/$81 BR $FE/$41",
+  "0DA000": "TL $F4/$01 BL $F7/$01 TR $F6/$01 BR $F8/$01",
+  "0DA008": "TL $F7/$01 BL $F7/$81 TR $F8/$01 BR $F8/$81",
+  "0DA010": "TL $FF/$41 BL $FA/$01 TR $FE/$01 BR $FA/$41",
+  "0DA018": "TL $FE/$C1 BL $FA/$01 TR $F8/$01 BR $FB/$01",
+  "0DA020": "TL $F7/$01 BL $F9/$01 TR $FE/$01 BR $FA/$01",
+  "0DA028": "TL $F7/$01 BL $F9/$01 TR $F8/$01 BR $FB/$01",
+  "0DA030": "TL $74/$01 BL $72/$01 TR $75/$01 BR $73/$01",
+  "0DA038": "TL $F5/$45 BL $FD/$05 TR $F6/$05 BR $F8/$05",
+  "0DA040": "TL $F4/$05 BL $F7/$05 TR $F5/$05 BR $FC/$05",
+  "0DA048": "TL $F5/$45 BL $FC/$05 TR $F5/$05 BR $FD/$05",
+  "0DA050": "TL $FE/$05 BL $FF/$05 TR $F8/$01 BR $F8/$81",
+  "0DA058": "TL $FE/$C5 BL $FA/$05 TR $F8/$01 BR $FB/$01",
+  "0DA060": "TL $F5/$45 BL $FD/$05 TR $F6/$01 BR $F8/$01",
+  "0DA068": "TL $E0/$01 BL $E4/$01 TR $E1/$01 BR $E5/$81",
+  "0DA070": "TL $E1/$41 BL $E5/$C1 TR $E0/$41 BR $E4/$01",
+  "0DA078": "TL $E2/$01 BL $E2/$01 TR $E5/$01 BR $E5/$81",
+  "0DA080": "TL $E5/$41 BL $E5/$C1 TR $E2/$01 BR $E2/$01",
+  "0DA088": "TL $E2/$01 BL $E0/$01 TR $E5/$01 BR $E1/$01",
+  "0DA090": "TL $E5/$41 BL $E1/$41 TR $E2/$01 BR $E0/$41",
+  "0DA098": "TL $FF/$41 BL $FA/$01 TR $FE/$C1 BR $FA/$01",
+  "0DA10F": "$59=$00: Screen exit -> CODE_0DA512",
+  "0DA112": "$59=$01: Screen jump -> CODE_0DA53D",
+  "0DA115": "$59=$02: unused, null pointer",
+  "0DA118": "$59=$03: unused, null pointer",
+  "0DA11B": "$59=$04: unused, null pointer",
+  "0DA11E": "$59=$05: unused, null pointer",
+  "0DA121": "$59=$06: unused, null pointer",
+  "0DA124": "$59=$07: unused, null pointer",
+  "0DA127": "$59=$08: unused, null pointer",
+  "0DA12A": "$59=$09: unused, null pointer",
+  "0DA12D": "$59=$0A: unused, null pointer",
+  "0DA130": "$59=$0B: unused, null pointer",
+  "0DA133": "$59=$0C: unused, null pointer",
+  "0DA136": "$59=$0D: unused, null pointer",
+  "0DA139": "$59=$0E: unused, null pointer",
+  "0DA13C": "$59=$0F: unused, null pointer",
+  "0DA13F": "$59=$10: Small door -> CODE_0DA57B",
+  "0DA142": "$59=$11: Invisible ? block (1-UP) -> CODE_0DA57B",
+  "0DA145": "$59=$12: Invisible note block -> CODE_0DA57B",
+  "0DA148": "$59=$13: Top left corner edge tile 1 -> CODE_0DA57B",
+  "0DA14B": "$59=$14: Top right corner edge tile 1 -> CODE_0DA57B",
+  "0DA14E": "$59=$15: Small POW door -> CODE_0DA57B",
+  "0DA151": "$59=$16: Invisible POW ? block -> CODE_0DA57B",
+  "0DA154": "$59=$17: Green star block -> CODE_0DA64D",
+  "0DA157": "$59=$18: 3-UP moon -> CODE_0DA57B",
+  "0DA15A": "$59=$19: Invisible 1-UP #1 -> CODE_0DA57B",
+  "0DA15D": "$59=$1A: Invisible 1-UP #2 -> CODE_0DA57B",
+  "0DA160": "$59=$1B: Invisible 1-UP #3 -> CODE_0DA57B",
+  "0DA163": "$59=$1C: Invisible 1-UP #4 -> CODE_0DA57B",
+  "0DA166": "$59=$1D: Red berry -> CODE_0DA57B",
+  "0DA169": "$59=$1E: Pink berry -> CODE_0DA57B",
+  "0DA16C": "$59=$1F: Green berry -> CODE_0DA57B",
+  "0DA16F": "$59=$20: Always turning block -> CODE_0DA57B",
+  "0DA172": "$59=$21: Bottom right of midway point (unused) -> CODE_0DA57B",
+  "0DA175": "$59=$22: Bottom right of midway point (unused) -> CODE_0DA57B",
+  "0DA178": "$59=$23: Note block (flower/feather/star) -> CODE_0DA57B",
+  "0DA17B": "$59=$24: ON/OFF block -> CODE_0DA57B",
+  "0DA17E": "$59=$25: Direction coins ? block -> CODE_0DA57B",
+  "0DA181": "$59=$26: Note block -> CODE_0DA57B",
+  "0DA184": "$59=$27: Note block, bounce on all sides -> CODE_0DA57B",
+  "0DA187": "$59=$28: Turn block (Flower) -> CODE_0DA57B",
+  "0DA18A": "$59=$29: Turn block (Feather) -> CODE_0DA57B",
+  "0DA18D": "$59=$2A: Turn block (Star) -> CODE_0DA57B",
+  "0DA190": "$59=$2B: Turn block (Star 2/1-UP/Vine) -> CODE_0DA57B",
+  "0DA193": "$59=$2C: Turn block (Multiple coins) -> CODE_0DA57B",
+  "0DA196": "$59=$2D: Turn block (Coin) -> CODE_0DA57B",
+  "0DA199": "$59=$2E: Turn block (Nothing) -> CODE_0DA57B",
+  "0DA19C": "$59=$2F: Turn block (POW) -> CODE_0DA57B",
+  "0DA19F": "$59=$30: ? block (Flower) -> CODE_0DA57B",
+  "0DA1A2": "$59=$31: ? block (Feather) -> CODE_0DA57B",
+  "0DA1A5": "$59=$32: ? block (Star) -> CODE_0DA57B",
+  "0DA1A8": "$59=$33: ? block (Star 2) -> CODE_0DA57B",
+  "0DA1AB": "$59=$34: ? block (Multiple coins) -> CODE_0DA57B",
+  "0DA1AE": "$59=$35: ? block (Key/Wings/Balloon/Shell) -> CODE_0DA57B",
+  "0DA1B1": "$59=$36: ? block (Yoshi) -> CODE_0DA57B",
+  "0DA1B4": "$59=$37: ? block (Shell) -> CODE_0DA57B",
+  "0DA1B7": "$59=$38: ? block (Shell) -> CODE_0DA57B",
+  "0DA1BA": "$59=$39: Turn block, unbreakable (Feather) -> CODE_0DA57B",
+  "0DA1BD": "$59=$3A: Top left corner edge tile 2 -> CODE_0DA57B",
+  "0DA1C0": "$59=$3B: Top right corner edge tile 2 -> CODE_0DA57B",
+  "0DA1C3": "$59=$3C: Top left corner edge tile 3 -> CODE_0DA57B",
+  "0DA1C6": "$59=$3D: Top right corner edge tile 3 -> CODE_0DA57B",
+  "0DA1C9": "$59=$3E: Top left corner edge tile 4 -> CODE_0DA57B",
+  "0DA1CC": "$59=$3F: Top right corner edge tile 4 -> CODE_0DA57B",
+  "0DA1CF": "$59=$40: Transculent block -> CODE_0DA57B",
+  "0DA1D2": "$59=$41: Yoshi Coin -> CODE_0DB2CA",
+  "0DA1D5": "$59=$42: Top left slope -> ADDR_0DA656",
+  "0DA1D8": "$59=$43: Top right slope -> ADDR_0DA656",
+  "0DA1DB": "$59=$44: Purple triangle, left -> CODE_0DA673",
+  "0DA1DE": "$59=$45: Purple triangle, right -> CODE_0DA673",
+  "0DA1E1": "$59=$46: Midway point rope -> CODE_0DA68E",
+  "0DA1E4": "$59=$47: Door -> CODE_0DA6D1",
+  "0DA1E7": "$59=$48: Invisible POW door -> CODE_0DA6D1",
+  "0DA1EA": "$59=$49: Ghost house exit -> CODE_0DEABF",
+  "0DA1ED": "$59=$4A: Climbing net door -> CODE_0DA7C1",
+  "0DA1F0": "$59=$4B: Conveyor end tile 1 -> CODE_0DC259",
+  "0DA1F3": "$59=$4C: Conveyor end tile 2 -> CODE_0DC259",
+  "0DA1F6": "$59=$4D: Line guide, top left 1/4 large circle -> CODE_0DCE67",
+  "0DA1F9": "$59=$4E: Line guide, top right 1/4 large circle -> CODE_0DCE67",
+  "0DA1FC": "$59=$4F: Line guide, bottom left 1/4 large circle -> CODE_0DCE67",
+  "0DA1FF": "$59=$50: Line guide, bottom right 1/4 large circle -> CODE_0DCE67",
+  "0DA202": "$59=$51: Line guide, top left 1/4 small circle -> CODE_0DCE94",
+  "0DA205": "$59=$52: Line guide, top right 1/4 small circle -> CODE_0DCE94",
+  "0DA208": "$59=$53: Line guide, bottom left 1/4 small circle -> CODE_0DCE94",
+  "0DA20B": "$59=$54: Line guide, bottom right 1/4 small circle -> CODE_0DCE94",
+  "0DA20E": "$59=$55: Line guide end, for horizontal line -> CODE_0DCEC0",
+  "0DA211": "$59=$56: Line guide end, for vertical line -> CODE_0DCEDA",
+  "0DA214": "$59=$57: Switch palace bottom right corner tile -> CODE_0DE95F",
+  "0DA217": "$59=$58: Switch palace bottom left corner tile -> CODE_0DE95F",
+  "0DA21A": "$59=$59: Switch palace top right corner tile -> CODE_0DE95F",
+  "0DA21D": "$59=$5A: Switch palace top left corner tile -> CODE_0DE95F",
+  "0DA220": "$59=$5B: Bit of brick background tile 1 -> CODE_0DE95F",
+  "0DA223": "$59=$5C: Bit of brick background tile 2 -> CODE_0DE95F",
+  "0DA226": "$59=$5D: Bit of brick background tile 3 -> CODE_0DE95F",
+  "0DA229": "$59=$5E: Bit of brick background tile 4 -> CODE_0DE95F",
+  "0DA22C": "$59=$5F: Large background area -> ADDR_0DE971",
+  "0DA22F": "$59=$60: Lava/mud top right corner edge -> CODE_0DDA57",
+  "0DA232": "$59=$61: Ghost house clock -> CODE_0DE9AA",
+  "0DA235": "$59=$62: Ghost house top left to bottom right beam 1 -> CODE_0DE9AA",
+  "0DA238": "$59=$63: Ghost house top right to bottom left beam 1 -> CODE_0DE9AA",
+  "0DA23B": "$59=$64: Ghost house cobweb, top right -> CODE_0DE9ED",
+  "0DA23E": "$59=$65: Ghost house cobweb, top left -> CODE_0DE9ED",
+  "0DA241": "$59=$66: Ghost house top right to bottom left beam 2 -> ADDR_0DEA3E",
+  "0DA244": "$59=$67: Ghost house top left to bottom right beam 2 -> ADDR_0DEA3E",
+  "0DA247": "$59=$68: Cloud fringe, bottom and right edge -> ADDR_0DB571",
+  "0DA24A": "$59=$69: Cloud fringe, bottom and left edge -> ADDR_0DB571",
+  "0DA24D": "$59=$6A: Cloud fringe, bottom right -> ADDR_0DB571",
+  "0DA250": "$59=$6B: Cloud fringe, bottom left -> ADDR_0DB571",
+  "0DA253": "$59=$6C: Cloud fringe on white, bottom and right edge -> ADDR_0DB571",
+  "0DA256": "$59=$6D: Cloud fringe on white, bottom and left edge -> ADDR_0DB571",
+  "0DA259": "$59=$6E: Cloud fringe on white, bottom right -> ADDR_0DB571",
+  "0DA25C": "$59=$6F: Cloud fringe on white, bottom left -> ADDR_0DB571",
+  "0DA25F": "$59=$70: Bit of canvass 1 -> ADDR_0DCEA6",
+  "0DA262": "$59=$71: Canvass 1 -> CODE_0DE0AE",
+  "0DA265": "$59=$72: Canvass 2 -> CODE_0DE0AE",
+  "0DA268": "$59=$73: Canvass 3 -> CODE_0DE0AE",
+  "0DA26B": "$59=$74: Canvass 4 -> CODE_0DE0AE",
+  "0DA26E": "$59=$75: Canvass tile 1 -> CODE_0DDA68",
+  "0DA271": "$59=$76: Canvass tile 2 -> CODE_0DDA68",
+  "0DA274": "$59=$77: Canvass tile 3 -> CODE_0DDA68",
+  "0DA277": "$59=$78: Canvass tile 4 -> CODE_0DDA68",
+  "0DA27A": "$59=$79: Canvass tile 5 -> CODE_0DDA68",
+  "0DA27D": "$59=$7A: Canvass tile 6 -> CODE_0DDA68",
+  "0DA280": "$59=$7B: Canvass tile 7 -> CODE_0DDA68",
+  "0DA283": "$59=$7C: Bit of canvas 2 -> CODE_0DDA80",
+  "0DA286": "$59=$7D: Bit of canvas 3 -> CODE_0DDA80",
+  "0DA289": "$59=$7E: Bit of canvas 4 -> CODE_0DDA80",
+  "0DA28C": "$59=$7F: Torpedo launcher -> CODE_0DDAA2",
+  "0DA28F": "$59=$80: Ghost house entrance -> CODE_0DEB6A",
+  "0DA292": "$59=$81: Water weed -> ADDR_0DEC68",
+  "0DA295": "$59=$82: Big bush 1 -> CODE_0DA71B",
+  "0DA298": "$59=$83: Big bush 2 -> CODE_0DA760",
+  "0DA29B": "$59=$84: Castle entrance -> CODE_0DC2E9",
+  "0DA29E": "$59=$85: Yoshi's house -> CODE_0DEC33",
+  "0DA2A1": "$59=$86: Arrow sign -> CODE_0DA7E7",
+  "0DA2A4": "$59=$87: ! block, green -> CODE_0DB58B",
+  "0DA2A7": "$59=$88: Tree branch, left -> CODE_0DB6E3",
+  "0DA2AA": "$59=$89: Tree branch, right -> CODE_0DB6E3",
+  "0DA2AD": "$59=$8A: Switch, green -> CODE_0DEC8E",
+  "0DA2B0": "$59=$8B: Switch, yellow -> CODE_0DEC8E",
+  "0DA2B3": "$59=$8C: Switch, blue -> CODE_0DEC8E",
+  "0DA2B6": "$59=$8D: Switch, red -> CODE_0DEC8E",
+  "0DA2B9": "$59=$8E: ! block, yellow -> CODE_0DB583",
+  "0DA2BC": "$59=$8F: Ghost house window -> CODE_0DECC1",
+  "0DA2BF": "$59=$90: Boss door -> CODE_0DC31E",
+  "0DA2C2": "$59=$91: Steep left slope (vert. lev.) -> CODE_0DA80D",
+  "0DA2C5": "$59=$92: Steep right slope (vert. lev.) -> CODE_0DA80D",
+  "0DA2C8": "$59=$93: Normal left slope (vert. lev.) -> CODE_0DA846",
+  "0DA2CB": "$59=$94: Normal right slope (vert. lev.) -> CODE_0DA846",
+  "0DA2CE": "$59=$95: Very steep left slope (vert. lev.) -> CODE_0DA87D",
+  "0DA2D1": "$59=$96: Very steep right slope (vert. lev.) -> CODE_0DA87D",
+  "0DA2D4": "$59=$97: Switch palace right and bottom edge tile -> CODE_0DEC5C",
+  "0DA2D7": "$59=$98: unused, draws two garbage tiles via the door code",
+  "0DA2DA": "$59=$99: unused, draws two garbage tiles via the door code",
+  "0DA2DD": "$59=$9A: unused, draws two garbage tiles via the door code",
+  "0DA2E0": "$59=$9B: unused, draws two garbage tiles via the door code",
+  "0DA2E3": "$59=$9C: unused, draws two garbage tiles via the door code",
+  "0DA2E6": "$59=$9D: unused, draws two garbage tiles via the door code",
+  "0DA2E9": "$59=$9E: unused, draws two garbage tiles via the door code",
+  "0DA2EC": "$59=$9F: unused, draws two garbage tiles via the door code",
+  "0DA2EF": "$59=$A0: unused, draws two garbage tiles via the door code",
+  "0DA2F2": "$59=$A1: unused, draws two garbage tiles via the door code",
+  "0DA2F5": "$59=$A2: unused, draws two garbage tiles via the door code",
+  "0DA2F8": "$59=$A3: unused, draws two garbage tiles via the door code",
+  "0DA2FB": "$59=$A4: unused, draws two garbage tiles via the door code",
+  "0DA2FE": "$59=$A5: unused, draws two garbage tiles via the door code",
+  "0DA301": "$59=$A6: unused, draws two garbage tiles via the door code",
+  "0DA304": "$59=$A7: unused, draws two garbage tiles via the door code",
+  "0DA307": "$59=$A8: unused, draws two garbage tiles via the door code",
+  "0DA30A": "$59=$A9: unused, draws two garbage tiles via the door code",
+  "0DA30D": "$59=$AA: unused, draws two garbage tiles via the door code",
+  "0DA310": "$59=$AB: unused, draws two garbage tiles via the door code",
+  "0DA313": "$59=$AC: unused, draws two garbage tiles via the door code",
+  "0DA316": "$59=$AD: unused, draws two garbage tiles via the door code",
+  "0DA319": "$59=$AE: unused, draws two garbage tiles via the door code",
+  "0DA31C": "$59=$AF: unused, draws two garbage tiles via the door code",
+  "0DA31F": "$59=$B0: unused, draws two garbage tiles via the door code",
+  "0DA322": "$59=$B1: unused, draws two garbage tiles via the door code",
+  "0DA325": "$59=$B2: unused, draws two garbage tiles via the door code",
+  "0DA328": "$59=$B3: unused, draws two garbage tiles via the door code",
+  "0DA32B": "$59=$B4: unused, draws two garbage tiles via the door code",
+  "0DA32E": "$59=$B5: unused, draws two garbage tiles via the door code",
+  "0DA331": "$59=$B6: unused, draws two garbage tiles via the door code",
+  "0DA334": "$59=$B7: unused, draws two garbage tiles via the door code",
+  "0DA337": "$59=$B8: unused, draws two garbage tiles via the door code",
+  "0DA33A": "$59=$B9: unused, draws two garbage tiles via the door code",
+  "0DA33D": "$59=$BA: unused, draws two garbage tiles via the door code",
+  "0DA340": "$59=$BB: unused, draws two garbage tiles via the door code",
+  "0DA343": "$59=$BC: unused, draws two garbage tiles via the door code",
+  "0DA346": "$59=$BD: unused, draws two garbage tiles via the door code",
+  "0DA349": "$59=$BE: unused, draws two garbage tiles via the door code",
+  "0DA34C": "$59=$BF: unused, draws two garbage tiles via the door code",
+  "0DA34F": "$59=$C0: unused, draws two garbage tiles via the door code",
+  "0DA352": "$59=$C1: unused, draws two garbage tiles via the door code",
+  "0DA355": "$59=$C2: unused, draws two garbage tiles via the door code",
+  "0DA358": "$59=$C3: unused, draws two garbage tiles via the door code",
+  "0DA35B": "$59=$C4: unused, draws two garbage tiles via the door code",
+  "0DA35E": "$59=$C5: unused, draws two garbage tiles via the door code",
+  "0DA361": "$59=$C6: unused, draws two garbage tiles via the door code",
+  "0DA364": "$59=$C7: unused, draws two garbage tiles via the door code",
+  "0DA367": "$59=$C8: unused, draws two garbage tiles via the door code",
+  "0DA36A": "$59=$C9: unused, draws two garbage tiles via the door code",
+  "0DA36D": "$59=$CA: unused, draws two garbage tiles via the door code",
+  "0DA370": "$59=$CB: unused, draws two garbage tiles via the door code",
+  "0DA373": "$59=$CC: unused, draws two garbage tiles via the door code",
+  "0DA376": "$59=$CD: unused, draws two garbage tiles via the door code",
+  "0DA379": "$59=$CE: unused, draws two garbage tiles via the door code",
+  "0DA37C": "$59=$CF: unused, draws two garbage tiles via the door code",
+  "0DA37F": "$59=$D0: unused, draws two garbage tiles via the door code",
+  "0DA382": "$59=$D1: unused, draws two garbage tiles via the door code",
+  "0DA385": "$59=$D2: unused, draws two garbage tiles via the door code",
+  "0DA388": "$59=$D3: unused, draws two garbage tiles via the door code",
+  "0DA38B": "$59=$D4: unused, draws two garbage tiles via the door code",
+  "0DA38E": "$59=$D5: unused, draws two garbage tiles via the door code",
+  "0DA391": "$59=$D6: unused, draws two garbage tiles via the door code",
+  "0DA394": "$59=$D7: unused, draws two garbage tiles via the door code",
+  "0DA397": "$59=$D8: unused, draws two garbage tiles via the door code",
+  "0DA39A": "$59=$D9: unused, draws two garbage tiles via the door code",
+  "0DA39D": "$59=$DA: unused, draws two garbage tiles via the door code",
+  "0DA3A0": "$59=$DB: unused, draws two garbage tiles via the door code",
+  "0DA3A3": "$59=$DC: unused, draws two garbage tiles via the door code",
+  "0DA3A6": "$59=$DD: unused, draws two garbage tiles via the door code",
+  "0DA3A9": "$59=$DE: unused, draws two garbage tiles via the door code",
+  "0DA3AC": "$59=$DF: unused, draws two garbage tiles via the door code",
+  "0DA3AF": "$59=$E0: unused, draws two garbage tiles via the door code",
+  "0DA3B2": "$59=$E1: unused, draws two garbage tiles via the door code",
+  "0DA3B5": "$59=$E2: unused, draws two garbage tiles via the door code",
+  "0DA3B8": "$59=$E3: unused, draws two garbage tiles via the door code",
+  "0DA3BB": "$59=$E4: unused, draws two garbage tiles via the door code",
+  "0DA3BE": "$59=$E5: unused, draws two garbage tiles via the door code",
+  "0DA3C1": "$59=$E6: unused, draws two garbage tiles via the door code",
+  "0DA3C4": "$59=$E7: unused, draws two garbage tiles via the door code",
+  "0DA3C7": "$59=$E8: unused, draws two garbage tiles via the door code",
+  "0DA3CA": "$59=$E9: unused, draws two garbage tiles via the door code",
+  "0DA3CD": "$59=$EA: unused, draws two garbage tiles via the door code",
+  "0DA3D0": "$59=$EB: unused, draws two garbage tiles via the door code",
+  "0DA3D3": "$59=$EC: unused, draws two garbage tiles via the door code",
+  "0DA3D6": "$59=$ED: unused, draws two garbage tiles via the door code",
+  "0DA3D9": "$59=$EE: unused, draws two garbage tiles via the door code",
+  "0DA3DC": "$59=$EF: unused, draws two garbage tiles via the door code",
+  "0DA3DF": "$59=$F0: unused, draws two garbage tiles via the door code",
+  "0DA3E2": "$59=$F1: unused, draws two garbage tiles via the door code",
+  "0DA3E5": "$59=$F2: unused, draws two garbage tiles via the door code",
+  "0DA3E8": "$59=$F3: unused, draws two garbage tiles via the door code",
+  "0DA3EB": "$59=$F4: unused, draws two garbage tiles via the door code",
+  "0DA3EE": "$59=$F5: unused, draws two garbage tiles via the door code",
+  "0DA3F1": "$59=$F6: unused, draws two garbage tiles via the door code",
+  "0DA3F4": "$59=$F7: unused, draws two garbage tiles via the door code",
+  "0DA3F7": "$59=$F8: unused, draws two garbage tiles via the door code",
+  "0DA3FA": "$59=$F9: unused, draws two garbage tiles via the door code",
+  "0DA3FD": "$59=$FA: unused, draws two garbage tiles via the door code",
+  "0DA400": "$59=$FB: unused, draws two garbage tiles via the door code",
+  "0DA403": "$59=$FC: unused, draws two garbage tiles via the door code",
+  "0DA406": "$59=$FD: unused, draws two garbage tiles via the door code",
+  "0DA409": "$59=$FE: unused, draws two garbage tiles via the door code",
+  "0DA40C": "$59=$FF: unused, draws two garbage tiles via the door code",
+  "0DA41E": "Tileset $0 (Normal 1) -> CODE_0DA44B",
+  "0DA421": "Tileset $1 (Castle 1) -> CODE_0DC190",
+  "0DA424": "Tileset $2 (Rope 1) -> CODE_0DCD90",
+  "0DA427": "Tileset $3 (Underground 1) -> CODE_0DD990",
+  "0DA42A": "Tileset $4 (Switch Palace 1) -> CODE_0DE890",
+  "0DA42D": "Tileset $5 (Ghost House 1) -> CODE_0DE890",
+  "0DA430": "Tileset $6 (Rope 2) -> CODE_0DCD90",
+  "0DA433": "Tileset $7 (Normal 2) -> CODE_0DA44B",
+  "0DA436": "Tileset $8 (Rope 3) -> CODE_0DCD90",
+  "0DA439": "Tileset $9 (Underground 2) -> CODE_0DD990",
+  "0DA43C": "Tileset $A (Switch Palace 2) -> CODE_0DD990",
+  "0DA43F": "Tileset $B (Castle 2) -> CODE_0DD990",
+  "0DA442": "Tileset $C (Cloud/Forest) -> CODE_0DA44B",
+  "0DA445": "Tileset $D (Ghost House 2) -> CODE_0DE890",
+  "0DA448": "Tileset $E (Underground 3) -> CODE_0DD990",
+  "0DA455": "$5A=$01: Water (Blue) -> CODE_0DA8C3",
+  "0DA458": "$5A=$02: Invisible coin blocks -> CODE_0DA8C3",
+  "0DA45B": "$5A=$03: Invisible note blocks -> CODE_0DA8C3",
+  "0DA45E": "$5A=$04: Invisible POW coins -> CODE_0DA8C3",
+  "0DA461": "$5A=$05: Coins -> CODE_0DA8C3",
+  "0DA464": "$5A=$06: Walk-through dirt -> CODE_0DA8C3",
+  "0DA467": "$5A=$07: Water (Other color) -> CODE_0DA8C3",
+  "0DA46A": "$5A=$08: Note blocks -> CODE_0DA8C3",
+  "0DA46D": "$5A=$09: Turn blocks -> CODE_0DA8C3",
+  "0DA470": "$5A=$0A: Coin ? blocks -> CODE_0DA8C3",
+  "0DA473": "$5A=$0B: Throw blocks -> CODE_0DA8C3",
+  "0DA476": "$5A=$0C: Black piranha plants -> CODE_0DA8C3",
+  "0DA479": "$5A=$0D: Cement blocks -> CODE_0DA8C3",
+  "0DA47C": "$5A=$0E: Brown blocks -> CODE_0DA8C3",
+  "0DA47F": "$5A=$0F: Vertical pipes -> CODE_0DAA26",
+  "0DA482": "$5A=$10: Horizontal pipes -> CODE_0DAAB4",
+  "0DA485": "$5A=$11: Bullet shooter -> CODE_0DAB0D",
+  "0DA488": "$5A=$12: Slopes -> CODE_0DAB3E",
+  "0DA48B": "$5A=$13: Ledge edges -> CODE_0DB075",
+  "0DA48E": "$5A=$14: Ground ledge -> CODE_0DB1D4",
+  "0DA491": "$5A=$15: Midway/Goal point -> CODE_0DB224",
+  "0DA494": "$5A=$16: Blue coins -> ADDR_0DB336",
+  "0DA497": "$5A=$17: Rope/Clouds -> CODE_0DB3BD",
+  "0DA49A": "$5A=$18: Water surface (ani) -> CODE_0DB3E3",
+  "0DA49D": "$5A=$19: Water surface (not ani) -> CODE_0DB3E3",
+  "0DA4A0": "$5A=$1A: Lava surface (ani) -> CODE_0DB3E3",
+  "0DA4A3": "$5A=$1B: Net top edge -> CODE_0DB3E3",
+  "0DA4A6": "$5A=$1C: Donut bridge -> CODE_0DB42D",
+  "0DA4A9": "$5A=$1D: Net bottom edge -> CODE_0DB461",
+  "0DA4AC": "$5A=$1E: Net vertical edge -> CODE_0DB49E",
+  "0DA4AF": "$5A=$1F: Vert. Pipe/Bone/Log -> CODE_0DB51F",
+  "0DA4B2": "$5A=$20: Horiz. Pipe/Bone/Log -> CODE_0DB547",
+  "0DA4B5": "$5A=$21: Long ground ledge -> CODE_0DB1C8",
+  "0DA4B8": "$5A=$22: unused -> CODE_0DB3E3",
+  "0DA4BB": "$5A=$23: unused -> CODE_0DB3E3",
+  "0DA4BE": "$5A=$24: unused -> CODE_0DB3E3",
+  "0DA4C1": "$5A=$25: unused -> CODE_0DB3E3",
+  "0DA4C4": "$5A=$26: unused -> CODE_0DB3E3",
+  "0DA4C7": "$5A=$27: unused -> CODE_0DB3E3",
+  "0DA4CA": "$5A=$28: unused -> CODE_0DB3E3",
+  "0DA4CD": "$5A=$29: unused -> CODE_0DB3E3",
+  "0DA4D0": "$5A=$2A: unused -> CODE_0DB3E3",
+  "0DA4D3": "$5A=$2B: unused -> CODE_0DB3E3",
+  "0DA4D6": "$5A=$2C: unused -> CODE_0DB3E3",
+  "0DA4D9": "$5A=$2D: unused -> CODE_0DB3E3",
+  "0DA4DC": "$5A=$2E: unassigned (not tileset specific) -> CODE_0DB3E3",
+  "0DA4DF": "$5A=$2F: unassigned (not tileset specific) -> CODE_0DB3E3",
+  "0DA4E2": "$5A=$30: Ice blue vertical pipe -> CODE_0DBB2C",
+  "0DA4E5": "$5A=$31: Ice blue turn tiles -> CODE_0DBB63",
+  "0DA4E8": "$5A=$32: Blue switch blocks -> CODE_0DB916",
+  "0DA4EB": "$5A=$33: Forest tree top -> CODE_0DBADC",
+  "0DA4EE": "$5A=$34: Solid left/right and top edge (forest) -> CODE_0DBA4C",
+  "0DA4F1": "$5A=$35: Ledge (forest) -> CODE_0DBA0A",
+  "0DA4F4": "$5A=$36: Large tree trunk (forest) -> CODE_0DB9C0",
+  "0DA4F7": "$5A=$37: Small tree trunk (forest) -> CODE_0DB966",
+  "0DA4FA": "$5A=$38: Red switch blocks -> CODE_0DB91E",
+  "0DA4FD": "$5A=$39: Right facing diagonal pipe -> CODE_0DB73F",
+  "0DA500": "$5A=$3A: Left facing diagonal ledge -> CODE_0DB7AA",
+  "0DA503": "$5A=$3B: Right facing diagonal ledge -> CODE_0DB863",
+  "0DA506": "$5A=$3C: Arch ledge -> CODE_0DB604",
+  "0DA509": "$5A=$3D: Top cloud fringe -> CODE_0DB6C3",
+  "0DA50C": "$5A=$3E: Left/right cloud fringe -> ADDR_0DB705",
+  "0DA50F": "$5A=$3F: Bushes 1 through 5 -> CODE_0DB5B7",
+  "0DA548": "Tiles for ext objects $10-$17",
+  "0DA550": "Tiles for ext objects $18-$1F",
+  "0DA558": "Tiles for ext objects $20-$27",
+  "0DA560": "Tiles for ext objects $28-$2F",
+  "0DA568": "Tiles for ext objects $30-$37",
+  "0DA570": "Tiles for ext objects $38-$3F",
+  "0DA578": "Tiles for ext objects $40-$42",
+  "0DA652": "Left slope tiles (object $42, $43)",
+  "0DA654": "Right slope tiles (object $42, $43)",
+  "0DA671": "Triangle top tiles (object $44, $45)",
+  "0DA6CD": "Door top tiles (object $47+)",
+  "0DA6CF": "Door bottom tiles (object $47+)",
+  "0DA6EE": "Big bush 1 row 0 (9 tiles, $25 = sky/background)",
+  "0DA6F7": "Big bush 1 row 1 (9 tiles, $25 = sky/background)",
+  "0DA700": "Big bush 1 row 2 (9 tiles, $25 = sky/background)",
+  "0DA709": "Big bush 1 row 3 (9 tiles, $25 = sky/background)",
+  "0DA712": "Big bush 1 row 4 (9 tiles, $25 = sky/background)",
+  "0DA100": "8-bit A/X/Y",
+  "0DA102": "Run the extended object code",
+  "0DA105": "Return to the level loader",
+  "0DA106": "8-bit A/X/Y again",
+  "0DA108": "A = extended object number",
+  "0DA10A": "X = extended object number",
+  "0DA10B": "Jump through the pointer table at $0DA10F, indexed by [X]",
+  "0DA40F": "8-bit A/X/Y",
+  "0DA411": "Run the standard object code",
+  "0DA414": "Return to the level loader",
+  "0DA415": "8-bit A/X/Y again",
+  "0DA417": "A = tileset [$1931]",
+  "0DA41A": "Jump through the tileset pointer table at $0DA41E",
+  "0DA44B": "8-bit A/X/Y",
+  "0DA44D": "X = standard object number [$5A]",
+  "0DA44F": "X -= 1 (object $00 never occurs)",
+  "0DA450": "A = table index",
+  "0DA451": "Jump through the standard object pointer table at $0DA455",
+  "0DA512": "Y = 0",
+  "0DA514": "A = destination screen byte from the level data",
+  "0DA516": "[$5A] = destination screen",
+  "0DA518": "Y = 1",
+  "0DA519": "\\",
+  "0DA51A": "|",
+  "0DA51B": "|",
+  "0DA51D": "|",
+  "0DA51F": "|",
+  "0DA521": "|",
+  "0DA523": "} Advance the level data pointer [$65] by one byte",
+  "0DA525": "\\",
+  "0DA527": "|",
+  "0DA529": "} X = screen number of the object ([$0A] & $1F)",
+  "0DA52A": "\\",
+  "0DA52C": "} Destination screen -> $19B8,X",
+  "0DA52F": "\\",
+  "0DA531": "|",
+  "0DA533": "} Water flag (bit 0 of [$0B]) -> $19D8,X (only used here)",
+  "0DA536": "\\",
+  "0DA538": "|",
+  "0DA539": "} Secondary exit flag -> [$1B93]",
+  "0DA53C": "Return",
+  "0DA53D": "\\",
+  "0DA53F": "|",
+  "0DA541": "} Current screen number [$1928] = object screen ([$0A] & $1F)",
+  "0DA544": "Also [$1BA1] = screen number",
+  "0DA547": "Return",
+  "0DA57B": "\\",
+  "0DA57C": "|",
+  "0DA57D": "} A = ext object number - $10",
+  "0DA57F": "[$00] = tile table index (also used for item memory checks)",
+  "0DA581": "\\",
+  "0DA583": "/ Index $18-$1C are the invisible 1UP and moon objects, which check collected flags first",
+  "0DA585": "\\",
+  "0DA587": "/ Otherwise skip the collected check",
+  "0DA589": "\\",
+  "0DA58C": "|",
+  "0DA58D": "|",
+  "0DA58E": "|",
+  "0DA58F": "} Y = [$13BF] / 8 (byte index of the level in the collected-flag tables)",
+  "0DA590": "\\",
+  "0DA593": "|",
+  "0DA595": "} X = [$13BF] & 7 (bit index)",
+  "0DA596": "\\",
+  "0DA598": "/ Index 8 = 3-UP moon uses a different flag table",
+  "0DA59A": "(not the moon)",
+  "0DA59C": "\\",
+  "0DA59F": "|",
+  "0DA5A3": "} Moon: test its collected bit in $1FEE,Y; if clear draw it",
+  "0DA5A5": "Already collected: draw nothing",
+  "0DA5A7": "\\",
+  "0DA5AA": "|",
+  "0DA5AE": "} Invisible 1UP: test its collected bit in $1F3C,Y; if clear draw it",
+  "0DA5B0": "Return",
+  "0DA5B1": "Y = tile position [$57]",
+  "0DA5B3": "\\",
+  "0DA5B6": "|",
+  "0DA5B8": "|",
+  "0DA5BA": "|",
+  "0DA5BC": "} Select Map16 page: tile index $13+ lives on page 1 (tile $100+), else page 0",
+  "0DA5BF": "A = Map16 tile for this object",
+  "0DA5C3": "[$0C] = tile to write",
+  "0DA5C5": "\\",
+  "0DA5C7": "|",
+  "0DA5C9": "|",
+  "0DA5CB": "|",
+  "0DA5CD": "|",
+  "0DA5CF": "|",
+  "0DA5D1": "|",
+  "0DA5D3": "|",
+  "0DA5D5": "|",
+  "0DA5D7": "} Objects $01, $07, $32, $26, $1B use item memory; others just draw (CODE_0DA648)",
+  "0DA5D9": "\\",
+  "0DA5DA": "|",
+  "0DA5DC": "|",
+  "0DA5DE": "|",
+  "0DA5E0": "|",
+  "0DA5E2": "|",
+  "0DA5E4": "|",
+  "0DA5E6": "|",
+  "0DA5E8": "|",
+  "0DA5EA": "|",
+  "0DA5EC": "|",
+  "0DA5EE": "} Object $1B only checks item memory when X position & $F is 1, 4, 7, $A or $D",
+  "0DA5F0": "\\",
+  "0DA5F1": "|",
+  "0DA5F2": "|",
+  "0DA5F3": "} Preserve X and Y on the stack",
+  "0DA5F4": "X = [$13BE] (index of the item memory table for this level)",
+  "0DA5F7": "\\",
+  "0DA5F9": "|",
+  "0DA5FA": "|",
+  "0DA5FE": "} [$08] = low byte of item memory pointer, $19F8 + table offset",
+  "0DA600": "\\",
+  "0DA602": "|",
+  "0DA606": "} [$09] = high byte of item memory pointer",
+  "0DA608": "\\",
+  "0DA60B": "|",
+  "0DA60C": "|",
+  "0DA60D": "} [$0E] = current screen number * 4",
+  "0DA60F": "\\",
+  "0DA611": "|",
+  "0DA613": "|",
+  "0DA615": "|",
+  "0DA617": "|",
+  "0DA619": "} If the object is in the lower half (Y bit 4 of [$0A]), [$0E] |= 2",
+  "0DA61B": "\\",
+  "0DA61C": "|",
+  "0DA61E": "|",
+  "0DA620": "|",
+  "0DA622": "|",
+  "0DA624": "} If the X column is >= 8, [$0E] |= 1",
+  "0DA626": "\\",
+  "0DA628": "|",
+  "0DA62A": "} X = [$57] & 7 (bit within the byte)",
+  "0DA62B": "\\",
+  "0DA62D": "|",
+  "0DA62F": "|",
+  "0DA633": "} [$0F] = item memory byte ([$08]),Y masked with bit X",
+  "0DA635": "\\",
+  "0DA636": "|",
+  "0DA637": "|",
+  "0DA638": "} Restore X and Y",
+  "0DA639": "\\",
+  "0DA63B": "/ Bit clear (never hit): draw the original tile",
+  "0DA63D": "\\",
+  "0DA63F": "/ Index $07 (green star block): leave it empty, no used block",
+  "0DA641": "\\",
+  "0DA644": "|",
+  "0DA646": "} Replace with tile $32 on page 1 (brown used block)",
+  "0DA648": "A = tile to write",
+  "0DA64A": "Write it to the level buffer at [$6B],Y",
+  "0DA64C": "Return",
+  "0DA64D": "Pretend the object index is $32 (green star block)",
+  "0DA64F": "Enter the middle of the single-tile routine",
+  "0DA656": "Y = tile position [$57]",
+  "0DA658": "\\",
+  "0DA659": "|",
+  "0DA65A": "|",
+  "0DA65C": "} X = ext object number - $42",
+  "0DA65D": "Select page 1 of the Map16 buffer",
+  "0DA660": "\\",
+  "0DA664": "} A = left tile; write it and step one column right",
+  "0DA667": "\\",
+  "0DA66B": "} Write the right tile",
+  "0DA66D": "Select page 1",
+  "0DA670": "Return",
+  "0DA673": "Y = tile position [$57]",
+  "0DA675": "\\",
+  "0DA676": "|",
+  "0DA677": "|",
+  "0DA679": "} X = ext object number - $44",
+  "0DA67A": "\\",
+  "0DA67E": "} Write the top tile",
+  "0DA680": "Select page 1",
+  "0DA683": "Step one row down",
+  "0DA686": "\\",
+  "0DA688": "} Write bottom tile $EB",
+  "0DA68A": "Select page 1",
+  "0DA68D": "Return",
+  "0DA68E": "\\",
+  "0DA691": "|",
+  "0DA695": "|",
+  "0DA697": "/ Midway flag for this level already set: draw nothing",
+  "0DA699": "\\",
+  "0DA69C": "/ Second midway flag [$13CE] set: draw nothing",
+  "0DA69E": "Y = position",
+  "0DA6A0": "One column left of the object",
+  "0DA6A1": "Select page 0",
+  "0DA6A4": "Left tile $35",
+  "0DA6A6": "Write it and step right",
+  "0DA6A9": "Select page 0",
+  "0DA6AC": "Right tile $38",
+  "0DA6AE": "Write it",
+  "0DA6B0": "Return",
+  "0DA6B1": "\\",
+  "0DA6B3": "|",
+  "0DA6B5": "|",
+  "0DA6B7": "} Save the level buffer pointer [$6B] in [$04]",
+  "0DA6B9": "Return",
+  "0DA6BA": "\\",
+  "0DA6BC": "|",
+  "0DA6BE": "|",
+  "0DA6C0": "|",
+  "0DA6C2": "|",
+  "0DA6C4": "} Restore [$6B]/[$6E] from the saved pointer in [$04]",
+  "0DA6C6": "\\",
+  "0DA6C9": "} Restore current screen [$1BA1] from [$1928]",
+  "0DA6CC": "Return",
+  "0DA6D1": "Y = tile position [$57]",
+  "0DA6D3": "\\",
+  "0DA6D4": "|",
+  "0DA6D5": "|",
+  "0DA6D7": "} X = ext object number - $47",
+  "0DA6D8": "Select page 0",
+  "0DA6DB": "\\",
+  "0DA6DF": "} Write the top tile",
+  "0DA6E1": "Step one row down",
+  "0DA6E4": "Select page 0",
+  "0DA6E7": "\\",
+  "0DA6EB": "} Write the bottom tile",
+  "0DA6ED": "Return"
+ }
+}

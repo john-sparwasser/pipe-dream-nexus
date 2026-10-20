@@ -1,0 +1,1100 @@
+{
+ "bank": "01",
+ "sections": {
+  "InitPiranha": {
+   "name": "Init: Piranha Plant position",
+   "summary": [
+    "Centers the plant horizontally between the two pipe tiles (X += 8) and moves it up one pixel (16-bit decrement of Y)."
+   ]
+  },
+  "CallSpriteMain": {
+   "name": "Dispatch sprite main routine",
+   "summary": [
+    "Runs the main routine for the current sprite (status 8) through the pointer table SpriteMainPtr that follows the JSL.",
+    "Parameters: X = sprite slot. Clears [$1491] first."
+   ]
+  },
+  "SpriteMainPtr": {
+   "name": "Pointer table: sprite main routines",
+   "summary": [
+    "2-byte pointers (bank $01), indexed by sprite number $00-$C8. Used by CallSpriteMain for sprites in normal status.",
+    "Sprites handled in other banks go through small wrapper routines below (Bank3SprHandler etc.)."
+   ]
+  },
+  "InvisSolid+Dinos": {
+   "name": "Invisible solid block, Dino Rhino and Dino Torch",
+   "summary": [
+    "Wrapper: calls the bank $03 routine for sprites 6D-6F."
+   ]
+  },
+  "GoalSphere": {
+   "name": "Goal Point Question Sphere",
+   "summary": [
+    "Sprite 4A, the sphere that ends the level (secret exit goal). Draws itself, sparkles, and when Mario touches it erases itself,",
+    "starts the end-of-level timer and requests the course clear music."
+   ]
+  },
+  "InitReznor": {
+   "name": "Init: Reznor",
+   "summary": [
+    "Wrapper: calls ReznorInit in bank $03."
+   ]
+  },
+  "Bank3SprHandler": {
+   "name": "Run Run bank $03 sprite main",
+   "summary": [
+    "Wrapper for many sprites whose code lives in bank $03 (see table)."
+   ]
+  },
+  "BanzaiBnCGrayPlat": {
+   "name": "Banzai Bill, ball and chain, grey platform",
+   "summary": [
+    "Wrapper: calls Banzai+Rotating in bank $02."
+   ]
+  },
+  "BubbleWithSprite": {
+   "name": "Bubble with sprite",
+   "summary": [
+    "Wrapper: calls BubbleSpriteMain in bank $02."
+   ]
+  },
+  "HammerBrother": {
+   "name": "Hammer Brother",
+   "summary": [
+    "Wrapper: calls HammerBrotherMain in bank $02."
+   ]
+  },
+  "FlyingPlatform": {
+   "name": "Hammer Brother flying blocks",
+   "summary": [
+    "Wrapper: calls FlyingPlatformMain in bank $02."
+   ]
+  },
+  "InitHammerBrother": {
+   "name": "Init: Hammer Brother (does nothing)",
+   "summary": [
+    "Calls a bare RTL; no initialization is needed."
+   ]
+  },
+  "VolcanoLotus": {
+   "name": "Volcano Lotus",
+   "summary": [
+    "Wrapper: calls VolcanoLotusMain in bank $02."
+   ]
+  },
+  "SumoBrother": {
+   "name": "Sumo Brother",
+   "summary": [
+    "Wrapper: calls SumoBrotherMain in bank $02."
+   ]
+  },
+  "SumosLightning": {
+   "name": "Sumo Brother's lightning",
+   "summary": [
+    "Wrapper: calls SumosLightningMain in bank $02."
+   ]
+  },
+  "JumpingPiranha": {
+   "name": "Jumping Piranha Plant",
+   "summary": [
+    "Wrapper: calls JumpingPiranhaMain in bank $02."
+   ]
+  },
+  "GasBubble": {
+   "name": "Large green gas bubble",
+   "summary": [
+    "Wrapper: calls GasBubbleMain in bank $02."
+   ]
+  },
+  "DirectionalCoins": {
+   "name": "Directional coins",
+   "summary": [
+    "Wrapper: calls DirectionCoinsMain in bank $02."
+   ]
+  },
+  "ExplodingBlock": {
+   "name": "Exploding block",
+   "summary": [
+    "Wrapper: calls ExplodingBlkMain in bank $02."
+   ]
+  },
+  "ScalePlatforms": {
+   "name": "Scale platforms",
+   "summary": [
+    "Wrapper: calls ScalePlatformMain in bank $02."
+   ]
+  },
+  "InitFloatingSkull": {
+   "name": "Init: floating skull",
+   "summary": [
+    "Wrapper: calls FloatingSkullInit in bank $02."
+   ]
+  },
+  "FloatingSkulls": {
+   "name": "Floating skull",
+   "summary": [
+    "Wrapper: calls FloatingSkullMain in bank $02."
+   ]
+  },
+  "GhostHouseExit": {
+   "name": "Ghost house exit sign and door",
+   "summary": [
+    "Wrapper: calls GhostExitMain in bank $02."
+   ]
+  },
+  "WarpBlocks": {
+   "name": "Invisible warp hole blocks",
+   "summary": [
+    "Wrapper: calls WarpBlocksMain in bank $02."
+   ]
+  },
+  "Pokey": {
+   "name": "Pokey",
+   "summary": [
+    "Wrapper: calls PokeyMain in bank $02."
+   ]
+  },
+  "RedSuperKoopa": {
+   "name": "Red Super Koopa",
+   "summary": [
+    "Wrapper: calls SuperKoopaMain in bank $02."
+   ]
+  },
+  "YellowSuperKoopa": {
+   "name": "Yellow Super Koopa",
+   "summary": [
+    "Wrapper: calls SuperKoopaMain in bank $02."
+   ]
+  },
+  "FeatherSuperKoopa": {
+   "name": "Feather Super Koopa",
+   "summary": [
+    "Wrapper: calls SuperKoopaMain in bank $02."
+   ]
+  },
+  "PipeLakitu": {
+   "name": "Pipe-dwelling Lakitu",
+   "summary": [
+    "Wrapper: calls PipeLakituMain in bank $02."
+   ]
+  },
+  "DigginChuck": {
+   "name": "Diggin' Chuck",
+   "summary": [
+    "Wrapper: calls ChucksMain in bank $02."
+   ]
+  },
+  "SwimJumpFish": {
+   "name": "Swimming/jumping fish",
+   "summary": [
+    "Wrapper: calls SwimJumpFishMain in bank $02."
+   ]
+  },
+  "DigginChucksRock": {
+   "name": "Diggin' Chuck's rock",
+   "summary": [
+    "Wrapper: calls ChucksRockMain in bank $02."
+   ]
+  },
+  "GrowingPipe": {
+   "name": "Growing/shrinking pipe end",
+   "summary": [
+    "Wrapper: calls GrowingPipeMain in bank $02."
+   ]
+  },
+  "YoshisHouseBirds": {
+   "name": "Yoshi's house birds",
+   "summary": [
+    "Wrapper: calls BirdsMain in bank $02."
+   ]
+  },
+  "YoshisHouseSmoke": {
+   "name": "Yoshi's house chimney smoke",
+   "summary": [
+    "Wrapper: calls SmokeMain in bank $02."
+   ]
+  },
+  "SideExit": {
+   "name": "Side exit / fireplace smoke",
+   "summary": [
+    "Wrapper: calls SideExitMain in bank $02."
+   ]
+  },
+  "InitWiggler": {
+   "name": "Init: Wiggler",
+   "summary": [
+    "Wrapper: calls WigglerInit in bank $02."
+   ]
+  },
+  "Wiggler": {
+   "name": "Wiggler",
+   "summary": [
+    "Wrapper: calls WigglerMain in bank $02."
+   ]
+  },
+  "CoinCloud": {
+   "name": "Coin game cloud",
+   "summary": [
+    "Wrapper: calls CoinCloudMain in bank $02."
+   ]
+  },
+  "TorpedoTed": {
+   "name": "Torpedo Ted",
+   "summary": [
+    "Wrapper: calls TorpedoTedMain in bank $02."
+   ]
+  },
+  "Chucks": {
+   "name": "Chargin' Chuck and variants",
+   "summary": [
+    "Sprites 91-98; same routine as Diggin' Chuck."
+   ]
+  },
+  "MovingLedge": {
+   "name": "Moving ledge hole in ghost house",
+   "summary": [
+    "Wrapper: calls MovingLedgeMain in bank $02."
+   ]
+  },
+  "Unused0187C5": {
+   "name": "Unused. Sumo Brother wrapper",
+   "summary": [
+    "Unreferenced duplicate of the Sumo Brother wrapper."
+   ]
+  },
+  "Layer3Smash": {
+   "name": "Layer 3 smash (Layer 3 Smasher)",
+   "summary": [
+    "Wrapper: sets the data bank to $02 and calls Layer3SmashMain in bank $02."
+   ]
+  },
+  "PeaBouncer": {
+   "name": "Spring board on wall (Pea Bouncer)",
+   "summary": [
+    "Wrapper: sets the data bank to $02 and calls PeaBouncerMain in bank $02.",
+    "Sprites 6B, 6C (spring boards on the wall)."
+   ]
+  },
+  "RipVanFish": {
+   "name": "Rip Van Fish",
+   "summary": [
+    "Wrapper: sets the data bank to $02 and calls RipVanFishMain in bank $02."
+   ]
+  },
+  "WallFollowers": {
+   "name": "Wall followers: Spike Top, Urchin, Fuzzy",
+   "summary": [
+    "Wrapper: sets the data bank to $02 and calls WallFollowersMain in bank $02.",
+    "Sprites 2E, 3A-3C, A5, A6 share it."
+   ]
+  },
+  "InitWingedCage": {
+   "name": "Init: winged cage (unused)",
+   "summary": [
+    "Wrapper: sets the data bank to $02 and calls Return02CBFD in bank $02.",
+    "Does nothing useful: calls a bare RTL (CBFD)."
+   ]
+  },
+  "WingedCage": {
+   "name": "Unused. Winged cage",
+   "summary": [
+    "Wrapper: sets the data bank to $02 and calls WingedCageMain in bank $02."
+   ]
+  },
+  "Dolphin": {
+   "name": "Dolphin",
+   "summary": [
+    "Wrapper: sets the data bank to $02 and calls DolphinMain in bank $02.",
+    "Sprites 41-43 (horizontal and vertical dolphins) share it."
+   ]
+  },
+  "InitMovingLedge": {
+   "name": "Init: moving ledge hole",
+   "summary": [
+    "Moves the sprite up one pixel (Y position low -= 1, no high-byte borrow)."
+   ]
+  },
+  "JumpOverShells": {
+   "name": "Yellow Koopa: jump over incoming shells",
+   "summary": [
+    "Every 4th frame (staggered by sprite slot) looks for a kicked shell (status $0A) in slots 9..0. If one is close enough to the",
+    "sprite and the sprite is on the ground and facing the other way, the sprite jumps (Y speed $C0).",
+    "Parameters: X = Koopa sprite slot."
+   ]
+  },
+  "JumpLoopStart": {
+   "name": "Shell search loop: test status",
+   "summary": [
+    ""
+   ]
+  },
+  "JumpLoopNext": {
+   "name": "Shell search loop: next slot",
+   "summary": [
+    ""
+   ]
+  },
+  "HandleJumpOver": {
+   "name": "Check shell proximity and jump",
+   "summary": [
+    "Builds a detection box around the shell in slot Y: X = shell X - $1A (16-bit), width $44, Y = shell Y, height $10,",
+    "tests it against this sprite's hitbox, then makes the sprite jump if it is on the ground and facing the opposite way to the shell."
+   ]
+  },
+  "Spr0to13SpeedX": {
+   "name": "Table: walking speed X",
+   "summary": [
+    "Indexed by direction (0 right, 1 left), +2 for fast sprites: right $08, left $F8, fast right $0C, fast left $F4."
+   ]
+  },
+  "Spr0to13Prop": {
+   "name": "Table: Koopa/Goomba property flags",
+   "summary": [
+    "Indexed by sprite number $00-$13. Bit 0 = fast walker, bit 1 = stays on ledges (turns at edges), bit 2 = turns to follow Mario,",
+    "bit 3 = jumps over shells, bit 7 = flutters wings in the air. Other bits are not used by this code."
+   ]
+  },
+  "ShellessKoopas": {
+   "name": "Shelless Koopa (sprites 00-03)",
+   "summary": [
+    "Main routine for the naked Koopas. Not locked: runs the timer/kick logic below. Locked: animates and interacts only.",
+    "Uses timer [$163E,X] (wait/kick), [$160E,X] (slot of the sprite it kicks), [$1528,X], [$1534,X] (kick state flags), [$C2,X] (kick pose timer).",
+    "The blue Koopa (sprite 02) behaves slightly differently from the others."
+   ]
+  },
+  "NOTE": {
+   "name": "Shelless Koopa logic, part 2",
+   "summary": [
+    "Continuation of ShellessKoopas (the 'NOTE' label comes from a stray comment in the source).",
+    "$0189FD: stopped sliding, set wait timer. $018A15: follow-through of a kick (slow the kicked sprite). $018A88: kick pose timer.",
+    "$018A9B: when [$1558,X] = 1, check the touched sprite and, on contact, erase the Koopa and mark that sprite (shell re-entry, probably)."
+   ]
+  },
+  "ExplodeBomb": {
+   "name": "Bob-omb explodes",
+   "summary": [
+    "Wrapper: sets the data bank to $02 and calls ExplodeBombRt (bank $02), which turns the Bob-omb into an explosion."
+   ]
+  },
+  "Bobomb": {
+   "name": "Bob-omb",
+   "summary": [
+    "Bob-omb main routine. [$1534,X] set: exploding. Otherwise walks like a Koopa until its fuse timer [$1540,X] is zero,",
+    "then becomes a stunned sprite (status 9) with a $40 frame fuse and keeps drawing itself."
+   ]
+  },
+  "Spr0to13Start": {
+   "name": "Koopa/Goomba/etc: start",
+   "summary": [
+    "Entry for sprites 04-07, 0C, 0F, 11, 13 and the walking Bob-omb. Locked: only interact with Mario and sprites, and draw.",
+    "Otherwise falls into Spr0to13Main."
+   ]
+  },
+  "Spr0to13Main": {
+   "name": "Walking sprite: speed, collisions, movement",
+   "summary": [
+    "Per-frame logic for the generic walkers. On the ground: sets the walking speed from direction and the property table.",
+    "Stops at walls and ceilings, despawns offscreen, moves and animates, then continues in SpriteOnGround / SpriteInAir."
+   ]
+  },
+  "SpriteOnGround": {
+   "name": "Walking sprite on the ground",
+   "summary": [
+    "Sets the resting Y speed, then handles the follow-Mario and jump-over-shell property flags."
+   ]
+  },
+  "DontFollowMario": {
+   "name": "Walking sprite: jump over shells",
+   "summary": [
+    "Restores the property flags and, if bit 3 is set, runs JumpOverShells; then continues at $018BB0."
+   ]
+  }
+ },
+ "lines": {
+  "0185B0": "\\",
+  "0185B2": "|",
+  "0185B3": "} Sprite X position += 8 (center on the pipe)",
+  "0185B5": "/",
+  "0185B7": "Sprite Y position low -= 1",
+  "0185B9": "A = new Y low",
+  "0185BB": "Borrow out of the low byte?",
+  "0185BD": "No: done",
+  "0185BF": "Borrow: Y position high -= 1",
+  "0185C2": "Return",
+  "0185C3": "[$1491] = 0 (clear horizontal movement this frame)",
+  "0185C6": "A = sprite number [$9E,X]",
+  "0185C8": "Jump to the routine at SpriteMainPtr[A] (ExecutePtr reads the inline word table)",
+  "0185CC": "00 - Green Koopa, no shell",
+  "0185CE": "01 - Red Koopa, no shell",
+  "0185D0": "02 - Blue Koopa, no shell",
+  "0185D2": "03 - Yellow Koopa, no shell",
+  "0185D4": "04 - Green Koopa",
+  "0185D6": "05 - Red Koopa",
+  "0185D8": "06 - Blue Koopa",
+  "0185DA": "07 - Yellow Koopa",
+  "0185DC": "08 - Green Koopa, flying left",
+  "0185DE": "09 - Green bouncing Koopa",
+  "0185E0": "0A - Red vertical flying Koopa",
+  "0185E2": "0B - Red horizontal flying Koopa",
+  "0185E4": "0C - Yellow Koopa with wings",
+  "0185E6": "0D - Bob-omb",
+  "0185E8": "0E - Keyhole",
+  "0185EA": "0F - Goomba",
+  "0185EC": "10 - Bouncing Goomba with wings",
+  "0185EE": "11 - Buzzy Beetle",
+  "0185F0": "12 - Unused",
+  "0185F2": "13 - Spiny",
+  "0185F4": "14 - Spiny falling",
+  "0185F6": "15 - Fish, horizontal",
+  "0185F8": "16 - Fish, vertical",
+  "0185FA": "17 - Fish, created from generator",
+  "0185FC": "18 - Surface jumping fish",
+  "0185FE": "19 - Display text from level Message Box #1",
+  "018600": "1A - Classic Piranha Plant",
+  "018602": "1B - Bouncing football in place",
+  "018604": "1C - Bullet Bill",
+  "018606": "1D - Hopping flame",
+  "018608": "1E - Lakitu",
+  "01860A": "1F - Magikoopa",
+  "01860C": "20 - Magikoopa's magic",
+  "01860E": "21 - Moving coin",
+  "018610": "22 - Green vertical net Koopa",
+  "018612": "23 - Red vertical net Koopa",
+  "018614": "24 - Green horizontal net Koopa",
+  "018616": "25 - Red horizontal net Koopa",
+  "018618": "26 - Thwomp",
+  "01861A": "27 - Thwimp",
+  "01861C": "28 - Big Boo",
+  "01861E": "29 - Koopa Kid",
+  "018620": "2A - Upside down Piranha Plant",
+  "018622": "2B - Sumo Brother's fire lightning",
+  "018624": "2C - Yoshi egg",
+  "018626": "2D - Baby green Yoshi",
+  "018628": "2E - Spike Top",
+  "01862A": "2F - Portable spring board",
+  "01862C": "30 - Dry Bones, throws bones",
+  "01862E": "31 - Bony Beetle",
+  "018630": "32 - Dry Bones, stay on ledge",
+  "018632": "33 - Fireball",
+  "018634": "34 - Boss fireball",
+  "018636": "35 - Green Yoshi",
+  "018638": "36 - Unused",
+  "01863A": "37 - Boo",
+  "01863C": "38 - Eerie",
+  "01863E": "39 - Eerie, wave motion",
+  "018640": "3A - Urchin, fixed",
+  "018642": "3B - Urchin, wall detect",
+  "018644": "3C - Urchin, wall follow",
+  "018646": "3D - Rip Van Fish",
+  "018648": "3E - POW",
+  "01864A": "3F - Para-Goomba",
+  "01864C": "40 - Para-Bomb",
+  "01864E": "41 - Dolphin, horizontal",
+  "018650": "42 - Dolphin2, horizontal",
+  "018652": "43 - Dolphin, vertical",
+  "018654": "44 - Torpedo Ted",
+  "018656": "45 - Directional coins",
+  "018658": "46 - Diggin' Chuck",
+  "01865A": "47 - Swimming/Jumping fish",
+  "01865C": "48 - Diggin' Chuck's rock",
+  "01865E": "49 - Growing/shrinking pipe end",
+  "018660": "4A - Goal Point Question Sphere",
+  "018662": "4B - Pipe dwelling Lakitu",
+  "018664": "4C - Exploding Block",
+  "018666": "4D - Ground dwelling Monty Mole",
+  "018668": "4E - Ledge dwelling Monty Mole",
+  "01866A": "4F - Jumping Piranha Plant",
+  "01866C": "50 - Jumping Piranha Plant, spit fire",
+  "01866E": "51 - Ninji",
+  "018670": "52 - Moving ledge hole in ghost house",
+  "018672": "53 - Throw block sprite",
+  "018674": "54 - Climbing net door",
+  "018676": "55 - Checkerboard platform, horizontal",
+  "018678": "56 - Flying rock platform, horizontal",
+  "01867A": "57 - Checkerboard platform, vertical",
+  "01867C": "58 - Flying rock platform, vertical",
+  "01867E": "59 - Turn block bridge, horizontal and vertical",
+  "018680": "5A - Turn block bridge, horizontal",
+  "018682": "5B - Brown platform floating in water",
+  "018684": "5C - Checkerboard platform that falls",
+  "018686": "5D - Orange platform floating in water",
+  "018688": "5E - Orange platform, goes on forever",
+  "01868A": "5F - Brown platform on a chain",
+  "01868C": "60 - Flat green switch palace switch",
+  "01868E": "61 - Floating skulls",
+  "018690": "62 - Brown platform, line-guided",
+  "018692": "63 - Checker/brown platform, line-guided",
+  "018694": "64 - Rope mechanism, line-guided",
+  "018696": "65 - Chainsaw, line-guided",
+  "018698": "66 - Upside down chainsaw, line-guided",
+  "01869A": "67 - Grinder, line-guided",
+  "01869C": "68 - Fuzz ball, line-guided",
+  "01869E": "69 - Unused",
+  "0186A0": "6A - Coin game cloud",
+  "0186A2": "6B - Spring board, left wall",
+  "0186A4": "6C - Spring board, right wall",
+  "0186A6": "6D - Invisible solid block",
+  "0186A8": "6E - Dino Rhino",
+  "0186AA": "6F - Dino Torch",
+  "0186AC": "70 - Pokey",
+  "0186AE": "71 - Super Koopa, red cape",
+  "0186B0": "72 - Super Koopa, yellow cape",
+  "0186B2": "73 - Super Koopa, feather",
+  "0186B4": "74 - Mushroom",
+  "0186B6": "75 - Flower",
+  "0186B8": "76 - Star",
+  "0186BA": "77 - Feather",
+  "0186BC": "78 - 1-Up",
+  "0186BE": "79 - Growing Vine",
+  "0186C0": "7A - Firework",
+  "0186C2": "7B - Goal Point",
+  "0186C4": "7C - Princess Peach",
+  "0186C6": "7D - Balloon",
+  "0186C8": "7E - Flying Red coin",
+  "0186CA": "7F - Flying yellow 1-Up",
+  "0186CC": "80 - Key",
+  "0186CE": "81 - Changing item from translucent block",
+  "0186D0": "82 - Bonus game sprite",
+  "0186D2": "83 - Left flying question block",
+  "0186D4": "84 - Flying question block",
+  "0186D6": "85 - Unused (Pretty sure)",
+  "0186D8": "86 - Wiggler",
+  "0186DA": "87 - Lakitu's cloud",
+  "0186DC": "88 - Unused (Winged cage sprite)",
+  "0186DE": "89 - Layer 3 smash",
+  "0186E0": "8A - Bird from Yoshi's house",
+  "0186E2": "8B - Puff of smoke from Yoshi's house",
+  "0186E4": "8C - Fireplace smoke/exit from side screen",
+  "0186E6": "8D - Ghost house exit sign and door",
+  "0186E8": "8E - Invisible \"Warp Hole\" blocks",
+  "0186EA": "8F - Scale platforms",
+  "0186EC": "90 - Large green gas bubble",
+  "0186EE": "91 - Chargin' Chuck",
+  "0186F0": "92 - Splittin' Chuck",
+  "0186F2": "93 - Bouncin' Chuck",
+  "0186F4": "94 - Whistlin' Chuck",
+  "0186F6": "95 - Clapin' Chuck",
+  "0186F8": "96 - Unused (Chargin' Chuck clone)",
+  "0186FA": "97 - Puntin' Chuck",
+  "0186FC": "98 - Pitchin' Chuck",
+  "0186FE": "99 - Volcano Lotus",
+  "018700": "9A - Sumo Brother",
+  "018702": "9B - Hammer Brother",
+  "018704": "9C - Flying blocks for Hammer Brother",
+  "018706": "9D - Bubble with sprite",
+  "018708": "9E - Ball and Chain",
+  "01870A": "9F - Banzai Bill",
+  "01870C": "A0 - Activates Bowser scene",
+  "01870E": "A1 - Bowser's bowling ball",
+  "018710": "A2 - MechaKoopa",
+  "018712": "A3 - Grey platform on chain",
+  "018714": "A4 - Floating Spike ball",
+  "018716": "A5 - Fuzzball/Sparky, ground-guided",
+  "018718": "A6 - HotHead, ground-guided",
+  "01871A": "A7 - Iggy's ball",
+  "01871C": "A8 - Blargg",
+  "01871E": "A9 - Reznor",
+  "018720": "AA - Fishbone",
+  "018722": "AB - Rex",
+  "018724": "AC - Wooden Spike, moving down and up",
+  "018726": "AD - Wooden Spike, moving up/down first",
+  "018728": "AE - Fishin' Boo",
+  "01872A": "AF - Boo Block",
+  "01872C": "B0 - Reflecting stream of Boo Buddies",
+  "01872E": "B1 - Creating/Eating block",
+  "018730": "B2 - Falling Spike",
+  "018732": "B3 - Bowser statue fireball",
+  "018734": "B4 - Grinder, non-line-guided",
+  "018736": "B5 - Sinking fireball used in boss battles",
+  "018738": "B6 - Reflecting fireball",
+  "01873A": "B7 - Carrot Top lift, upper right",
+  "01873C": "B8 - Carrot Top lift, upper left",
+  "01873E": "B9 - Info Box",
+  "018740": "BA - Timed lift",
+  "018742": "BB - Grey moving castle block",
+  "018744": "BC - Bowser statue",
+  "018746": "BD - Sliding Koopa without a shell",
+  "018748": "BE - Swooper bat",
+  "01874A": "BF - Mega Mole",
+  "01874C": "C0 - Grey platform on lava",
+  "01874E": "C1 - Flying grey turnblocks",
+  "018750": "C2 - Blurp fish",
+  "018752": "C3 - Porcu-Puffer fish",
+  "018754": "C4 - Grey platform that falls",
+  "018756": "C5 - Big Boo Boss",
+  "018758": "C6 - Dark room with spot light",
+  "01875A": "C7 - Invisible mushroom",
+  "01875C": "C8 - Light switch block for dark room",
+  "01875E": "Run invisible block / Dino main (bank $03)",
+  "018762": "Return",
+  "018763": "Draw the sprite (standard 16x16 graphics)",
+  "018766": "\\",
+  "018768": "/ Sprites locked: return",
+  "01876A": "\\",
+  "01876C": "|",
+  "01876E": "} Sparkle effect when ([$13] AND $1F) = 0, only if on-screen and not locked (CODE_01B152)",
+  "018770": "/",
+  "018773": "Check contact with Mario",
+  "018776": "No contact: return",
+  "018778": "Erase the sprite (status 0)",
+  "01877B": "\\",
+  "01877D": "} [$1493] = [$0DDA] = $FF: end-of-level timer started",
+  "018780": "/",
+  "018783": "\\",
+  "018785": "/ Music request [$1DFB] = $0B (course clear)",
+  "018788": "Return",
+  "018789": "Run ReznorInit (bank $03)",
+  "01878D": "Return",
+  "01878E": "Run Bnk3CallSprMain",
+  "018792": "Return",
+  "018793": "Run Banzai+Rotating",
+  "018797": "Return",
+  "018798": "Run BubbleSpriteMain",
+  "01879C": "Return",
+  "01879D": "Run HammerBrotherMain",
+  "0187A1": "Return",
+  "0187A2": "Run FlyingPlatformMain",
+  "0187A6": "Return",
+  "0187A7": "Run Return02DA59",
+  "0187AB": "Return",
+  "0187AC": "Run VolcanoLotusMain",
+  "0187B0": "Return",
+  "0187B1": "Run SumoBrotherMain",
+  "0187B5": "Return",
+  "0187B6": "Run SumosLightningMain",
+  "0187BA": "Return",
+  "0187BB": "Run JumpingPiranhaMain",
+  "0187BF": "Return",
+  "0187C0": "Run GasBubbleMain",
+  "0187C4": "Return",
+  "0187C5": "Run SumoBrotherMain (bank $02)",
+  "0187C9": "Return",
+  "0187CA": "Run DirectionCoinsMain",
+  "0187CE": "Return",
+  "0187CF": "Run ExplodingBlkMain",
+  "0187D3": "Return",
+  "0187D4": "Run ScalePlatformMain",
+  "0187D8": "Return",
+  "0187D9": "Run FloatingSkullInit",
+  "0187DD": "Return",
+  "0187DE": "Run FloatingSkullMain",
+  "0187E2": "Return",
+  "0187E3": "Run GhostExitMain",
+  "0187E7": "Return",
+  "0187E8": "Run WarpBlocksMain",
+  "0187EC": "Return",
+  "0187ED": "Run PokeyMain",
+  "0187F1": "Return",
+  "0187F2": "Run SuperKoopaMain",
+  "0187F6": "Return",
+  "0187F7": "Run SuperKoopaMain",
+  "0187FB": "Return",
+  "0187FC": "Run SuperKoopaMain",
+  "018800": "Return",
+  "018801": "Run PipeLakituMain",
+  "018805": "Return",
+  "018806": "Run ChucksMain",
+  "01880A": "Return",
+  "01880B": "Run SwimJumpFishMain",
+  "01880F": "Return",
+  "018810": "Run ChucksRockMain",
+  "018814": "Return",
+  "018815": "Run GrowingPipeMain",
+  "018819": "Return",
+  "01881A": "Run BirdsMain",
+  "01881E": "Return",
+  "01881F": "Run SmokeMain",
+  "018823": "Return",
+  "018824": "Run SideExitMain",
+  "018828": "Return",
+  "018829": "Run WigglerInit",
+  "01882D": "Return",
+  "01882E": "Run WigglerMain",
+  "018832": "Return",
+  "018833": "Run CoinCloudMain",
+  "018837": "Return",
+  "018838": "Run TorpedoTedMain",
+  "01883C": "Return",
+  "01883D": "\\",
+  "01883E": "|",
+  "018840": "|",
+  "018841": "} Data bank = $02",
+  "018842": "Run Layer3SmashMain",
+  "018846": "Restore data bank",
+  "018847": "Return",
+  "018848": "\\",
+  "018849": "|",
+  "01884B": "|",
+  "01884C": "} Data bank = $02",
+  "01884D": "Run PeaBouncerMain",
+  "018851": "Restore data bank",
+  "018852": "Return",
+  "018853": "\\",
+  "018854": "|",
+  "018856": "|",
+  "018857": "} Data bank = $02",
+  "018858": "Run RipVanFishMain",
+  "01885C": "Restore data bank",
+  "01885D": "Return",
+  "01885E": "\\",
+  "01885F": "|",
+  "018861": "|",
+  "018862": "} Data bank = $02",
+  "018863": "Run WallFollowersMain",
+  "018867": "Restore data bank",
+  "018868": "Return",
+  "018869": "Unreferenced RTS (stray)",
+  "01886A": "Run ChucksMain",
+  "01886E": "Return",
+  "01886F": "\\",
+  "018870": "|",
+  "018872": "|",
+  "018873": "} Data bank = $02",
+  "018874": "Run Return02CBFD",
+  "018878": "Restore data bank",
+  "018879": "Return",
+  "01887A": "\\",
+  "01887B": "|",
+  "01887D": "|",
+  "01887E": "} Data bank = $02",
+  "01887F": "Run WingedCageMain",
+  "018883": "Restore data bank",
+  "018884": "Return",
+  "018885": "\\",
+  "018886": "|",
+  "018888": "|",
+  "018889": "} Data bank = $02",
+  "01888A": "Run DolphinMain",
+  "01888E": "Restore data bank",
+  "01888F": "Return",
+  "018890": "Sprite Y position low -= 1",
+  "018892": "Return",
+  "018893": "Run MovingLedgeMain",
+  "018897": "Return",
+  "018898": "\\",
+  "018899": "} Only run when ([X] EOR [$13]) AND 3 = 0, i.e. once every 4 frames",
+  "01889B": "/",
+  "01889D": "Not this frame: return",
+  "01889F": "Y = 9: first sprite slot to check",
+  "0188A1": "\\",
+  "0188A4": "/ Status of slot Y = $0A (kicked shell)?",
+  "0188A6": "Yes: test whether to jump it",
+  "0188A8": "Y--",
+  "0188A9": "Loop for slots 9..0",
+  "0188AB": "Return",
+  "0188AC": "\\",
+  "0188AF": "|",
+  "0188B0": "|",
+  "0188B2": "|",
+  "0188B4": "|",
+  "0188B7": "} [$00]/[$08] = shell X position - $1A (box left edge, low/high)",
+  "0188B9": "/",
+  "0188BB": "\\",
+  "0188BD": "/ [$02] = $44: box width",
+  "0188BF": "\\",
+  "0188C2": "|",
+  "0188C4": "} [$01]/[$09] = shell Y position (box top, low/high)",
+  "0188C7": "/",
+  "0188C9": "\\",
+  "0188CB": "/ [$03] = $10: box height",
+  "0188CD": "Hitbox of this sprite into $04-$07, $0A, $0B",
+  "0188D1": "Test overlap of the two boxes",
+  "0188D5": "No overlap: try the next slot",
+  "0188D7": "This sprite on the ground?",
+  "0188DA": "No: try the next slot",
+  "0188DC": "A = shell direction",
+  "0188DF": "Same direction as this sprite?",
+  "0188E2": "Yes: don't jump, return",
+  "0188E4": "Jump speed:",
+  "0188E6": "Sprite Y speed = $C0 (jump)",
+  "0188E8": "Clear timer [$163E,X]",
+  "0188EB": "Return",
+  "0188EC": "$08 right, $F8 left, $0C fast right, $F4 fast left",
+  "0188F0": "Sprites 00-07 (shelless Koopas, Koopas)",
+  "0188F8": "Sprites 08-0F (para Koopas, Bob-omb, Keyhole, Goomba)",
+  "018900": "Sprites 10-13 (winged Goomba, Buzzy Beetle, unused, Spiny)",
+  "018904": "A = sprites locked flag",
+  "018906": "Not locked: go to the main logic at $018952",
+  "018908": "Timer [$163E,X]",
+  "01890B": "Timer >= $80?",
+  "01890D": "Yes: skip the animation, go to $01891F",
+  "01890F": "Sprites locked?",
+  "018911": "Yes: skip the animation",
+  "018913": "Advance the walk animation (SetAnimationFrame)",
+  "018916": "\\",
+  "018919": "|",
+  "01891A": "} Animation frame [$1602,X] += 5 (select the Koopa frame set without shell)",
+  "01891C": "/",
+  "01891F": "Interact with Mario (CODE_018931)",
+  "018922": "Apply speed to position",
+  "018925": "Sprite X speed = 0",
+  "018927": "On the ground?",
+  "01892A": "No: keep Y speed",
+  "01892C": "Sprite Y speed = 0",
+  "01892E": "Go to sprite interaction and graphics ($018B03)",
+  "018931": "A = sprite number",
+  "018933": "Blue Koopa (02)?",
+  "018935": "No: go to $01893C",
+  "018937": "Blue: plain interaction with Mario",
+  "01893A": "Return",
+  "01893C": "\\",
+  "01893F": "} Set bit 7 of tweaker [$167A,X] for the duration of the interaction",
+  "018940": "/",
+  "018943": "Interact with Mario",
+  "018946": "No contact: skip",
+  "018948": "Contact: Mario kills it (kick sound, knocked away, status 2, points) (CODE_01B12A)",
+  "01894B": "\\",
+  "01894E": "/ Restore bit 7 of tweaker [$167A,X] to 0",
+  "018951": "Return",
+  "018952": "Timer [$163E,X]",
+  "018955": "Zero: go to $0189B4",
+  "018957": "Timer = $80?",
+  "018959": "No: go to $01896B",
+  "01895B": "Face Mario",
+  "01895E": "A = sprite number",
+  "018960": "Blue Koopa (02)?",
+  "018962": "Yes: no hop",
+  "018964": "\\",
+  "018966": "/ Not blue: Y speed = $E0 (small hop)",
+  "018968": "Clear timer [$163E,X]",
+  "01896B": "Timer = 1?",
+  "01896D": "No: go to $018908 (animate and interact)",
+  "01896F": "Y = slot of the sprite to kick [$160E,X]",
+  "018972": "Status of that sprite",
+  "018975": "Status 9 (carryable/stunned)?",
+  "018977": "No: go to $018908",
+  "018979": "\\",
+  "01897B": "|",
+  "01897C": "|",
+  "01897F": "|",
+  "018980": "} Within +-$12 pixels horizontally of that sprite?",
+  "018982": "/",
+  "018984": "No: go to $018908",
+  "018986": "Play the kick sound",
+  "018989": "[$C2,X] = [$1558,X] = $20 (kick pose timers)",
+  "01898C": "Y = this sprite's direction",
+  "01898F": "A = kick speed for that direction ($30 or $D0)",
+  "018992": "Y = slot of the kicked sprite",
+  "018995": "Kicked sprite X speed = A",
+  "018998": "\\",
+  "01899A": "/ Kicked sprite status = $0A (kicked)",
+  "01899D": "\\",
+  "0189A0": "/ Kicked sprite [$C2] = its [$1540]",
+  "0189A3": "\\",
+  "0189A5": "/ Kicked sprite [$1564] = 8 (briefly ignore other sprites)",
+  "0189A8": "\\",
+  "0189AB": "} Tweaker bit 4 (kickable like a shell) clear? Then give it an upward kick",
+  "0189AD": "/",
+  "0189AF": "\\",
+  "0189B1": "/ Unused here: kicked sprite Y speed = $E0",
+  "0189B4": "[$1528,X] flag",
+  "0189B7": "Zero: go to $018A15",
+  "0189B9": "Touching a wall?",
+  "0189BC": "No: keep X speed",
+  "0189BE": "Sprite X speed = 0",
+  "0189C0": "On the ground?",
+  "0189C3": "No: go to $0189E6",
+  "0189C5": "\\",
+  "0189C7": "|",
+  "0189C9": "|",
+  "0189CB": "} [$00] = friction: 2 normally, 1 on slippery levels ([$86] non-zero)",
+  "0189CD": "/",
+  "0189CE": "[$00] = friction",
+  "0189D0": "A = sprite X speed",
+  "0189D2": "|speed| < 2?",
+  "0189D4": "Yes: stopped, go to $0189FD",
+  "0189D6": "Positive: just subtract friction",
+  "0189D8": "\\",
+  "0189D9": "|",
+  "0189DB": "} Negative: speed += 2 * friction (then minus friction below)",
+  "0189DC": "/",
+  "0189DE": "\\",
+  "0189DF": "/ A -= friction",
+  "0189E1": "Store as sprite X speed",
+  "0189E3": "Spawn sliding smoke (CODE_01804E)",
+  "0189E6": "Animation counter [$1570,X] = 0",
+  "0189E9": "Offscreen check, move, animate, ground check (CODE_018B43)",
+  "0189EC": "\\",
+  "0189EE": "|",
+  "0189F0": "|",
+  "0189F2": "} A = tile $E6 for the blue Koopa, $86 for the others",
+  "0189F4": "/",
+  "0189F6": "Y = OAM index of the sprite",
+  "0189F9": "Set the tile number of its first OAM entry",
+  "0189FC": "Return",
+  "0189FD": "On the ground?",
+  "018A00": "No: skip setting the timer",
+  "018A02": "\\",
+  "018A04": "|",
+  "018A06": "} A = $FF wait timer, but $A0 for the blue Koopa",
+  "018A08": "/",
+  "018A0A": "Blue Koopa: A = $A0",
+  "018A0C": "Timer [$163E,X] = A",
+  "018A0F": "Clear [$1528,X]",
+  "018A12": "Go back to the animation code ($018913)",
+  "018A15": "[$1534,X]: kicking something?",
+  "018A18": "No: go to $018A88",
+  "018A1A": "Y = slot of the kicked sprite",
+  "018A1D": "Its status",
+  "018A20": "Still kicked ($0A)?",
+  "018A22": "Yes: follow it",
+  "018A24": "Clear [$1534,X]",
+  "018A27": "Reset the frame and return ($018A62)",
+  "018A29": "Kicked sprite [$1528] = $0A",
+  "018A2C": "Touching a wall?",
+  "018A2F": "No: keep going",
+  "018A31": "\\",
+  "018A33": "} Wall hit: X speed of the kicked sprite and of the Koopa = 0",
+  "018A36": "/",
+  "018A38": "On the ground?",
+  "018A3B": "No: go to $018A62",
+  "018A3D": "\\",
+  "018A3F": "|",
+  "018A41": "} A = 2, or 1 on slippery levels ([$86] non-zero) after the LSR below",
+  "018A43": "/",
+  "018A45": "Slippery: A = 1",
+  "018A46": "[$00] = friction",
+  "018A48": "A = kicked sprite X speed",
+  "018A4B": "|speed| < 2?",
+  "018A4D": "Yes: stopped, go to $018A69",
+  "018A4F": "Positive: subtract friction",
+  "018A51": "\\",
+  "018A52": "|",
+  "018A54": "} Negative: speed += 2 * friction",
+  "018A55": "/",
+  "018A57": "\\",
+  "018A58": "/ Speed -= friction (towards zero)",
+  "018A5A": "Kicked sprite X speed = A",
+  "018A5D": "Koopa X speed = A (slides with it)",
+  "018A5F": "Spawn sliding smoke (CODE_01804E)",
+  "018A62": "Animation counter [$1570,X] = 0",
+  "018A65": "Offscreen check, move, animate (CODE_018B43)",
+  "018A68": "Return",
+  "018A69": "\\",
+  "018A6B": "} Both sprites X speed = 0",
+  "018A6D": "/",
+  "018A70": "Clear [$1534,X]",
+  "018A73": "\\",
+  "018A75": "/ Kicked sprite status = 9 (carryable)",
+  "018A78": "Save the Koopa slot",
+  "018A79": "X = kicked sprite slot",
+  "018A7A": "Set stunned timer for it (CODE_01AA0B)",
+  "018A7D": "Its timer [$1540]",
+  "018A80": "Zero: leave it",
+  "018A82": "\\",
+  "018A84": "/ Non-zero: [$1540] = $FF",
+  "018A87": "X = Koopa slot again",
+  "018A88": "[$C2,X] kick pose timer",
+  "018A8A": "Zero: go to $018A9B",
+  "018A8C": "[$C2,X]--",
+  "018A8E": "Old value >= 8?",
+  "018A90": "Frame 4 (kick pose)",
+  "018A92": "Yes: use 4",
+  "018A94": "No: frame 0",
+  "018A96": "Animation frame [$1602,X] = A",
+  "018A99": "Go to interaction and graphics ($018B00)",
+  "018A9B": "Timer [$1558,X]",
+  "018A9E": "= 1?",
+  "018AA0": "No: normal walking (Spr0to13Main)",
+  "018AA2": "Y = [$1594,X] (sprite it touched)",
+  "018AA5": "Its status",
+  "018AA8": "< 8?",
+  "018AAA": "Yes: not active, return",
+  "018AAC": "Its Y speed",
+  "018AAF": "Moving up: return",
+  "018AB1": "Its sprite number",
+  "018AB4": "Moving coin (21)?",
+  "018AB6": "Yes: return",
+  "018AB8": "Hitbox of this Koopa to $04-$07 (A)",
+  "018ABC": "Save the Koopa slot",
+  "018ABD": "X = slot of the other sprite",
+  "018ABE": "Hitbox of the other sprite to $00-$03 (B)",
+  "018AC2": "Restore the Koopa slot",
+  "018AC3": "Test overlap",
+  "018AC7": "No contact: return",
+  "018AC9": "Contact: erase the Koopa (OffScrEraseSprite)",
+  "018ACC": "Y = [$1594,X]",
+  "018ACF": "\\",
+  "018AD1": "/ Other sprite [$1558] = $10",
+  "018AD4": "\\",
+  "018AD6": "/ Other sprite [$160E] = Koopa's sprite number",
+  "018AD9": "Return",
+  "018ADA": "\\",
+  "018ADB": "|",
+  "018ADD": "|",
+  "018ADE": "} Data bank = $02",
+  "018ADF": "/ Run ExplodeBombRt",
+  "018AE3": "Restore data bank",
+  "018AE4": "Return",
+  "018AE5": "Exploding flag [$1534,X]",
+  "018AE8": "Set: explode",
+  "018AEA": "Fuse timer [$1540,X]",
+  "018AED": "Running: walk normally (Spr0to13Start)",
+  "018AEF": "\\",
+  "018AF1": "/ Sprite status = 9 (stunned/carryable)",
+  "018AF4": "\\",
+  "018AF6": "/ Fuse timer [$1540,X] = $40 frames",
+  "018AF9": "Draw the sprite and return",
+  "018AFC": "Sprites locked?",
+  "018AFE": "No: run the main logic",
+  "018B00": "Interact with Mario",
+  "018B03": "Interact with other sprites",
+  "018B06": "Draw the sprite",
+  "018B09": "Return",
+  "018B0A": "On the ground?",
+  "018B0D": "No: skip setting speed",
+  "018B0F": "Y = sprite number",
+  "018B11": "A = property flags",
+  "018B14": "Bit 0 (fast) into carry",
+  "018B15": "Y = direction",
+  "018B18": "Slow: keep the index",
+  "018B1A": "\\",
+  "018B1B": "/ Fast: index += 2",
+  "018B1C": "A = walking speed for direction/speed",
+  "018B1F": "EOR slope speed offset [$15B8,X]",
+  "018B22": "Carry = signs differ (slope pushes against walking direction)",
+  "018B23": "A = walking speed again",
+  "018B26": "Signs equal: use it unchanged",
+  "018B28": "Opposite:",
+  "018B29": "Add slope offset",
+  "018B2C": "Sprite X speed = A",
+  "018B2E": "Y = direction",
+  "018B31": "A = direction",
+  "018B32": "A = direction + 1 (1 = right wall, 2 = left wall)",
+  "018B33": "AND object contact flags",
+  "018B36": "Wall flags only",
+  "018B38": "Not touching a wall in the walking direction",
+  "018B3A": "Touching: X speed = 0",
+  "018B3C": "Touching a ceiling?",
+  "018B3F": "No: go on",
+  "018B41": "Ceiling: Y speed = 0",
+  "018B43": "Despawn if offscreen",
+  "018B46": "Apply speed to position",
+  "018B49": "Advance the walk animation",
+  "018B4C": "On the ground?",
+  "018B4F": "No: go to SpriteInAir",
+  "018B51": "Set the ground Y speed (0, or $18 on slopes)",
+  "018B54": "[$151C,X] = 0 (clear ledge-turn flag)",
+  "018B57": "Y = sprite number",
+  "018B59": "A = property flags",
+  "018B5C": "Save them",
+  "018B5D": "Bit 2 (follow Mario)",
+  "018B5F": "Not set: skip",
+  "018B61": "A = [$1570,X]",
+  "018B64": "Low 7 bits",
+  "018B66": "Not zero: skip (only turn once per $80 frames)",
+  "018B68": "A = current direction",
+  "018B6B": "Save it",
+  "018B6C": "Face Mario",
+  "018B6F": "A = old direction",
+  "018B70": "Changed direction?",
+  "018B73": "No: skip",
+  "018B75": "Yes: turning timer",
+  "018B77": "[$15AC,X] = 8",
+  "018B7A": "Restore the property flags",
+  "018B7B": "Bit 3 (jump over shells)",
+  "018B7D": "Not set: skip",
+  "018B7F": "Look for shells to jump over",
+  "018B82": "Continue at $018BB0"
+ }
+}
