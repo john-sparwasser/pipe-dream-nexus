@@ -12,6 +12,7 @@ import json
 import re
 import shutil
 import sys
+import textwrap
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -48,6 +49,8 @@ TOKEN = re.compile(r"(?<![\w$#])([A-Za-z_][A-Za-z0-9_+&?]*)")
 ADDR6 = re.compile(r"\$([0-9A-F]{2})([89A-F][0-9A-F]{3})\b")
 BRANCH_TGT = re.compile(r"\[\$([0-9A-F]{4})\]")
 HWREG = re.compile(r"\$((?:21[0-4][0-9A-F])|(?:42[01][0-9A-F])|(?:43[0-7][0-9A-F]))\b")
+CODE_COL = 32   # width of the instruction field; comments start in the same column on every row (~97% of rows fit)
+WRAP = 110      # wrap ;; summary text at this width
 CALLS = {"JSR", "JSL", "JMP", "JML"}
 FLOW_END = {"RTS", "RTL", "RTI", "JMP", "JML", "BRA", "BRL"}
 
@@ -344,8 +347,8 @@ def main():
             return ""
         if ln.kind == "comment":
             return f'<span class=c>{linkify(ln.comment, b)}</span>'
-        if ln.kind == "raw":
-            return html.escape(ln.raw)
+        if ln.kind == "raw":  # stray prose left in the dump: show it as a comment, not bare text
+            return f'<span class=c>; {html.escape(ln.raw.strip())}</span>'
         idattr = f' id="{ln.addr & 0xFFFF:04X}"' if ln.addr is not None else ""
         addr = f'<span class=rom>${b}:{ln.addr & 0xFFFF:04X}</span>' if ln.addr is not None else " " * 8
         code = ln.code.strip()
@@ -358,8 +361,11 @@ def main():
         comment = comments.get((b, ln.addr), ln.comment) if ln.addr is not None and code else ln.comment
         if comment and (b, ln.addr) in comments and not comment.startswith(" "):
             comment = " " + comment
-        com = f'{" " * max(1, 28 - len(code))}<span class=c>;{linkify(comment, b)}</span>' if comment else ""
-        return f'<span{idattr} class=l>{addr}  {(ln.hex or ""):<12}  {codeh}{com}</span>'
+        if not code and not ln.hex:  # label-only row: the section header already shows it
+            return f'<span class=c>;{linkify(comment, b)}</span>' if comment else None
+        vis = len(html.unescape(re.sub(r"<[^>]+>", "", codeh)))  # visible width: links shorten labels
+        com = f'{" " * max(1, CODE_COL - vis)}<span class=c>;{linkify(comment, b)}</span>' if comment else ""
+        return f'<span{idattr} class=l>{addr} {(ln.hex or ""):<12} {codeh}{com}</span>'
 
     named_count = 0
     for b, secs in parsed.items():
@@ -375,16 +381,25 @@ def main():
             summary = ann.get("summary") or []
             if isinstance(summary, str):
                 summary = summary.splitlines()
-            body += [f'<span class=c>;; {linkify(str(l), b)}</span>' for l in summary if str(l).strip()]
+            for l in summary:
+                l = str(l).rstrip()
+                if not l.strip():
+                    continue
+                indent = len(l) - len(l.lstrip())  # keep "Parameters:" style indents, wrap with a hanging one
+                for i, w in enumerate(textwrap.wrap(l.strip(), WRAP - 3 - indent) or [""]):
+                    body.append(f'<span class=c>;; {" " * (indent + (4 if i else 0))}{linkify(w, b)}</span>')
             seen, parts = set(), []
             for cb, ca, cs in callers.get((b, s["anchor"]), []):
                 if (cb, ca) not in seen:
                     seen.add((cb, ca))
                     href = f"#{ca & 0xFFFF:04X}" if cb == b else f"{cb}.html#{ca & 0xFFFF:04X}"
-                    parts.append(f'<a href="{href}">${cb}:{ca & 0xFFFF:04X}</a> ({html.escape(title_of(cb, cs))})')
+                    parts.append(f'<a href="{href}">${cb}:{ca & 0xFFFF:04X}</a>: {html.escape(title_of(cb, cs))}')
             if parts:
-                body.append(f'<span class=c>;; Called by: {", ".join(parts[:12])}{" ..." if len(parts) > 12 else ""}</span>')
-            body += [render_line(ln, b) for ln in s["lines"]] + ["}", ""]
+                body.append('<span class=c>;; Called by:</span>')
+                body += [f'<span class=c>;;     {p}</span>' for p in parts[:12]]
+                if len(parts) > 12:
+                    body.append(f'<span class=c>;;     ... and {len(parts) - 12} more</span>')
+            body += [r for r in (render_line(ln, b) for ln in s["lines"]) if r is not None] + ["}", ""]
         page = (f'{head(f"SMW ${b}")}\n{nav}\n<div id=body><div id=left><pre id=toc>{chr(10).join(toc)}</pre>'
                 f'<pre id=results hidden></pre></div>\n<div id=right><pre>{chr(10).join(body)}</pre></div></div>\n</body></html>')
         (HERE / f"{b}.html").write_text(page, encoding="utf-8")

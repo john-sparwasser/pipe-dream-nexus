@@ -6,7 +6,8 @@ a { color: #080; text-decoration: none; }
 a:hover { text-decoration: underline; }
 #header { display: flex; justify-content: center; align-items: center; gap: .5em; flex-wrap: wrap; height: 2em; font-family: system-ui, sans-serif; }
 #body { display: flex; flex: 1; min-height: 0; overflow: clip; }
-#left { width: 38vw; overflow: auto; border-right: 1px solid #888; }
+#toc, #results { white-space: pre-wrap; overflow-wrap: anywhere; }
+#left { width: 32vw; overflow: auto; border-right: 1px solid #888; }
 #right { flex: 1; min-width: 0; overflow: auto; }
 .page { max-width: 60em; margin: 0 auto; padding: 0 1em; font: 15px/1.5 system-ui, sans-serif; overflow: auto; }
 .page table { border-collapse: collapse; width: 100%; }
