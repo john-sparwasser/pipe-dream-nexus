@@ -1,0 +1,166 @@
+{
+ "addresses": {
+  "00C1": {
+   "name": "Slot minus one of sprite state",
+   "kind": "byte (used as $C1,X once)",
+   "desc": [
+    "Only real use: Yoshi runs away after Mario is hit by a smoke puff ($02:A488 `STA $C1,X`, value 2). X is [$18DF]",
+    "(Yoshi slot plus one), so this probably lands on Yoshi's own $00C2 state entry.",
+    "All other hits are the byte $C1 inside pointer tables (growing vine, Chuck states, scroll routines).",
+    "Values: 2 = Yoshi state 'runs away'."
+   ]
+  },
+  "00C2": {
+   "name": "Sprite state",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "General-purpose state number of each sprite slot, the 'which phase am I in' variable of the sprite's main routine.",
+    "Most sprites dispatch through a pointer table on it and advance it with INC (State++) or reset it with STZ.",
+    "Meaning is per sprite type: Urchin and Big Boo phases, Wall springboard compression (signed), Turn block bridge",
+    "0 = extending / 1 = retracting, Flying question block (wings fall off), Power-up 'clear when free'.",
+    "Slot 0 is $00C2, slot 1 is $00C3, ... slot 11 is $00CD.",
+    "Values: 0 = initial / idle state; higher values = later phases (sprite specific)."
+   ]
+  },
+  "00CB": {
+   "name": "Bonus game flag",
+   "kind": "byte",
+   "desc": [
+    "Set to 1 by the Init bonus game sprite ($01:DE08 `LDA #$01 : STA $CB`). No sample reads it back directly, so it",
+    "is probably a leftover flag. As sprite slot 9 state it is also the $00C2 table element (see $00C2).",
+    "Other hits are the byte $CB inside pointers (level data, cutscene state tables).",
+    "Values: 1 = set by bonus game init."
+   ]
+  },
+  "00CE": {
+   "name": "Sprite data pointer, low byte",
+   "kind": "pointer (24-bit with $00CF, $00D0)",
+   "desc": [
+    "Low byte of the long pointer to the current level's sprite list. Load Level copies the pointer from Ptrs05EC00 into",
+    "$00CE/$00CF and forces the bank byte $00D0 to $07; it then reads the list header with `LDA [$CE]`.",
+    "Spawn-sprite-from-level-data and the Sprite list loop walk it with `LDA [$CE],Y` (format YYYYEEsy per entry in",
+    "horizontal levels). Chocolate Island 2 also rewrites it from its own sprite table.",
+    "Other hits are the byte $CE inside pointer words."
+   ]
+  },
+  "00CF": {
+   "name": "Sprite data pointer, high byte",
+   "kind": "pointer (middle byte of $00CE/$00CF/$00D0)",
+   "desc": [
+    "High byte of the 16-bit address within bank $07 of the level's sprite list. Set with `STA $CF` in Load level",
+    "($05:D8F3) from the second byte of the pointer table entry; read together with $00CE through `[$CE]`.",
+    "Other hits are the byte $CF inside pointer words (cutscene states, Koopa Kid states, level tally)."
+   ]
+  },
+  "00D0": {
+   "name": "Sprite data pointer, bank byte",
+   "kind": "pointer (bank byte of $00CE)",
+   "desc": [
+    "Bank byte of the sprite list pointer. Load level sets it to $07 because all level sprite data lives in bank $07.",
+    "Hits at $05:C6A8 are misdisassembled data (a TRB that is really other code), not a real use.",
+    "Values: $07 = sprite data bank."
+   ]
+  },
+  "00D1": {
+   "name": "Mario X position copy, low",
+   "kind": "word low byte (with $00D2)",
+   "desc": [
+    "Copy of Mario's X position, low byte ([$94] is the original). Game mode 14 (in level, $00:A2F7) copies $0094 into",
+    "$00D1 each frame, in 16-bit mode, so $00D2 receives the high byte. Sprite routines use it as Mario's position",
+    "(Mario horizontal position relative to sprite, Release carried sprite, Lakitu's cloud). Lakitu's cloud copies it",
+    "into the cloud's X low.",
+    "Other hits are the byte $D1 inside pointer words."
+   ]
+  },
+  "00D2": {
+   "name": "Mario X position copy, high",
+   "kind": "word high byte (with $00D1)",
+   "desc": [
+    "High byte of the copy of Mario's X position ([$95] is the original), filled together with $00D1 from game mode 14.",
+    "Read by Mario horizontal position relative to sprite, Release carried sprite and Lakitu's cloud logic.",
+    "Other hits are the byte $D2 inside pointer words (cutscene states, Mario animation routines)."
+   ]
+  },
+  "00D3": {
+   "name": "Mario Y position copy, low",
+   "kind": "word low byte (with $00D4)",
+   "desc": [
+    "Copy of Mario's Y position, low byte ([$96] is the original), written each frame from game mode 14 ($00:A2FB).",
+    "Used by sprites as Mario's Y: sprite-minus-Mario distance for stomp/bounce, Lakitu's cloud",
+    "(cloud Y = Mario Y + offset), pipe animation. Boo main routine temporarily subtracts [$18B6] from it to aim above Mario's feet, then restores it."
+   ]
+  },
+  "00D4": {
+   "name": "Mario Y position copy, high",
+   "kind": "word high byte (with $00D3)",
+   "desc": [
+    "High byte of the copy of Mario's Y position ([$97] is the original), filled with $00D3 from game mode 14.",
+    "Read by the stomp/hurt contact check, position-relative routines and Lakitu; Boo main routine also writes it",
+    "while aiming. Put Mario on Yoshi copies a value into it. Other hits are the byte $D4 inside pointer words."
+   ]
+  },
+  "00D5": {
+   "name": "Wiggler buffer pointer, low",
+   "kind": "pointer (24-bit with $00D6, $00D7)",
+   "desc": [
+    "Low byte of a temporary long pointer to a Wiggler's position history buffer ([$D5],Y). Wiggler init and main",
+    "routine store the sprite's X/Y low into the buffer through it; Wiggler draw reads each segment's history back.",
+    "Set from sprite slot n AND 3 plus $7B at $02:F011. Other hits are the byte $D5 inside level data pointers."
+   ]
+  },
+  "00D6": {
+   "name": "Wiggler buffer pointer, middle",
+   "kind": "pointer (middle byte of $00D5)",
+   "desc": [
+    "High byte of the Wiggler buffer address: $9A plus a per-slot offset (DATA_02EFEE). Set at $02:F022 by Wiggler",
+    "init. With $00D7 = $7F the buffer is at $7F:9A7B + n * $80 (n = slot AND 3). Other hits are the byte $D6 inside",
+    "pointer tables (sprite init/main routines, level data)."
+   ]
+  },
+  "00D7": {
+   "name": "Wiggler buffer pointer, bank",
+   "kind": "pointer (bank byte of $00D5)",
+   "desc": [
+    "Bank byte of the Wiggler buffer pointer; Wiggler init sets it to $7F. Other hits are the byte $D7 inside pointer",
+    "tables (line-guide platform routines, Chocolate Island 2 sprite table, level data).",
+    "Values: $7F = Wiggler history buffer bank."
+   ]
+  },
+  "00D8": {
+   "name": "Sprite Y position low",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "Low byte of each sprite's Y position in the level (RAM_SpriteYLo); [$14D4] is the high byte. Everything that",
+    "moves a sprite adds speed to it; collision, drawing and block interaction read it.",
+    "Slot 0 is $00D8, slot 1 is $00D9, ... slot 11 is $00E3."
+   ]
+  },
+  "00E0": {
+   "name": "Sprite Y position low, slot 8",
+   "kind": "byte (element 8 of the $00D8 table)",
+   "desc": [
+    "Y low of sprite slot 8. Bowser's Mechakoopa drop and ball throw (and phase 9 bounce) write it directly to place",
+    "a newly spawned sprite below Bowser: Bowser Y low + $40 (or +$47), then InitSpriteTables with X = 8.",
+    "Other hits are the byte $E0 inside pointers (Fireball init/main, level data)."
+   ]
+  },
+  "00E4": {
+   "name": "Sprite X position low",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "Low byte of each sprite's X position in the level (RAM_SpriteXLo); [$14E0] is the high byte. Moved by speed,",
+    "read by collision, drawing and block interaction, and by Mario-relative checks.",
+    "Slot 0 is $00E4, slot 1 is $00E5, ... slot 11 is $00EF."
+   ]
+  },
+  "00EC": {
+   "name": "Sprite X position low, slot 8",
+   "kind": "byte (element 8 of the $00E4 table)",
+   "desc": [
+    "X low of sprite slot 8. Bowser's Mechakoopa drop/ball throw and phase 9 bounce write it directly: Bowser X low + 8,",
+    "to place the new sprite, then InitSpriteTables with X = 8. Other hits are the byte $EC inside pointer tables",
+    "(Chocolate Island 2 layer 1 data, overworld event states)."
+   ]
+  }
+ }
+}

@@ -1,0 +1,376 @@
+{
+ "addresses": {
+  "18E7": {
+   "name": "Yoshi has stomp ability",
+   "kind": "flag byte",
+   "desc": [
+    "Non-zero while the Yoshi Mario rides can stomp the ground (the colored-shell power: the stomp effect Yoshi gets from a",
+    "blue shell). Set from bit 0 of A in the Yoshi tongue/spit logic, cleared by the Yoshi sprite main routine, and read",
+    "by Mario's block and slope collision code.",
+    "Values: 0 = no stomp ability, 1 = has stomp ability."
+   ]
+  },
+  "18E8": {
+   "name": "Yoshi growing/swallow timer",
+   "kind": "timer",
+   "desc": [
+    "Countdown that, while non-zero, freezes the other sprites and counts down once per frame in the Yoshi sprite main routine",
+    "(it is copied into the sprites-locked flag and $13FB). Set to $40 when baby Yoshi swallows a caught sprite or is",
+    "stunned/carried; probably the growing/eating pause. Also tested by the item-spawn and Baby Yoshi helper code so they",
+    "skip work while it runs.",
+    "Values: 0 = not running."
+   ]
+  },
+  "18E9": {
+   "name": "Torpedo Ted puff slot",
+   "kind": "index (round-robin, 3..0)",
+   "desc": [
+    "Rotating index into the 4 minor extended sprite slots. When all four slots are busy, the Torpedo Ted trail puff spawner",
+    "decrements it (wrapping to 3) and overwrites that slot instead of failing."
+   ]
+  },
+  "18EA": {
+   "name": "Minor extended sprite X high",
+   "kind": "byte table, one per minor extended sprite slot (index X or Y)",
+   "desc": [
+    "High byte of the X position of minor extended sprites (water splashes, smoke puffs, Boo stream, shattered block pieces,",
+    "bounce sprites). The low byte is in a neighbouring table. Spawners store the parent sprite's or Mario's X high byte",
+    "(plus carry when the low byte is offset); the movers add a sign extension to it when X speed is applied."
+   ]
+  },
+  "18F7": {
+   "name": "Score sprite slot",
+   "kind": "index (round-robin, 5..0)",
+   "desc": [
+    "Rotating index of the next score sprite slot to use. The score spawner decrements it, wraps it back to 5 and uses it",
+    "as Y, so the oldest score sprite is replaced when all slots are full."
+   ]
+  },
+  "18F8": {
+   "name": "Block-hit hitbox timer",
+   "kind": "byte table, indexed by hitbox slot (X or Y)",
+   "desc": [
+    "Frames remaining for a block-hit hitbox (bounce block or cape hit sprite). Set to 6 when the slot is claimed;",
+    "decremented each frame by the bounce block and cape hit routine."
+   ]
+  },
+  "18FC": {
+   "name": "Piranha plant slot index",
+   "kind": "index (round-robin, 7..0)",
+   "desc": [
+    "Rotating index (0-7) used by the Piranha plant routine to pick a slot; decremented and wrapped back to 7."
+   ]
+  },
+  "18FE": {
+   "name": "Diagonal Bullet Bill timer",
+   "kind": "counter",
+   "desc": [
+    "Frame counter for the surrounding/diagonal Bullet Bill generator. Incremented each time the generator runs and reset",
+    "to 0 when it reaches its limit (comment in the source says $A0)."
+   ]
+  },
+  "18FF": {
+   "name": "Shooter slot index",
+   "kind": "index (round-robin, 7..0)",
+   "desc": [
+    "Rotating index used when loading a level shooter sprite into the shooter tables; decremented and wrapped back to 7."
+   ]
+  },
+  "1900": {
+   "name": "Bonus star counter / score value",
+   "kind": "byte (BCD)",
+   "desc": [
+    "Course clear bonus stars remaining, in BCD. The course clear routine tests it for zero and counts it down while",
+    "tallying the bonus, one point of score per step. Also written by the 'set score value from height' routine (bank 07),",
+    "which stores a value here for the score handling to read."
+   ]
+  },
+  "1901": {
+   "name": "Bounce sprite OAM property",
+   "kind": "byte table, indexed by bounce sprite slot",
+   "desc": [
+    "YXPPCCCT property byte for a bounce sprite's tile. Stored when the bounce sprite is set up and ORed with $64 (priority)",
+    "when the bounce sprite is drawn into OAM."
+   ]
+  },
+  "1906": {
+   "name": "Iggy/Larry platform hold timer",
+   "kind": "timer",
+   "desc": [
+    "Frames the tilting platform in Iggy/Larry's room stays stationary at maximum tilt. While non-zero it counts down and",
+    "the platform does not move; when it reaches zero the next phase ($1907) starts."
+   ]
+  },
+  "1907": {
+   "name": "Iggy/Larry platform phase",
+   "kind": "state (0-5)",
+   "desc": [
+    "Current phase of the tilting platform in Iggy/Larry's room. Incremented when a tilt finishes and wrapped to 0 after 5.",
+    "Values: 0-5 select the direction/rate steps in the tilt sequence."
+   ]
+  },
+  "1909": {
+   "name": "Creating/eating block frozen flag",
+   "kind": "flag byte",
+   "desc": [
+    "Set to $FF when the creating/eating block sprite is initialised; cleared by Mario's block collision code. The block",
+    "main routine tests it for $FF (probably 'block is frozen/not yet touched').",
+    "Values: $FF = set at init, 0 = cleared."
+   ]
+  },
+  "190A": {
+   "name": "Fading Boo timer",
+   "kind": "timer",
+   "desc": [
+    "Fade timer for the cluster Boos (ghosts that fade in and out); counts down toward 0 and is read by the cluster sprite",
+    "routine (value is copied to $185E). Cleared when cluster type 5 is spawned."
+   ]
+  },
+  "190B": {
+   "name": "Boo fade level",
+   "kind": "byte",
+   "desc": [
+    "Fade step 0-8 used for the palette transparency effect on fading Boos. Set by the cluster sprite routine; incremented",
+    "by the Big Boo boss states and read to choose the palette entry."
+   ]
+  },
+  "190C": {
+   "name": "Directional coin timer",
+   "kind": "timer",
+   "desc": [
+    "Frame timer started by a directional coin block. While running it counts down in the Directional Coins sprite.",
+    "Also ORed with the P-switch timers when the level-start setup and Mario OAM code decide palette/blue-POW handling.",
+    "Cleared by the spawn sprite from block routine."
+   ]
+  },
+  "190D": {
+   "name": "Bowser Peach-appears flag",
+   "kind": "flag byte",
+   "desc": [
+    "Incremented in Bowser's phase 9 (bounce on the floor); probably flags the Peach-appears event. Read by the Bowser scene",
+    "item box and floor/roof drawing and by the Bowser room palette/lightning flash code, which change behaviour once set."
+   ]
+  },
+  "190E": {
+   "name": "Sprite buoyancy setting",
+   "kind": "bit flags (bits 7-6)",
+   "desc": [
+    "Level header sprite buoyancy bits: the first byte of the level's sprite data AND $C0, stored at level load. Non-zero",
+    "makes sprites float/swim; tested by sprite-block interaction, Cheep Cheep and orange platform init.",
+    "Bits: 7-6 = buoyancy setting from the sprite header."
+   ]
+  },
+  "190F": {
+   "name": "Sprite tweaker byte 190F",
+   "kind": "byte table, indexed by sprite slot",
+   "desc": [
+    "Per-sprite property bits copied from Sprite190FVals when the sprite is spawned. Read by block interaction, Mario-sprite",
+    "contact (stomp/kick/hurt), draw and off-screen checks, Yoshi swallow, fireball hits and level end processing.",
+    "Bit 7 is cleared when a sprite is erased."
+   ]
+  },
+  "191C": {
+   "name": "Yoshi tongue holds key flag",
+   "kind": "flag byte",
+   "desc": [
+    "Incremented in the Yoshi tongue logic when the sprite on the tongue is number $80 (a key); tested by the keyhole",
+    "sprite when Mario is on Yoshi. Cleared by the spawn-item-from-sprite routine (probably when the key is gone)."
+   ]
+  },
+  "191D": {
+   "name": "Sumo Bro flame slot index",
+   "kind": "index (round-robin, 9..0)",
+   "desc": [
+    "Rotating index (0-9) into the extended sprite table used when spawning a Sumo Bro flame; decremented and wrapped to 9",
+    "when all slots are busy."
+   ]
+  },
+  "1921": {
+   "name": "Ending picture step",
+   "kind": "counter",
+   "desc": [
+    "Step number of the Peach ending picture sequence (state 5). Incremented each time the step timer in $1540 expires and",
+    "used as an index into the timing table; the sequence ends at $54. Also read when drawing the Peach message letters."
+   ]
+  },
+  "1925": {
+   "name": "Level mode",
+   "kind": "byte",
+   "desc": [
+    "Level data format/mode: header bits (byte 2 AND $1F) selecting how objects, layers and Map16 are loaded for this level.",
+    "Set to 7 for the overworld map and 0 on the level names/OW border setup. Used by the level object loader and layer",
+    "pointer tables, the Map16 generator and layer 2 updates."
+   ]
+  },
+  "1928": {
+   "name": "Screen counter / scene phase",
+   "kind": "byte (multi-use)",
+   "desc": [
+    "In level load: the current screen number, reset to 0 and incremented when an object starts a new page ($0A bit 7).",
+    "In credits: scene phase/timer (set to $E2 at actor init) used by the background DMA and screen wipe. Mario",
+    "animation B sets it to 7 for the message box freeze."
+   ]
+  },
+  "192A": {
+   "name": "Level entrance type",
+   "kind": "byte",
+   "desc": [
+    "Written to 0 or from other level-load data in the level pointer setup (probably the level entrance type from the",
+    "header); read by the Mario Start! level setup."
+   ]
+  },
+  "192B": {
+   "name": "Sprite graphics set",
+   "kind": "byte",
+   "desc": [
+    "Sprite GFX set number for the level (level header byte 3 AND $0F). Set to fixed values for cutscenes ($14) and the",
+    "overworld ($11). Read by the GFX upload routine and by some sprite graphics."
+   ]
+  },
+  "192D": {
+   "name": "Foreground palette setting",
+   "kind": "byte",
+   "desc": [
+    "Foreground color palette set for the level (level header byte 4 AND 7); fixed values for overworld and cutscenes.",
+    "Read by the level palette loader."
+   ]
+  },
+  "192E": {
+   "name": "Sprite palette setting",
+   "kind": "byte",
+   "desc": [
+    "Sprite palette set for the level ((header byte 4 AND $38) >> 3); 0 or 2 for title/cutscene/overworld. Read by the",
+    "level palette loader."
+   ]
+  },
+  "192F": {
+   "name": "Background color setting",
+   "kind": "byte",
+   "desc": [
+    "Level background color setting (level header byte 2 >> 5); 3 in cutscenes. Read by the level palette loader."
+   ]
+  },
+  "1930": {
+   "name": "Background palette setting",
+   "kind": "byte",
+   "desc": [
+    "Level background palette set (level header byte 1 >> 5); 3 in cutscenes. Read by the level palette loader."
+   ]
+  },
+  "1931": {
+   "name": "Tileset",
+   "kind": "byte",
+   "desc": [
+    "Tileset number of the current level (from the level header; $18 for the cutscene castle, $FF at Mario Start, a fixed",
+    "value per overworld submap). Indexes block interaction, Map16 pointers, palettes, layer 3 and sprite GFX uploads.",
+    "Its partner $1932 is reset together with it."
+   ]
+  },
+  "1933": {
+   "name": "Current layer",
+   "kind": "byte (flag)",
+   "desc": [
+    "Which layer is being processed: 0 = layer 1, 1 = layer 2. The level loader increments it to move to layer 2;",
+    "block collision, block spawning and sprite routines set it from the layer they hit and later read it.",
+    "Values: 0 = layer 1, 1 = layer 2."
+   ]
+  },
+  "1935": {
+   "name": "Extra Mario tile upload flag",
+   "kind": "flag byte",
+   "desc": [
+    "Set to 1 when Mario's extra tile rows at $0BF6 are queued for DMA to VRAM; the Mario graphics DMA routine tests it",
+    "and clears it after uploading.",
+    "Values: 0 = nothing pending, 1 = upload pending."
+   ]
+  },
+  "1938": {
+   "name": "Level sprite load status",
+   "kind": "byte table, indexed by level sprite entry",
+   "desc": [
+    "Per level-data sprite entry: whether it has been spawned. Set (incremented) when the entry is loaded so it is not",
+    "spawned twice; cleared when the sprite is erased off-screen so it can respawn when scrolled back.",
+    "Values: 0 = not loaded, non-zero = loaded."
+   ]
+  },
+  "19B8": {
+   "name": "Screen exit table",
+   "kind": "byte table, one per screen",
+   "desc": [
+    "Destination level number for each screen exit of the level. Filled by the level exit objects and read by the level",
+    "loader to find the target level."
+   ]
+  },
+  "1B78": {
+   "name": "On hardcoded OW path flag",
+   "kind": "flag byte",
+   "desc": [
+    "Overworld flag: cleared when Mario starts walking from a level tile or when he arrives, meaning he is not on a",
+    "hardcoded path.",
+    "Values: 0 = not on a hardcoded path."
+   ]
+  },
+  "1B7A": {
+   "name": "Overworld path step",
+   "kind": "byte",
+   "desc": [
+    "Current step along the hardcoded overworld path; cleared when walking from a level tile and set to the step index",
+    "while Mario walks."
+   ]
+  },
+  "1B80": {
+   "name": "Overworld walk speed set",
+   "kind": "index",
+   "desc": [
+    "Index selecting the overworld walk speed table (1 on tiles with property $14, otherwise 0); read when Mario walks."
+   ]
+  },
+  "1B82": {
+   "name": "Overworld event X position",
+   "kind": "byte",
+   "desc": [
+    "X position of the overworld event effect (low nibble of map position * 16); used to place the smoke puff."
+   ]
+  },
+  "1B83": {
+   "name": "Overworld event Y position",
+   "kind": "byte",
+   "desc": [
+    "Y position of the overworld event effect; used with $1B82 to place the smoke puff."
+   ]
+  },
+  "1B84": {
+   "name": "Overworld event timer",
+   "kind": "timer",
+   "desc": [
+    "Smoke puff timer for the overworld event, set to $28 when it starts and counted down; also used as a tile source",
+    "index when applying edits."
+   ]
+  },
+  "1B86": {
+   "name": "Overworld event state",
+   "kind": "state",
+   "desc": [
+    "State of the overworld event machine (tile changes, smoke puff, fading tiles). Advanced with INC after each stage",
+    "and cleared when the event is applied to the layer 1 map."
+   ]
+  },
+  "1B87": {
+   "name": "Overworld sub-state",
+   "kind": "state",
+   "desc": [
+    "Shared overworld state counter: lives exchange iris state, save prompt/message box state and the game over message",
+    "(incremented on negative lives). Set to 1 to start the player switch and 5 after the level (probably the save prompt)."
+   ]
+  },
+  "1B88": {
+   "name": "Box/iris direction",
+   "kind": "flag byte",
+   "desc": [
+    "Direction/state for the overworld message box (0 = opening/open, 1 = closing), the lives exchange iris and the",
+    "credits screen wipe (1 = grow toward $E0, 0 = shrink to 0).",
+    "Values: 0 = opening or shrinking, 1 = closing or growing."
+   ]
+  }
+ }
+}

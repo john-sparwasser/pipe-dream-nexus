@@ -1,0 +1,260 @@
+{
+ "addresses": {
+  "0086": {
+   "name": "Slippery level flag",
+   "kind": "flag byte",
+   "desc": [
+    "Nonzero on a slippery (ice) level, 0 otherwise. Mario's ground physics and walk animation take a different path",
+    "when it is set, and skid smoke is only spawned when it is 0. Bit 7 is set at level start by ROR when tileset-related",
+    "value $192A is 5. Read by the Mario ground speed, jump start and shelless Koopa routines.",
+    "Values: 0 = normal ground; nonzero = slippery."
+   ]
+  },
+  "0088": {
+   "name": "Mario animation timer",
+   "kind": "timer / scratch byte",
+   "desc": [
+    "Per-animation countdown or index for Mario's scripted animations. Pipe entry/exit (animations 5, 6, 7) set it to the",
+    "pipe timer and count it down by one per frame; the scripted walk (A) uses it as the offset into the input script; the",
+    "cutscene movement (C) uses it as the frames left for the current command. Level start sets it to the Mario Start! timer.",
+    "Set by the pipe-entry collision code ($F40A) and read by the Mario animation routines. Also hit by pointer tables."
+   ]
+  },
+  "0089": {
+   "name": "Mario animation scratch",
+   "kind": "byte, scratch",
+   "desc": [
+    "Second per-animation byte next to $0088. Pipe entry stores the pipe direction index here and the pipe animations read it;",
+    "the scripted walk (animation A) counts the frames remaining in the current script step down in it; level start sets it to 1."
+   ]
+  },
+  "008A": {
+   "name": "General scratch / pointer low",
+   "kind": "scratch (word with $008B, 24-bit pointer with $008C)",
+   "desc": [
+    "Reused by many unrelated routines. As a 24-bit source pointer $008A/$008B/$008C it is the stream read by the GFX",
+    "decompression and ending palette code (byte read through it, bank in $008C). Also a menu checksum sum, file select value,",
+    "a pass counter for overworld tile edits, and the saved Mario Y speed while climbing.",
+    "In Mario collision it is the water contact bits (cleared at the start); bit 0 is set for touching certain tiles."
+   ]
+  },
+  "008B": {
+   "name": "General scratch / tile flags",
+   "kind": "scratch / bit flags",
+   "desc": [
+    "Reused scratch. As the middle byte of the pointer $008A/$008B/$008C it is the high byte of the GFX decompression source.",
+    "In Mario's climbing code it holds the climbable-tile contact flags: Mario animation 0 sets it to $1F when touching all",
+    "climbable tiles, the climb routine reads it, and level collision clears it. The overworld border icon drawer uses it as",
+    "a Y offset (walking poses are drawn 5 pixels higher)."
+   ]
+  },
+  "008C": {
+   "name": "General scratch / bank byte",
+   "kind": "scratch",
+   "desc": [
+    "Reused scratch. As the third byte of the pointer $008A/$008B/$008C it is the bank byte of the GFX decompression source,",
+    "incremented when the pointer wraps past $FFFF. The overworld sprite drawers use it as a tile counter (3 for a 2x2 sprite,",
+    "7 for the 8 tiles of Mario riding Yoshi). Block interaction copies Mario's $0093 into it."
+   ]
+  },
+  "008D": {
+   "name": "General scratch / loop counter",
+   "kind": "scratch",
+   "desc": [
+    "Reused scratch. The ending palette and GFX decompression code counts it down by 2 per step as a loop counter; level",
+    "collision stores a saved copy of the tile-contact flag ([$13EF]) in it, which the block and slope collision then reads."
+   ]
+  },
+  "008E": {
+   "name": "Scratch: layer 2 orientation bits",
+   "kind": "scratch",
+   "desc": [
+    "Reused scratch. Mario level collision stores [$5B] & $82 here (the level orientation bits for layer 2); the block and",
+    "slope collision clears it to 0; the pipe-entry lookup and the Mode 7 boss room platform check also use it."
+   ]
+  },
+  "008F": {
+   "name": "Scratch: was-in-air flag",
+   "kind": "scratch",
+   "desc": [
+    "Reused scratch. Level collision backs up the in-air flag RAM_IsFlying here before it is changed, so the block and slope",
+    "collision and the cape ground pound on landing can tell whether Mario was in the air. The ending decompression stores the",
+    "current command byte here, and the cutscene movement code uses it as the script position (+2 per command)."
+   ]
+  },
+  "0090": {
+   "name": "Mario Y offset in block",
+   "kind": "byte (0-15)",
+   "desc": [
+    "Y offset of Mario's collision point inside its 16x16 block; the block and slope collision uses it as an index when",
+    "looking up slope heights. Written and read in Mario's block and slope collision."
+   ]
+  },
+  "0091": {
+   "name": "Collision point Y offset",
+   "kind": "byte (0-15)",
+   "desc": [
+    "Y offset of the collision point inside its block, computed by the block and slope collision as ($90 + table offset)",
+    "& $0F. Used right afterwards to compare against the slope height."
+   ]
+  },
+  "0092": {
+   "name": "Slope column X offset",
+   "kind": "byte (0-15)",
+   "desc": [
+    "Column inside the block used for slope height lookups: (X offset + 8) & $0F, set in Mario's block and slope collision.",
+    "Also read by the cape ground pound on landing and by the pipe-entry map16 lookup."
+   ]
+  },
+  "0093": {
+   "name": "Block half flag",
+   "kind": "flag byte",
+   "desc": [
+    "0 when Mario's collision point is in the left half of the 16x16 block, 1 for the right half (set by INC in the block and",
+    "slope collision). Block interaction reads it and copies it into $008C."
+   ]
+  },
+  "0094": {
+   "name": "Mario X position, low byte",
+   "kind": "word low byte (high is $0095)",
+   "desc": [
+    "Mario's X position in pixels within the level; $0094 is the low byte and $0095 the high byte (screen number). It is",
+    "read by nearly every routine that needs Mario's location and written whenever Mario is moved: layer 2 displacement,",
+    "platforms and sprites carrying him, pipes, the keyhole, the level start position and wall pushes.",
+    "Read as a 16-bit word together with $0095."
+   ]
+  },
+  "0095": {
+   "name": "Mario X position, high byte",
+   "kind": "word high byte (low is $0094)",
+   "desc": [
+    "High byte of Mario's X position ($0094 is the low byte): the screen number he is on. Platforms, carry sprites and Mega",
+    "Moles add sign extension and carry here when carrying Mario; the level loader sets it from the start position table.",
+    "Sprite spawners copy it as the X high of effects such as bubbles, splashes and smoke."
+   ]
+  },
+  "0096": {
+   "name": "Mario Y position, low byte",
+   "kind": "word low byte (high is $0097)",
+   "desc": [
+    "Mario's Y position in pixels in the level; $0096 is the low byte and $0097 the high byte. Written by the level loader,",
+    "pipes, layer 2 displacement, platforms carrying him and cutscene movement; read by collision, sprite contact and effect",
+    "spawners. Level start sets it to $A0 for the intro."
+   ]
+  },
+  "0097": {
+   "name": "Mario Y position, high byte",
+   "kind": "word high byte (low is $0096)",
+   "desc": [
+    "High byte of Mario's Y position ($0096 is the low byte). Set by the level loader from the start position table; bumped",
+    "by INC when Mario crosses into the next screen in the block collision; copied into spawned score sprites, bubbles, splashes",
+    "and fireballs. Set to 0 in the Mode 7 boss room."
+   ]
+  },
+  "0098": {
+   "name": "Block Y position, low",
+   "kind": "word low byte (high is $0099)",
+   "desc": [
+    "Y position of the block being acted on: the 16x16 block hit by Mario, a sprite, the cape or a bounce sprite. Used to",
+    "generate or change a Map16 tile ($009C), spawn a bounce sprite or smoke, or look up a tile. Low byte; $0099 is the high.",
+    "Block interaction snaps it to the grid by clearing its low nibble."
+   ]
+  },
+  "0099": {
+   "name": "Block Y position, high",
+   "kind": "word high byte (low is $0098)",
+   "desc": [
+    "High byte of the block Y position ($0098 is the low byte), i.e. the screen number for the block. Written by sprite and",
+    "extended sprite routines before a Map16 tile is generated or a bounce sprite is spawned."
+   ]
+  },
+  "009A": {
+   "name": "Block X position, low",
+   "kind": "word low byte (high is $009B)",
+   "desc": [
+    "X position of the block being acted on, low byte ($009B is the high byte). Set from Mario, a sprite, the cape or an",
+    "extended sprite before calling the Map16 tile generation, bounce sprite spawn or smoke routines; block interaction snaps",
+    "it to the 16x16 grid. The bridge breaker mirrors it about the bridge center."
+   ]
+  },
+  "009B": {
+   "name": "Block X position, high",
+   "kind": "word high byte (low is $009A)",
+   "desc": [
+    "High byte of the block X position ($009A is the low byte), i.e. the screen number. Set alongside $009A by the same",
+    "routines; also used as a Flat Palace Switch X high when the switch sprite is spawned."
+   ]
+  },
+  "009C": {
+   "name": "Block to generate",
+   "kind": "byte (Map16 tile id)",
+   "desc": [
+    "Number of the block to generate at the position in $0098-$009B (the generate-tile handlers map it to a Map16 tile).",
+    "Set by the code that needs a block changed: $0D = used block, $02 = empty, $08 = Monty Mole hole, a growing pipe's tile.",
+    "Read by the Map16 tile generation routine."
+   ]
+  },
+  "009D": {
+   "name": "Sprites locked flag",
+   "kind": "flag byte",
+   "desc": [
+    "Freezes the sprites when nonzero: sprite main routines, many timers and extended sprites skip their update while it is",
+    "set. Set during power-up growth, Yoshi growing, pipe and other Mario animations; cleared (0) when the effect ends.",
+    "Read by almost every sprite routine.",
+    "Values: 0 = sprites run; nonzero = sprites frozen."
+   ]
+  },
+  "009E": {
+   "name": "Sprite number",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "The sprite number (type) of each of the 12 sprite slots; it selects which main routine runs for the slot. Set when a",
+    "sprite spawns (e.g. from a block or the level) and rewritten when a sprite changes form (a Koopa becomes its shell).",
+    "Read by contact, interaction and physics routines to tell sprite types apart. Slot N is at $009E+N."
+   ]
+  },
+  "00A5": {
+   "name": "Sprite number, slot 7",
+   "kind": "byte (entry of sprite number table $009E)",
+   "desc": [
+    "Entry for sprite slot 7 of the sprite number table at $009E. Extended sprite smoke, burst and fireball code loads it",
+    "and compares with $A9; the exact purpose is unclear (probably a special-sprite check)."
+   ]
+  },
+  "00A6": {
+   "name": "Sprite number, slot 8",
+   "kind": "byte (entry of sprite number table $009E)",
+   "desc": [
+    "Entry for sprite slot 8 of the sprite number table at $009E. The Bowser fight writes it to create a sprite in that",
+    "slot: $A1 (Mechakoopa) and $7C (Princess Peach) are set here."
+   ]
+  },
+  "00AA": {
+   "name": "Sprite Y speed",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "Vertical speed of each sprite slot, signed (negative is up, positive is down), applied each frame by the sprite position",
+    "routines. Sprites set it to launch a jump ($D8 for Ludwig, $E3 for Blargg, $F8 rise for balloons), apply gravity by",
+    "incrementing it, or cap it at a terminal speed (e.g. $40 for Thwimp). Slot N is at $00AA+N."
+   ]
+  },
+  "00B5": {
+   "name": "Sprite Y speed, slot 11",
+   "kind": "byte (entry of sprite Y speed table $00AA)",
+   "desc": [
+    "Entry for sprite slot 11 of the table at $00AA. The only direct write is STA $B5,X in the extended sprite smoke puff",
+    "routine, where X is an extended sprite index, so the meaning there is something else (a value from a table indexed by",
+    "direction). Other hits are pointer table bytes."
+   ]
+  },
+  "00B6": {
+   "name": "Sprite X speed",
+   "kind": "byte table, one per sprite slot (index X)",
+   "desc": [
+    "Horizontal speed of each sprite slot, signed (negative is left, positive is right), applied each frame by the sprite",
+    "position routines. Sprites set it to walk or jump (Ludwig jump speed, Koopa kicked speed), reverse it (Urchin, wall",
+    "hits), step it toward 0 (Boo, shelled Koopa sliding) or accelerate it. Slot N is at $00B6+N."
+   ]
+  }
+ }
+}

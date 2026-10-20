@@ -1,0 +1,321 @@
+{
+ "addresses": {
+  "0313": {
+   "name": "OAM properties, tile 68",
+   "kind": "byte, OAM buffer (indexed by Y)",
+   "desc": [
+    "Properties byte (YXPPCCCT: flips, priority, palette, name table bit) of OAM entry 68, the fifth entry of the",
+    "$0300 page. Draw routines index it with Y: checkerboard platform, turn block bridge, bonus game block, Mario's",
+    "cape/draw tables each store the tile's properties here; the Fishin' Boo graphics flips it with EOR."
+   ]
+  },
+  "0340": {
+   "name": "OAM X position, entry 80",
+   "kind": "byte, OAM buffer (indexed by Y)",
+   "desc": [
+    "Byte 0 (the X position) of OAM entry 80, the first entry of the $0340 block in the shadow OAM buffer.",
+    "Written with STA,Y by the three-tile rope column sprite and the switch palace ! block particles: screen X",
+    "low byte.",
+    "Copied to the PPU by the NMI OAM DMA."
+   ]
+  },
+  "0341": {
+   "name": "OAM Y position, entry 80",
+   "kind": "byte, OAM buffer (indexed by Y)",
+   "desc": [
+    "Byte 1 (the Y position) of OAM entry 80, the first entry of the $0340 block in the shadow OAM buffer.",
+    "Written with STA,Y by the three-tile rope column sprite and the switch palace ! block particles: screen Y",
+    "low byte.",
+    "Copied to the PPU by the NMI OAM DMA."
+   ]
+  },
+  "0342": {
+   "name": "OAM tile number, entry 80",
+   "kind": "byte, OAM buffer (indexed by Y)",
+   "desc": [
+    "Byte 2 (the tile number) of OAM entry 80, the first entry of the $0340 block in the shadow OAM buffer.",
+    "Written with STA,Y by the three-tile rope column sprite and the switch palace ! block particles: tile;",
+    "the rope column uses DATA_0CD6D6[X], the switch palace ! particles use $E6.",
+    "Copied to the PPU by the NMI OAM DMA."
+   ]
+  },
+  "0343": {
+   "name": "OAM properties, entry 80",
+   "kind": "byte, OAM buffer (indexed by Y)",
+   "desc": [
+    "Byte 3 (the properties) of OAM entry 80, the first entry of the $0340 block in the shadow OAM buffer.",
+    "Written with STA,Y by the three-tile rope column sprite and the switch palace ! block particles:",
+    "properties (flip, priority, palette); the rope column uses [$02].",
+    "Copied to the PPU by the NMI OAM DMA."
+   ]
+  },
+  "0380": {
+   "name": "OAM X position, entry 96",
+   "kind": "byte, OAM buffer (indexed by X)",
+   "desc": [
+    "Byte 0 (the X position) of OAM entry 96, the first entry of the $0380 block in the shadow OAM buffer.",
+    "Written by the cutscene sprite row / 2x2 block drawing, the ending cutscene state sprites, and the carried",
+    "item / Mario exit walk sprite (tile $E4 or $E6, properties $21 or $3F in the samples).",
+    "Copied to the PPU by the NMI OAM DMA."
+   ]
+  },
+  "0381": {
+   "name": "OAM Y position, entry 96",
+   "kind": "byte, OAM buffer (indexed by X)",
+   "desc": [
+    "Byte 1 (the Y position) of OAM entry 96, the first entry of the $0380 block in the shadow OAM buffer.",
+    "Written by the cutscene sprite row / 2x2 block drawing, the ending cutscene state sprites, and the carried",
+    "item / Mario exit walk sprite (tile $E4 or $E6, properties $21 or $3F in the samples).",
+    "Copied to the PPU by the NMI OAM DMA."
+   ]
+  },
+  "0382": {
+   "name": "OAM tile number, entry 96",
+   "kind": "byte, OAM buffer (indexed by X)",
+   "desc": [
+    "Byte 2 (the tile number) of OAM entry 96, the first entry of the $0380 block in the shadow OAM buffer.",
+    "Written by the cutscene sprite row / 2x2 block drawing, the ending cutscene state sprites, and the carried",
+    "item / Mario exit walk sprite (tile $E4 or $E6, properties $21 or $3F in the samples).",
+    "Copied to the PPU by the NMI OAM DMA."
+   ]
+  },
+  "0383": {
+   "name": "OAM properties, entry 96",
+   "kind": "byte, OAM buffer (indexed by X)",
+   "desc": [
+    "Byte 3 (the properties) of OAM entry 96, the first entry of the $0380 block in the shadow OAM buffer.",
+    "Written by the cutscene sprite row / 2x2 block drawing, the ending cutscene state sprites, and the carried",
+    "item / Mario exit walk sprite (tile $E4 or $E6, properties $21 or $3F in the samples).",
+    "Copied to the PPU by the NMI OAM DMA."
+   ]
+  },
+  "0400": {
+   "name": "OAM high table, sprites 0-3",
+   "kind": "byte, packed OAM size bits",
+   "desc": [
+    "First byte of the packed OAM high table: 2 bits per sprite (X bit 8 and size) for sprites 0-3.",
+    "Built each frame from the one-byte-per-sprite entries at $0420-$049F by the 'Pack OAM size bits' routine,",
+    "which ORs $0420,$0421,$0422,$0423 together shifted two bits apart. Game mode 00 and the switch icon code write",
+    "it directly (e.g. $AA = all four sprites 16x16).",
+    "Bits: 0-1 sprite 0, 2-3 sprite 1, 4-5 sprite 2, 6-7 sprite 3 (each: bit 0 = X bit 8, bit 1 = large size)."
+   ]
+  },
+  "0420": {
+   "name": "OAM size bits, sprite 0",
+   "kind": "byte, one per OAM sprite (indexed by X or Y)",
+   "desc": [
+    "Per-sprite size/X-high entry for OAM sprite 0 (OAM entry at $0200); the NMI-bound packed table is $0400-$041F.",
+    "Draw routines store a value here after writing the tile; the packer folds four of these into one $0400 byte.",
+    "Heavily used (about 60 sites): extended, minor extended, score, smoke and bounce sprites all write it.",
+    "Values: 0 = 8x8 on-screen, 2 = 16x16, 3 = 16x16 with X bit 8 set (sprite on the next page)."
+   ]
+  },
+  "0421": {
+   "name": "OAM size bits, sprite 1",
+   "kind": "byte, one per OAM sprite",
+   "desc": [
+    "Per-sprite size/X-high entry for OAM sprite 1 (OAM entry at $0204); the NMI-bound packed table is $0400-$041F.",
+    "Draw routines store a value here after writing the tile; the packer folds four of these into one $0400 byte.",
+    "Values: 0 = 8x8 on-screen, 2 = 16x16, 3 = 16x16 with X bit 8 set (sprite on the next page)."
+   ]
+  },
+  "0422": {
+   "name": "OAM size bits, sprite 2",
+   "kind": "byte, one per OAM sprite",
+   "desc": [
+    "Per-sprite size/X-high entry for OAM sprite 2 (OAM entry at $0208); the NMI-bound packed table is $0400-$041F.",
+    "Draw routines store a value here after writing the tile; the packer folds four of these into one $0400 byte.",
+    "Values: 0 = 8x8 on-screen, 2 = 16x16, 3 = 16x16 with X bit 8 set (sprite on the next page)."
+   ]
+  },
+  "0423": {
+   "name": "OAM size bits, sprite 3",
+   "kind": "byte, one per OAM sprite",
+   "desc": [
+    "Per-sprite size/X-high entry for OAM sprite 3 (OAM entry at $020C); the NMI-bound packed table is $0400-$041F.",
+    "Draw routines store a value here after writing the tile; the packer folds four of these into one $0400 byte.",
+    "Values: 0 = 8x8 on-screen, 2 = 16x16, 3 = 16x16 with X bit 8 set (sprite on the next page)."
+   ]
+  },
+  "0448": {
+   "name": "OAM size bits, sprite 40",
+   "kind": "byte, one per OAM sprite",
+   "desc": [
+    "Per-sprite size/X-high entry for OAM sprite 40 (OAM entry at $02A0); the NMI-bound packed table is",
+    "$0400-$041F.",
+    "Draw routines store a value here after writing the tile; the packer folds four of these into one $0400 byte.",
+    "Written without an index by Bowser overlay (Peach), the border icon/map sprites and the lives exchange",
+    "(large).",
+    "Values: 0 = 8x8 on-screen, 2 = 16x16, 3 = 16x16 with X bit 8 set (sprite on the next page)."
+   ]
+  },
+  "0460": {
+   "name": "OAM size bits, sprite 64",
+   "kind": "byte, one per OAM sprite (indexed by X or Y)",
+   "desc": [
+    "Per-sprite size/X-high entry for OAM sprite 64 (OAM entry at $0300); the NMI-bound packed table is",
+    "$0400-$041F.",
+    "Draw routines store a value here after writing the tile; the packer folds four of these into one $0400 byte.",
+    "Heavily used (about 60 sites): Wiggler, Boo/bat clusters, Bowser scene floor/roof, chained platform, etc.",
+    "Values: 0 = 8x8 on-screen, 2 = 16x16, 3 = 16x16 with X bit 8 set (sprite on the next page)."
+   ]
+  },
+  "0461": {
+   "name": "OAM size bits, sprite 65",
+   "kind": "byte, one per OAM sprite",
+   "desc": [
+    "Per-sprite size/X-high entry for OAM sprite 65 (OAM entry at $0304); the NMI-bound packed table is",
+    "$0400-$041F.",
+    "Draw routines store a value here after writing the tile; the packer folds four of these into one $0400 byte.",
+    "Values: 0 = 8x8 on-screen, 2 = 16x16, 3 = 16x16 with X bit 8 set (sprite on the next page)."
+   ]
+  },
+  "0462": {
+   "name": "OAM size bits, sprite 66",
+   "kind": "byte, one per OAM sprite",
+   "desc": [
+    "Per-sprite size/X-high entry for OAM sprite 66 (OAM entry at $0308); the NMI-bound packed table is",
+    "$0400-$041F.",
+    "Draw routines store a value here after writing the tile; the packer folds four of these into one $0400 byte.",
+    "Values: 0 = 8x8 on-screen, 2 = 16x16, 3 = 16x16 with X bit 8 set (sprite on the next page)."
+   ]
+  },
+  "0463": {
+   "name": "OAM size bits, sprite 67",
+   "kind": "byte, one per OAM sprite",
+   "desc": [
+    "Per-sprite size/X-high entry for OAM sprite 67 (OAM entry at $030C); the NMI-bound packed table is",
+    "$0400-$041F.",
+    "Draw routines store a value here after writing the tile; the packer folds four of these into one $0400 byte.",
+    "Values: 0 = 8x8 on-screen, 2 = 16x16, 3 = 16x16 with X bit 8 set (sprite on the next page)."
+   ]
+  },
+  "0480": {
+   "name": "OAM size bits, sprite 96",
+   "kind": "byte, one per OAM sprite",
+   "desc": [
+    "Per-sprite size/X-high entry for OAM sprite 96 (OAM entry at $0380); the NMI-bound packed table is",
+    "$0400-$041F.",
+    "Draw routines store a value here after writing the tile; the packer folds four of these into one $0400 byte.",
+    "Written with value 2 (16x16) by the cutscene sprite row, ending sprites and the carried item sprite.",
+    "Values: 0 = 8x8 on-screen, 2 = 16x16, 3 = 16x16 with X bit 8 set (sprite on the next page)."
+   ]
+  },
+  "04A0": {
+   "name": "Window HDMA table, left edge",
+   "kind": "byte table, 2 bytes per scanline (left, right)",
+   "desc": [
+    "Window left edge per scanline for the HDMA windowing effect on channel 7 (to $2126). The table has 224",
+    "lines of",
+    "2 bytes: $04A0 + 2*line is the left edge and $04A1 + 2*line is the right edge (WH0/WH1); lines 0-111 are here",
+    "and lines 112-223 continue at $0580. An empty window is left $FF / right $00 (or left 1).",
+    "Written by iris-out/peace pose, dark room spotlight, screen wipes, overworld load and the lives exchange."
+   ]
+  },
+  "04A1": {
+   "name": "Window HDMA table, right edge",
+   "kind": "byte table, 2 bytes per scanline (left, right)",
+   "desc": [
+    "Window right edge per scanline, interleaved with $04A0 (left edge) in the channel 7 HDMA window table.",
+    "Right $FF with left $00 covers the whole line; left $FF with right $00 is empty. Cleared and filled by the",
+    "HDMA window init at $00:9263 and by the iris/spotlight routines (peace pose, dark room, overworld load)."
+   ]
+  },
+  "0590": {
+   "name": "Window table, line 112 area",
+   "kind": "byte table (ROM bytes mixed in), shares $04A0 HDMA table",
+   "desc": [
+    "In RAM, part of the second half of the windowing HDMA table at $0580 (lines 112-223, left/right pairs).",
+    "The lives exchange iris effect stores the window edge here ($0590,X) and at $0548,Y for the upper half.",
+    "The 9 read hits are not RAM: the layer 3 image table in bank 05 contains bytes that look like $0590."
+   ]
+  },
+  "0680": {
+   "name": "Palette upload select",
+   "kind": "byte (0, 3 or 6); doubles as ROM pointer bytes",
+   "desc": [
+    "Requests a CGRAM palette upload in NMI and selects which buffer: 0 = none/queue at $0682, 3 = list at $0905,",
+    "6 = list at $0703. The upload routine ('MoreDMA') clears it to 0 once the records are sent; the level-end",
+    "dithered fade and the overworld submap/event code set 3 or 6; the finish pose code checks for 3.",
+    "Most of the 284 hits are not RAM: the level layer 1 data pointer table in bank 05 holds $06:8000-style",
+    "addresses."
+   ]
+  },
+  "0681": {
+   "name": "Palette queue write index",
+   "kind": "byte, index into $0682 buffer",
+   "desc": [
+    "Offset of the end of the queued CGRAM record list at $0682 (the first free byte). Magikoopa, Big Boo,",
+    "Peach ending fade, Bowser room lightning and overworld sprites read it, append a record at $0682+index and",
+    "advance it. Cleared with the RAM clear and when the upload (option 0) completes."
+   ]
+  },
+  "0682": {
+   "name": "Palette queue first byte count",
+   "kind": "byte (also base of queue records)",
+   "desc": [
+    "First byte of the queued palette upload list: each record is [byte count][CGRAM start index][color data],",
+    "with a count of 0 ending the list. Written (count $10 = 8 colors, 2 = one color) by Magikoopa, Big Boo,",
+    "Peach and",
+    "Bowser room code, indexed by X/Y from $0681; cleared by the uploader when empty.",
+    "Some hits are ROM pointer bytes in the bank 05 level layer 1 data table."
+   ]
+  },
+  "0683": {
+   "name": "Palette queue CGRAM index",
+   "kind": "byte, record header",
+   "desc": [
+    "Second byte of a queued palette record: the CGRAM color index where the colors go. $F0 = last sprite palette,",
+    "$F1 = a single color, 0 = backdrop, $47 and $02 are other overworld/cutscene targets. Written by Magikoopa,",
+    "Big Boo, Peach fade, Bowser room, overworld sprites and the cutscene phase palette loader."
+   ]
+  },
+  "0684": {
+   "name": "Palette queue color data (low)",
+   "kind": "byte, record data",
+   "desc": [
+    "First data byte of a queued palette record (color low byte of the first color; the record continues at $0685,",
+    "$0686...). Written by Bowser room lightning, scene phase palette, Magikoopa, Big Boo, Peach and overworld",
+    "sprites",
+    "through X/Y index from $0681."
+   ]
+  },
+  "0685": {
+   "name": "Palette queue color high byte",
+   "kind": "byte, record data (also ROM bytes)",
+   "desc": [
+    "Second data byte of a queued palette record: the high byte of the first color (with $0684 as the low byte).",
+    "Bowser room lightning zeroes it as the default color 0 before replacing it.",
+    "Some read hits are ROM pointer bytes in the bank 05 level layer 1 data table."
+   ]
+  },
+  "0686": {
+   "name": "Palette queue data / end marker",
+   "kind": "byte, record data (also ROM bytes)",
+   "desc": [
+    "Third data byte of a queued palette record (color 1 low byte); Bowser room lightning writes colors 1-7 here.",
+    "Peach and overworld sprites write 0 at this position (+X) as the end-of-list terminator.",
+    "Most of the 33 hits are not RAM: bank 05 level layer 1/2 data pointer tables hold these bytes."
+   ]
+  },
+  "0691": {
+   "name": "Palette queue second record CGRAM index",
+   "kind": "byte, record header",
+   "desc": [
+    "In the cutscene scene phase palette load, the second queued palette record is placed at $0690: count $0C at",
+    "$0690 and CGRAM index $12 at $0691. In RAM it is just the second byte of whichever record starts at $0690.",
+    "One hit is a ROM pointer byte in the bank 05 level layer 1 data table (level $015)."
+   ]
+  },
+  "0694": {
+   "name": "Palette queue terminator",
+   "kind": "byte, end of record list",
+   "desc": [
+    "A zero here ends the queued CGRAM record list after one record (record size 2 + $10 data bytes from $0682",
+    "+ X).",
+    "Magikoopa and the Big Boo boss store 0 here with STZ,X to terminate the queue.",
+    "One hit is a ROM pointer byte in the bank 05 level layer 1 data table (level $0E3)."
+   ]
+  }
+ }
+}

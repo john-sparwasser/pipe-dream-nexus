@@ -48,6 +48,7 @@ LABEL = re.compile(r"^(\S+?):\s*(.*)$")
 TOKEN = re.compile(r"(?<![\w$#])([A-Za-z_][A-Za-z0-9_+&?]*)")
 ADDR6 = re.compile(r"\$([0-9A-F]{2})([89A-F][0-9A-F]{3})\b")
 BRANCH_TGT = re.compile(r"\[\$([0-9A-F]{4})\]")
+RAMHEX = re.compile(r"(?<![\w$#:;])\$(?:(7[EF]):)?([0-9A-F]{4}|[0-9A-F]{2})(?![0-9A-F:])(?!,s\b)")
 HWREG = re.compile(r"\$((?:21[0-4][0-9A-F])|(?:42[01][0-9A-F])|(?:43[0-7][0-9A-F]))\b")
 CODE_COL = 32   # width of the instruction field; comments start in the same column on every row (~97% of rows fit)
 WRAP = 110      # wrap ;; summary text at this width
@@ -291,19 +292,56 @@ def main():
             return href, base + suffix, (tb, base)
         return None
 
+    # Every WRAM address the code touches, with its call sites (see ramscan.py), plus written descriptions.
+    sys.path.insert(0, str(HERE))  # python -I does not put the script's folder on the path
+    import ramscan
+    ram = ramscan.scan(parsed, lambda b, s: names.get((b, s["anchor"]), {}).get("name") or s["title"])
+    for e in ram.values():
+        for u in e["uses"]:
+            u["comment"] = comments.get((u["bank"], u["addr"]), u["comment"]).strip()
+    ram_ann = ramscan.load_ram_annotations(HERE / "ram")
+    sym_key = {}
+    for key, e in sorted(ram.items()):
+        for sym in e["syms"]:
+            sym_key.setdefault(sym, key)
+
+    def ram_link(key, text):
+        t = ram_ann.get(key, {}).get("name")
+        return f'<a class=ram href="ram.html#{ramscan.anchor(key)}"{f" title={chr(34)}{html.escape(t)}{chr(34)}" if t else ""}>{text}</a>'
+
+    def plain(seg, regs=True, prose=False):
+        """Escape a text segment; link raw RAM addresses ($1540, $0094, $7E:B900) that have a RAM map entry.
+        In prose a bare two-digit $xx is usually a value ("timer = $40"), so only [$xx] is linked there."""
+        seg = html.escape(seg)
+        if not regs:
+            return seg
+
+        def sub(m):
+            key = int(m.group(2), 16) if not m.group(1) else int(m.group(1), 16) << 16 | int(m.group(2), 16)
+            if prose and not m.group(1) and len(m.group(2)) == 2 and m.string[max(0, m.start() - 1):m.start()] != "[":
+                return m.group(0)
+            if key in ram:
+                return ram_link(key, m.group(0))
+            return m.group(0)
+        return RAMHEX.sub(sub, seg)
+
     def linkify(text, bank, regs=False):
         """Escape text; link known labels, RAM_ symbols and $BBAAAA addresses; title hardware registers."""
         pieces, pos = [], 0
         for m in TOKEN.finditer(text):
             tok, rep = m.group(1), None
             if tok.startswith("RAM_"):
-                rep = f'<a class=ram href="ram.html#{html.escape(tok)}">{html.escape(tok)}</a>'
+                base = tok.split("+")[0]
+                key = sym_key.get(base)
+                if key is None:
+                    continue
+                rep = ram_link(key, html.escape(tok))
             elif (r := resolve(tok, bank)):
                 rep = f'<a href="{html.escape(r[0])}">{html.escape(r[1])}</a>'
             if rep:
-                pieces += [html.escape(text[pos:m.start()]), rep]
+                pieces += [plain(text[pos:m.start()], regs), rep]
                 pos = m.end()
-        pieces.append(html.escape(text[pos:]))
+        pieces.append(plain(text[pos:], regs))
         out = "".join(pieces)
         out = ADDR6.sub(lambda m: f'<a href="{m.group(1)}.html#{m.group(2)}">{m.group(0)}</a>'
                         if m.group(1) in parsed and int(m.group(2), 16) in addrs[m.group(1)] else m.group(0), out)
@@ -314,7 +352,6 @@ def main():
 
     # Pass 1: callers of each section, RAM symbol addresses (from the operand bytes).
     callers = defaultdict(list)                 # (bank, anchor) -> [(bank, addr, title)]
-    ram_addr, ram_refs = defaultdict(Counter), defaultdict(list)
     for b, secs in parsed.items():
         for s in secs:
             for ln in s["lines"]:
@@ -326,11 +363,8 @@ def main():
                     continue
                 tok = tm.group(1)
                 if tok.startswith("RAM_"):
-                    ram_refs[tok].append((b, s))
-                    by = ln.hex.split()[1:] if ln.hex else []
-                    if 1 <= len(by) <= 3:
-                        ram_addr[tok][int("".join(reversed(by)), 16)] += 1
-                elif ln.mn in CALLS and ln.addr is not None:
+                    continue
+                if ln.mn in CALLS and ln.addr is not None:
                     r = resolve(tok, b)
                     if r and r[2][1]:
                         callers[r[2]].append((b, ln.addr, s))
@@ -405,25 +439,74 @@ def main():
         (HERE / f"{b}.html").write_text(page, encoding="utf-8")
         print(f"{b}.html  {len(secs):5} sections  {len(page) / 1e6:.1f} MB")
 
-    # RAM map
-    rows = []
-    for sym in sorted(ram_addr, key=lambda s: ram_addr[s].most_common(1)[0][0]):
-        a = ram_addr[sym].most_common(1)[0][0]
-        seen, links = set(), []
-        for rb, rs in ram_refs[sym]:
-            if (rb, rs["anchor"]) not in seen:
-                seen.add((rb, rs["anchor"]))
-                links.append(f'<a href="{rb}.html#{html.escape(rs["anchor"])}">${rb}:{html.escape(title_of(rb, rs))}</a>')
-        rows.append(f'<tr id="{html.escape(sym)}"><td><code>${a:04X}</code></td><td><code>{html.escape(sym)}</code></td>'
-                    f'<td>{len(ram_refs[sym])}</td><td>{" ".join(links[:40])}{" ..." if len(links) > 40 else ""}</td></tr>')
-    unresolved = sorted(s for s in ram_refs if s not in ram_addr)
+    # RAM map: what each address does, then a collapsed list of every instruction that touches it.
+    def desc_html(lines):
+        """Join wrapped description lines into paragraphs; Values:/Bits:/Bit N lines start their own row."""
+        rows, cur = [], []
+        for l in lines:
+            l = str(l).strip()
+            if not l:
+                continue
+            if cur and re.match(r"^(Values?:|Bits?:|Bit \d|\d+\s*[-:=]|\$[0-9A-F]+\s*[-:=]|[-*] )", l):
+                rows.append(cur)
+                cur = [l]
+            else:
+                cur.append(l)
+        if cur:
+            rows.append(cur)
+        return "".join(f"<p>{plain(' '.join(r), prose=True)}</p>" for r in rows)
+
+    def use_row(u):
+        com = re.sub(r"^[\\|/}\s]+", "", u["comment"])
+        mode = {"R": "R", "W": "W", "M": "RW"}[u["mode"]]
+        return (f'<div class=u><span class="m m{mode}">{mode}</span> '
+                f'<a href="{u["bank"]}.html#{u["addr"] & 0xFFFF:04X}">${u["bank"]}:{u["addr"] & 0xFFFF:04X}</a> '
+                f'<code>{html.escape(u["code"])}</code>'
+                f'{f" <span class=c>; {html.escape(com[:110])}</span>" if len(com) >= 4 else ""}</div>')
+
+    ram_blocks, described, page_first = [], 0, {}
+    for key in sorted(ram):
+        e, a = ram[key], ram_ann.get(key, {})
+        uses = e["uses"]
+        modes = Counter(u["mode"] for u in uses)
+        groups = defaultdict(list)
+        for u in sorted(uses, key=lambda u: (u["bank"], u["addr"])):
+            groups[(u["bank"], u["anchor"], u["sec"])].append(u)
+        use_html = "".join(
+            f'<div class=g><a href="{gb}.html#{html.escape(ga)}">${gb} {html.escape(gt)}</a> '
+            f'<span class=n>{len(us)}x</span></div>' + "".join(use_row(u) for u in us)
+            for (gb, ga, gt), us in groups.items())
+        name = a.get("name") or (e["sym"] and e["sym"][4:]) or ""
+        has_desc = bool(a.get("desc"))
+        described += has_desc
+        aliases = "".join(f'<a id="{html.escape(s)}"></a>' for s in sorted(e["syms"]))
+        syms = " ".join(f"<code>{html.escape(s)}</code>" for s in sorted(e["syms"]))
+        counts = ", ".join(f"{modes[m]} {w}" for m, w in (("R", "read"), ("W", "write"), ("M", "read-modify-write")) if modes[m])
+        q = " ".join([ramscan.fmt(key), name, " ".join(e["syms"]), " ".join(a.get("desc", []))]).lower()
+        ram_blocks.append(
+            f'<section class=rv id="{ramscan.anchor(key)}" data-q="{html.escape(q, quote=True)}">{aliases}'
+            f'<h3><a class=addr href="#{ramscan.anchor(key)}">{ramscan.fmt(key)}</a> '
+            f'{f"<b>{html.escape(name)}</b>" if name else ""} {syms}'
+            f'{f" <span class=kind>{html.escape(a["kind"])}</span>" if a.get("kind") else ""}</h3>'
+            + (f'<div class=desc>{desc_html(a["desc"])}</div>' if has_desc else
+               '<p class=none>No description written yet. The instructions below show how it is used.</p>')
+            + f'<details><summary>{len(uses)} use{"s" if len(uses) != 1 else ""} in {len(groups)} '
+              f'routine{"s" if len(groups) != 1 else ""} ({counts})</summary><div class=uses>{use_html}</div></details></section>')
+        page_first.setdefault(key >> 8 if key < 0x10000 else key >> 16, ramscan.anchor(key))
+    jump = " ".join(f'<a href="#{page_first[p]}">${p:02X}{"xx" if p < 0x100 else ":xxxx"}</a>' for p in sorted(page_first))
     (HERE / "ram.html").write_text(f"""{head("SMW RAM map")}
 {nav}
-<div class=page><h1>RAM symbols</h1>
-<p>Every <code>RAM_*</code> symbol the disassembly names, with the address recovered from the instruction bytes and the
-routines that touch it. {len(rows)} symbols.</p>
-<table><tr><th>Address</th><th>Symbol</th><th>Uses</th><th>Referenced from</th></tr>{"".join(rows)}</table>
-{("<p>No address recovered for: " + ", ".join(map(html.escape, unresolved)) + "</p>") if unresolved else ""}
+<div class="page wide"><h1>RAM map</h1>
+<p>Every byte of work RAM the code reads or writes, found from the instruction operands. Each entry says what the address
+holds and how it is used, then lists every instruction that touches it (expand the list; <b>R</b> reads, <b>W</b> writes,
+<b>RW</b> modifies in place). <code>$00xx</code> is the direct page, <code>$0100</code> and up is normal RAM, and
+<code>$7E:</code> and <code>$7F:</code> are the extended areas. {len(ram_blocks)} addresses, {described} with a written description.
+Descriptions were drafted from the code with Claude. Where the code only shows <i>how</i> a byte is used and not <i>why</i>, the
+text says so.</p>
+<p><input id=rq placeholder="Filter by address, name or words (e.g. 1540, timer, yoshi)" size=48 autofocus>
+<span id=rcount></span></p>
+<p class=jump>{jump}</p>
+{"".join(ram_blocks)}
 </div></body></html>""", encoding="utf-8")
 
     # Cross-bank search: fetches every bank page client-side and scans it.
@@ -450,7 +533,7 @@ registers show their name on hover. {nsec} sections across {len(parsed)} banks, 
 <h2>Additional</h2>
 <ul>
 <li><a href="search.html">Search all banks</a> &ndash; one regex across every page</li>
-<li><a href="ram.html">RAM map</a> &ndash; every named RAM symbol, its address and who touches it</li>
+<li><a href="ram.html">RAM map</a> &ndash; what every RAM address does, with the instructions that touch it</li>
 <li><a href="graph.html">Call graph</a> &ndash; interactive graph of the named routines (735 nodes, 53 communities)</li>
 <li>Notes: <a href="{GITHUB}/SYSTEM_NOTES.md">system</a>, <a href="{GITHUB}/SNES_HARDWARE_NOTES.md">SNES hardware</a>,
 <a href="{GITHUB}/LEVEL_PIPELINE_NOTES.md">level pipeline</a>, <a href="{GITHUB}/SPRITE_ENGINE_NOTES.md">sprite engine</a></li>
@@ -465,7 +548,7 @@ were produced with Claude and reviewed against the code. Super Mario World is &c
     g = SRC / "graph" / "graph.html"
     if g.exists():
         shutil.copy(g, HERE / "graph.html")
-    print(f"ram.html  {len(rows)} symbols ({len(unresolved)} unresolved); {named_count} named sections; "
+    print(f"ram.html  {len(ram_blocks)} addresses ({described} described); {named_count} named sections; "
           f"{len(comments)} overlay comments; index.html + search.html written")
 
 

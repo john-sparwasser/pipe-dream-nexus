@@ -1,0 +1,417 @@
+{
+ "addresses": {
+  "1662": {
+   "name": "Sprite tweaker: clipping and death",
+   "kind": "bit flags + 6-bit index, byte table indexed by sprite slot (index X)",
+   "desc": [
+    "First sprite property byte. Its low six bits select the sprite's hitbox (clipping) entry, used by Mario contact,",
+    "sprite-to-sprite contact and Yoshi's tongue. Loaded from a per-sprite-number table at spawn and rewritten by",
+    "sprites that change size (Rex squash sets 0, Pokey sets it from its segment count, Bob-omb explosion $11).",
+    "Values: bits 0-5 = clipping index. Bit 6 = use the shell frame when drawn as a killed sprite ($019B27).",
+    "Bit 5 is tested as 'smushed' by the Pokey/Wiggler code and bit 7 by the bounce-block hit code ($02946E)."
+   ]
+  },
+  "166E": {
+   "name": "Sprite tweaker: interaction and palette",
+   "kind": "bit flags, byte table indexed by sprite slot (index X)",
+   "desc": [
+    "Second sprite property byte, copied from Sprite166EVals[sprite number] when the sprite is spawned and zeroed",
+    "when the slot is cleared. Low nibble holds palette/graphics-page bits; the high bits are interaction switches.",
+    "Bits: Bit 7 = skip sprite-block interaction (checked at $01926A). Bit 6 = no water/lava splash.",
+    "Bit 5 = ignores cape and bounce-block hits. Bit 4 = ignores Mario's fireballs.",
+    "The shell/kicked code sets bits 4-5 ($30) so a kicked sprite cannot be killed by fireballs or the cape."
+   ]
+  },
+  "167A": {
+   "name": "Sprite tweaker: Mario interaction",
+   "kind": "bit flags, byte table indexed by sprite slot (index X)",
+   "desc": [
+    "Third sprite property byte, loaded per sprite number at spawn. Controls how the sprite interacts with Mario,",
+    "attacks and the screen edge. Code changes bits at run time: Boo sets bit 7, bounced/pressed sprites clear it.",
+    "Bits: Bit 7 = do not use the default Mario interaction (sprite handles contact itself). Bit 6 = gives a power-up",
+    "when eaten by Yoshi. Bit 4 = can be kicked like a shell. Bit 2 = keep processing when off-screen.",
+    "Bit 1 = invincible to fireballs/cape/explosion kills."
+   ]
+  },
+  "1686": {
+   "name": "Sprite tweaker: sprite interaction",
+   "kind": "bit flags, byte table indexed by sprite slot (index X or Y)",
+   "desc": [
+    "Fourth sprite property byte, loaded from Sprite1686Vals[sprite number] at spawn and cleared when the slot is",
+    "reset. Mostly settings for how the sprite interacts with other sprites, objects and Yoshi's tongue.",
+    "Bits: Bit 3 = no sprite-to-sprite interaction (the interaction loop ORs the byte for both sprites).",
+    "Bit 2 = object (block) interaction setting, tested in the sprite map16 lookup. Bit 7 is cleared by Bowser's retreat",
+    "state. Other bits are tested by the tongue, stomp and level-end code; meaning not traced here."
+   ]
+  },
+  "1692": {
+   "name": "Sprite memory setting",
+   "kind": "byte",
+   "desc": [
+    "Which sprite-memory (OAM allotment) setting the level uses: the sprite header's low six bits, stored while the",
+    "level loads. Selects a row of tables that decide how many OAM tiles each sprite slot is given and which slots",
+    "the spawn routines may use. Read when sprites are drawn, when finding a free slot and when spawning from level",
+    "data; the line-guide rope/platform init also tests it for non-zero.",
+    "Values: 0 = default setting; other values select the alternative layouts."
+   ]
+  },
+  "1693": {
+   "name": "Map16 tile number under probe",
+   "kind": "byte (scratch result of a tile lookup)",
+   "desc": [
+    "Low byte of the Map16 tile that the last block lookup landed on, as an acts-like tile number. Set by the",
+    "collision lookups for Mario, sprites, bounce/extended sprites, the cape and Yoshi's berry check, then read",
+    "straight away to decide the response (solid, slope, coin, pipe, P-switch swap, ...).",
+    "Only valid right after a lookup; not meaningful between lookups."
+   ]
+  },
+  "1694": {
+   "name": "Slope surface offset",
+   "kind": "byte",
+   "desc": [
+    "Height offset along the surface of a slope tile at the probe point, used by sprite and extended-sprite",
+    "block checks to place the sprite on the slope. Written by the sprite vertical check; cleared to 0 at the",
+    "start of those checks and by the extended-sprite tile collision, meaning 'no offset'.",
+    "Values: 0 = flat / no slope offset."
+   ]
+  },
+  "1695": {
+   "name": "Saved slot or loop counter",
+   "kind": "scratch (byte)",
+   "desc": [
+    "General scratch byte that holds a sprite slot index or loop counter across a call that reuses X or Y.",
+    "Examples: sprite B's slot in the sprite-to-sprite loop, the candidate slot while spawning Baby Yoshi or a block",
+    "item, the probe counter (3..0) of the line-guide engine, Yoshi's tongue loop, extended-sprite slot for the Koopa Kid",
+    "and the hitting sprite for Pokey. Also stores last frame's liquid flags ($164A) in the sprite-block code.",
+    "No single meaning; each routine reloads it right after use."
+   ]
+  },
+  "1697": {
+   "name": "Consecutive stomp counter",
+   "kind": "counter",
+   "desc": [
+    "Counts enemies Mario has stomped (or bounced off) since last touching the ground. The count picks the score",
+    "(100, 200, 400, ... up to 1-UP) and is read when the stomp is rewarded, by Yoshi's stomp shake, Dry Bones and",
+    "the push-out routine. Incremented on each stomp (Wiggler too) and when Mario mounts Yoshi.",
+    "Reset to 0 in Mario's block/slope collision when he lands.",
+    "Values: 0 = no stomps in the current chain."
+   ]
+  },
+  "1698": {
+   "name": "Saved misc sprite slot",
+   "kind": "index (scratch)",
+   "desc": [
+    "Slot index of the minor extended sprite, bounce sprite or smoke sprite currently being processed. The per-frame",
+    "handlers store X here ($028B6E) and reload X from it after calling subroutines that clobber it (draw and",
+    "tile-check helpers). Read only to restore X or Y."
+   ]
+  },
+  "1699": {
+   "name": "Bounce sprite number table",
+   "kind": "byte table, one per bounce sprite slot (index X or Y)",
+   "desc": [
+    "Type of the bounce sprite in each slot (block hit from below, turn block spin, etc.). Written when a block is",
+    "hit, read by the bounce sprite loop and drawing code. Zeroed to free the slot when the block lands.",
+    "Values: 0 = slot free. 1-6 = bounce block routine, 7 = turn block routine."
+   ]
+  },
+  "169D": {
+   "name": "Bounce sprite init flag",
+   "kind": "flag byte table, one per bounce sprite slot (index X)",
+   "desc": [
+    "Zeroed when a bounce sprite is created and incremented by its first frame, so the routine can run its one-time",
+    "set-up (play sound, check things) only once.",
+    "Values: 0 = not yet initialized; nonzero = initialized."
+   ]
+  },
+  "16A1": {
+   "name": "Bounce sprite Y position low",
+   "kind": "byte table, one per bounce sprite slot (index X or Y)",
+   "desc": [
+    "Low byte of the bounce sprite's Y position. Set from the block's position when spawned, moved by its Y speed",
+    "each frame, and used to place the block when it turns back into a tile. Partner of $16A9 (Y high).",
+    "Also reused by the shooter smoke helpers to move extended/smoke sprites."
+   ]
+  },
+  "16A5": {
+   "name": "Bounce sprite X position low",
+   "kind": "byte table, one per bounce sprite slot (index X or Y)",
+   "desc": [
+    "Low byte of the bounce sprite's X position, copied from the block when spawned. Read for drawing and when",
+    "the bounce sprite becomes a block tile again. Partner of $16AD (X high)."
+   ]
+  },
+  "16A9": {
+   "name": "Bounce sprite Y position high",
+   "kind": "byte table, one per bounce sprite slot (index X or Y)",
+   "desc": [
+    "High byte of the bounce sprite's Y position ([$16A1] is the low byte). Adjusted for borrow/carry when the",
+    "position moves and when the sprite is aligned to a tile row before drawing."
+   ]
+  },
+  "16AD": {
+   "name": "Bounce sprite X position high",
+   "kind": "byte table, one per bounce sprite slot (index X or Y)",
+   "desc": [
+    "High byte of the bounce sprite's X position ([$16A5] is the low byte). Set when the block is hit, read by",
+    "the drawing routine and when the block is regenerated."
+   ]
+  },
+  "16B1": {
+   "name": "Bounce sprite Y speed",
+   "kind": "signed byte table, one per bounce sprite slot (index X or Y)",
+   "desc": [
+    "Vertical speed of the bounce sprite. Set at spawn from BlockBounceSpeedY (up for a block hit from below,",
+    "down for a block hit from above) and changed each frame by gravity-like steps from DATA_029072 in the",
+    "turn block routine. Applied to the position by the speed helper at $02B526."
+   ]
+  },
+  "16B5": {
+   "name": "Bounce sprite X speed",
+   "kind": "signed byte table, one per bounce sprite slot (index X or Y)",
+   "desc": [
+    "Horizontal speed of the bounce sprite, from BlockBounceSpeedX at spawn. Nonzero for blocks hit from the side",
+    "(+$40 / $C0). Applied by the bounce block routine each frame."
+   ]
+  },
+  "16C1": {
+   "name": "Bounce sprite resulting tile",
+   "kind": "byte table, one per bounce sprite slot (index X or Y)",
+   "desc": [
+    "Map16 tile the bounce sprite turns back into when its timer runs out (the block's used/empty form, or a",
+    "turned-over block). Stored from $07 at spawn; read by the 'turn bounce sprite into its block' routine.",
+    "Also read by the 'Find bounce sprite slot' check."
+   ]
+  },
+  "16C5": {
+   "name": "Bounce sprite timer",
+   "kind": "timer byte table, one per bounce sprite slot (index X)",
+   "desc": [
+    "Frame countdown for the bounce sprite. Set to 8 frames at spawn and decremented by the loop; when it hits",
+    "zero the sprite stops and the block is regenerated.",
+    "Values: 0 = timer expired."
+   ]
+  },
+  "16C9": {
+   "name": "Bounce sprite direction and layer",
+   "kind": "bit flags + index, byte table indexed by bounce sprite slot (index X or Y)",
+   "desc": [
+    "Packs which way the block was hit with a layer bit. Bits 0-1 index the speed/direction tables",
+    "(DATA_0290D6/DA, BlockBounceSpeedX/Y: hit from below, right, left, above). Bit 7 is tested to choose",
+    "the screen boundary set for drawing and tile placement, probably layer 1 versus layer 2.",
+    "Written at spawn ([$06] ORed with a rotated bit from [$08]); read while the sprite moves, is drawn and is regenerated."
+   ]
+  },
+  "16CD": {
+   "name": "Block-hit hitbox status",
+   "kind": "byte table, one per block-hit hitbox slot (index Y)",
+   "desc": [
+    "Which kind of block-hit hitbox occupies each slot: used to make Mario's bumped block, a Yoshi ground stomp",
+    "or the cape hit adjacent sprites. The value indexes the hitbox size/offset tables when the hitbox is tested.",
+    "Values: 0 = slot free. 1 = block hit by Mario. 2 = Yoshi stomp shake."
+   ]
+  },
+  "16D1": {
+   "name": "Block-hit hitbox X low",
+   "kind": "byte table, one per block-hit hitbox slot (index Y)",
+   "desc": [
+    "Low byte of the hitbox X position of the slot in [$16CD]. Set from the block position or, for a Yoshi stomp,",
+    "from Mario's X ($0094). Partner of $16D5 (X high). Read when testing sprites against the hitbox."
+   ]
+  },
+  "16D5": {
+   "name": "Block-hit hitbox X high",
+   "kind": "byte table, one per block-hit hitbox slot (index Y)",
+   "desc": [
+    "High byte of the hitbox X position ([$16D1] is the low byte). Written when a block hits; read by the",
+    "bounce block and cape hitbox test."
+   ]
+  },
+  "16D9": {
+   "name": "Block-hit hitbox Y low",
+   "kind": "byte table, one per block-hit hitbox slot (index Y)",
+   "desc": [
+    "Low byte of the hitbox Y position. For a Yoshi stomp it is Mario's Y ($0096) + $20 (his feet);",
+    "for a block hit it is the block's Y minus the scroll offset. Partner of $16DD (Y high)."
+   ]
+  },
+  "16DD": {
+   "name": "Block-hit hitbox Y high",
+   "kind": "byte table, one per block-hit hitbox slot (index Y)",
+   "desc": [
+    "High byte of the hitbox Y position ([$16D9] is the low byte). The Yoshi stomp routine first writes",
+    "Mario's X high ($0095) here, which looks like a mistake for $16D5; it is overwritten afterwards."
+   ]
+  },
+  "16E1": {
+   "name": "Score sprite type",
+   "kind": "byte table, one per score sprite slot (index X or Y)",
+   "desc": [
+    "Which number a score sprite shows (10, 20, 40, ... 1000, 1-UP etc.). Written by anything that awards points",
+    "(stomps, coins, block hits, smoke-puff contact), read by the score update to pick the amount to add and the",
+    "tiles to draw.",
+    "Values: 0 = slot free. $0D = 1-UP; other values select an amount in the score table."
+   ]
+  },
+  "16E7": {
+   "name": "Score sprite Y position low",
+   "kind": "byte table, one per score sprite slot (index X or Y)",
+   "desc": [
+    "Low byte of the score sprite's Y position, spawned 8 pixels above the source sprite. The update routine",
+    "decrements it each frame so the number rises. Partner of $16F9 (Y high)."
+   ]
+  },
+  "16ED": {
+   "name": "Score sprite X position low",
+   "kind": "byte table, one per score sprite slot (index X or Y)",
+   "desc": [
+    "Low byte of the score sprite's X position, copied from the source sprite or coin when spawned.",
+    "Partner of $16F3 (X high). Read while the number is positioned on screen."
+   ]
+  },
+  "16F3": {
+   "name": "Score sprite X position high",
+   "kind": "byte table, one per score sprite slot (index X or Y)",
+   "desc": [
+    "High byte of the score sprite's X position ([$16ED] is the low byte). The update routine computes the",
+    "16-bit difference to the screen edge from it to see whether the number is off-screen."
+   ]
+  },
+  "16F9": {
+   "name": "Score sprite Y position high",
+   "kind": "byte table, one per score sprite slot (index X or Y)",
+   "desc": [
+    "High byte of the score sprite's Y position ([$16E7] is the low byte). Borrowed from (decremented) when the",
+    "low byte wraps while the number rises."
+   ]
+  },
+  "16FF": {
+   "name": "Score sprite timer and rise speed",
+   "kind": "byte table, one per score sprite slot (index X or Y)",
+   "desc": [
+    "Set to $30 when a score sprite is created and counted down once per frame. It doubles as the lifetime and the",
+    "rise-speed control: when it reaches 0 the number has finished and the slot ($16E1) is freed.",
+    "Values: $30 = freshly spawned; 0 = finished."
+   ]
+  },
+  "1705": {
+   "name": "Score sprite layer index",
+   "kind": "byte table, one per score sprite slot (index X or Y)",
+   "desc": [
+    "Selects which scroll/layer position the number is drawn relative to. The score update multiplies it by 4 and",
+    "uses it as an index into the screen boundary words ($001A/$001C region), so 0 is layer 1 and the next",
+    "value is layer 2. Written when the score sprite is spawned (0 by block interaction, from the source",
+    "sprite's layer elsewhere); a comment in the source guesses it is a timer, but the code treats it as a layer index."
+   ]
+  },
+  "170B": {
+   "name": "Extended sprite number",
+   "kind": "byte table, one per extended sprite slot (index X or Y)",
+   "desc": [
+    "Type of the extended sprite in each slot: fireballs, smoke puffs, bubbles, hammers, bones, baseballs,",
+    "splashes, sparkles, Reznor fireballs, Wiggler flowers and so on. Written by whatever spawns one, read by the",
+    "extended sprite loop to dispatch to the matching routine and by the cape and fireball hit tests.",
+    "Values: 0 = slot free. 1 = smoke puff, 6 = bone, 7 = lava splash, 8 = Torpedo Ted arm, $0A = cloud game coin,",
+    "$0B = Piranha fireball, $0C = Volcano Lotus fire, $0E = Wiggler flower."
+   ]
+  },
+  "1715": {
+   "name": "Extended sprite Y position low",
+   "kind": "byte table, one per extended sprite slot (index X or Y)",
+   "desc": [
+    "Low byte of the extended sprite's Y position ([$1729] is the high byte). Set at spawn (e.g. Hopping flame,",
+    "Yoshi spit, Mario fireball), moved by Y speed ($173D) each frame, and temporarily saved/restored around",
+    "tile-collision tests."
+   ]
+  },
+  "171F": {
+   "name": "Extended sprite X position low",
+   "kind": "byte table, one per extended sprite slot (index X or Y)",
+   "desc": [
+    "Low byte of the extended sprite's X position ([$1733] is the high byte). Set at spawn, moved by X speed",
+    "($1747) each frame, restored after the hitbox and tile-collision checks."
+   ]
+  },
+  "1729": {
+   "name": "Extended sprite Y position high",
+   "kind": "byte table, one per extended sprite slot (index X or Y)",
+   "desc": [
+    "High byte of the extended sprite's Y position ([$1715] is the low byte). Updated with the carry/borrow",
+    "when the 16-bit position changes and saved/restored around tile checks."
+   ]
+  },
+  "1733": {
+   "name": "Extended sprite X position high",
+   "kind": "byte table, one per extended sprite slot (index X or Y)",
+   "desc": [
+    "High byte of the extended sprite's X position ([$171F] is the low byte). Updated with the carry when the",
+    "X speed is added, and saved/restored around tile checks."
+   ]
+  },
+  "173D": {
+   "name": "Extended sprite Y speed",
+   "kind": "signed byte table, one per extended sprite slot (index X or Y)",
+   "desc": [
+    "Vertical speed of each extended sprite, in 1/16 pixel per frame (positive = down). Set at spawn (Mario",
+    "fireball $30 down, thrown hammer / flower / game coin $D0 up) and changed by gravity: the hammer adds 2 per",
+    "frame up to $40, fireballs bounce using a table. Read by the movement code."
+   ]
+  },
+  "1747": {
+   "name": "Extended sprite X speed",
+   "kind": "signed byte table, one per extended sprite slot (index X or Y)",
+   "desc": [
+    "Horizontal speed of each extended sprite, in 1/16 pixel per frame (positive = right). Set at spawn from",
+    "a direction or table. The smoke trail halves it with an arithmetic shift; the baseball/bone code flips it.",
+    "The unused following-sprite routine misuses it as the index of the sprite to follow."
+   ]
+  },
+  "175B": {
+   "name": "Fireball hit counter",
+   "kind": "counter byte table, one per extended sprite slot (index X)",
+   "desc": [
+    "Counts how many times a Mario fireball has hit a wall. Incremented on the hit; the fireball dissipates when",
+    "it reaches its limit, and the counter is reset to 0 when the fireball bounces off the floor ($02A010)."
+   ]
+  },
+  "1765": {
+   "name": "Extended sprite counter",
+   "kind": "counter byte table, one per extended sprite slot (index X or Y)",
+   "desc": [
+    "Per-type counter. Animation frame counter for Mario's fireball, the small flame remnant, the baseball/bone",
+    "and the hammer/spinner (incremented every frame); bounce counter for Wiggler flowers and cloud-game coins;",
+    "phase counter for water bubbles. Cleared or preset to 1 by the spawners."
+   ]
+  },
+  "176F": {
+   "name": "Extended sprite timer",
+   "kind": "timer byte table, one per extended sprite slot (index X or Y)",
+   "desc": [
+    "General-purpose countdown or lifetime for each extended sprite; meaning per type. Examples: smoke puff $0F",
+    "frames, Yoshi spit fireball $A0, Hopping flame fire $FF, bubble timer/phase 0 at spawn.",
+    "The type's routine counts it down and deletes the sprite ($170B = 0) or changes frames when it expires.",
+    "Values: 0 = timer expired."
+   ]
+  },
+  "1779": {
+   "name": "Extended sprite layer flag",
+   "kind": "flag byte table, one per extended sprite slot (index X or Y)",
+   "desc": [
+    "Whether the extended sprite is behind scenery. Mario's fireball copies Mario's behind-scenery flag at spawn;",
+    "Yoshi's spit sets 0. Collision checks XOR it with the target's flag and skip the contact when they are on",
+    "different layers (fireball vs. sprite, smoke puff vs. Mario, Reznor fireball).",
+    "Values: 0 = in front; nonzero = behind scenery."
+   ]
+  },
+  "1783": {
+   "name": "Shooter type table",
+   "kind": "byte table, one per shooter slot (index X, 8 slots)",
+   "desc": [
+    "Type of each active shooter (Bullet Bill shooter, Torpedo Ted launcher, ...), stored by LoadShooter as the",
+    "level data's shooter sprite number minus $C8 and, per the shooter loop, read as type + 1. The shooter loop",
+    "runs each non-empty slot every frame. LoadShooter looks for a free slot by scanning for a zero entry.",
+    "Values: 0 = slot free."
+   ]
+  }
+ }
+}

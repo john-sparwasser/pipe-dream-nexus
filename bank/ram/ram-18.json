@@ -1,0 +1,370 @@
+{
+ "addresses": {
+  "1B89": {
+   "name": "Iris and box size",
+   "kind": "byte",
+   "desc": [
+    "Size of a growing/shrinking window effect: the iris radius on the Lives exchange screen, the half-width in",
+    "pixels (0-$50) of the message box window, and a scene timer/fade progress in the credits.",
+    "Written by the iris, message box and credits setup code, read by the window HDMA code ($0C wipe update).",
+    "Credits setup stores $E2 here as the starting position of the transition (probably)."
+   ]
+  },
+  "1B8A": {
+   "name": "Lives exchange selected player",
+   "kind": "byte",
+   "desc": [
+    "Player chosen on the Lives exchange screen (the one with more lives). Stored when the iris effect starts and",
+    "compared on later frames to detect whether the selection changed."
+   ]
+  },
+  "1B8B": {
+   "name": "Lives exchange cursor blink timer",
+   "kind": "timer",
+   "desc": [
+    "Cursor blink timer on the Lives exchange screen. Restarted to $18 when the selected player changes."
+   ]
+  },
+  "1B8C": {
+   "name": "Overworld iris direction",
+   "kind": "byte",
+   "desc": [
+    "Direction of the overworld submap-switch iris: 0 = closing, 2 = opening.",
+    "Cleared when Mario starts walking a path ($04:9628); read as an index by the submap switch states.",
+    "Values: 0 = closing, 2 = opening."
+   ]
+  },
+  "1B8D": {
+   "name": "Overworld iris width",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Current width value of the overworld submap-switch iris. Starts at $7000 when Mario walks a path and is",
+    "increased by a width step each frame of the switch. Partner of $1B8F (height)."
+   ]
+  },
+  "1B8F": {
+   "name": "Overworld iris height",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Current height value of the overworld submap-switch iris. Starts at $5400 when Mario walks a path and is",
+    "increased by a height step each frame of the switch. Partner of $1B8D (width)."
+   ]
+  },
+  "1B91": {
+   "name": "Menu cursor blink counter",
+   "kind": "counter",
+   "desc": [
+    "Frame counter incremented by the menu cursor handler; the blinking menu cursor drawing routine reads it to",
+    "decide whether the cursor is visible this frame."
+   ]
+  },
+  "1B92": {
+   "name": "Menu cursor position",
+   "kind": "byte",
+   "desc": [
+    "Current cursor position in the title/file select style menus. Cleared at Nintendo Presents, set to the file",
+    "number in the erase file menu, and used as the index by the cursor handler and the cursor drawing routine."
+   ]
+  },
+  "1B93": {
+   "name": "Secondary exit flag",
+   "kind": "flag byte",
+   "desc": [
+    "Flag from the level's exit data marking that a screen exit is a secondary exit. Stored by the screen exit",
+    "object loader ($0D:A539) and read by the level load code ($05:D7D4, $05:D94C) to choose the entry setup."
+   ]
+  },
+  "1B94": {
+   "name": "Bonus game initialized flag",
+   "kind": "flag byte",
+   "desc": [
+    "Set (incremented) after the bonus game sprite (sprite 82) has run its init, so the init is done only once.",
+    "Also tested by the level-end coin sprite code ($00:FC81)."
+   ]
+  },
+  "1B95": {
+   "name": "Yoshi wings level flag",
+   "kind": "flag byte",
+   "desc": [
+    "Nonzero while Mario is in the Yoshi wings bonus area (a special level reached with Yoshi wings; probably).",
+    "Read by level start, P-switch/fall-off, level load, screen exit and Yoshi code. The wings exit animation",
+    "uses it as a phase: 0 = going out, 2 = coming back."
+   ]
+  },
+  "1B9A": {
+   "name": "Layer 2 scroll trigger",
+   "kind": "flag byte",
+   "desc": [
+    "Background scroll status for the flying grey turnblocks: set to 8 when the movement starts, 0 while not",
+    "yet triggered. Also read by scroll sprite 0B (layer 2 ON/OFF switch). Orange platform writes 1 (unused).",
+    "Values: 0 = not activated, 8 = activated."
+   ]
+  },
+  "1B9B": {
+   "name": "Keep reserve item flag",
+   "kind": "flag byte",
+   "desc": [
+    "Set to 1 by the scripted level-end walk. Mario's death routine keeps the reserve item if it is 1.",
+    "Also read by the extended sprite hitbox code ($02:A768)."
+   ]
+  },
+  "1B9E": {
+   "name": "Overworld flag, purpose unclear",
+   "kind": "flag byte",
+   "desc": [
+    "Set to 1 when Mario starts walking along an overworld path; cleared on overworld load, submap switch",
+    "finish and when a button is pressed on a tile. Purpose unclear from the code."
+   ]
+  },
+  "1BA0": {
+   "name": "Overworld earthquake timer",
+   "kind": "timer",
+   "desc": [
+    "Countdown used by the overworld; set to $FF by an overworld event (earthquake per the original note),",
+    "decremented by the overworld game mode and read by the path-walking code."
+   ]
+  },
+  "1BA1": {
+   "name": "Current level screen number",
+   "kind": "byte",
+   "desc": [
+    "Screen number the level object loader is working on. Set per object, incremented by the rectangle object",
+    "helpers when an object crosses into the next screen, and restored from $1928 afterwards."
+   ]
+  },
+  "1BA2": {
+   "name": "Mode 7 graphics index",
+   "kind": "byte",
+   "desc": [
+    "Index into the Mode 7 boss picture data: kid row + frame + flip for Morton/Roy/Ludwig, $2C for the Reznor",
+    "ring, and set by Bowser. Read by the Mode 7 positioning/tilemap routine."
+   ]
+  },
+  "1BA3": {
+   "name": "Mode 7 pixel plane buffer",
+   "kind": "byte table (index X)",
+   "desc": [
+    "Scratch buffer for Mode 7 boss graphics setup; collects the three bit planes of each pixel into a 3-bit",
+    "color, rotating them down per byte."
+   ]
+  },
+  "1BB2": {
+   "name": "3bpp to 4bpp conversion buffer",
+   "kind": "byte table (index X)",
+   "desc": [
+    "Scratch buffer for the 3bpp to 4bpp graphics converter: planes 0-1 are stored, planes 2-3 are ORed in",
+    "before the tile is uploaded to VRAM."
+   ]
+  },
+  "1BE3": {
+   "name": "Layer 3 type",
+   "kind": "byte",
+   "desc": [
+    "Layer 3 (BG3) type for the level, from DATA_05D78A at level load. Used by the layer 3 setup routines.",
+    "Values: 0 = none."
+   ]
+  },
+  "1BE4": {
+   "name": "Layer 1 update VRAM address high",
+   "kind": "byte",
+   "desc": [
+    "High byte of the VRAM address of the pending layer 1 tile update; 0 = no update. Tested by the NMI",
+    "VRAM uploader; written by the layer 2 stripe builders ($05:8A11) as well. Partner of $1BE5."
+   ]
+  },
+  "1BE5": {
+   "name": "Layer 1 update VRAM address low",
+   "kind": "byte",
+   "desc": [
+    "Low byte of the pending layer 1 update VRAM address. Read by the NMI VRAM uploaders, written by the",
+    "stripe builders. See $1BE4."
+   ]
+  },
+  "1BE6": {
+   "name": "Layer 1 update buffer, left column",
+   "kind": "byte table (index X)",
+   "desc": [
+    "Buffer of tile words for the left column of a layer update; the stripe builder writes word 0",
+    "(top-left 8x8 tile) here, uploaded by NMI. Companion buffer at $1C66."
+   ]
+  },
+  "1C66": {
+   "name": "Layer 1 update buffer, right column",
+   "kind": "byte table (index X)",
+   "desc": [
+    "Second buffer of tile words for a pending layer update, written by the stripe builders at $05:8A7E.",
+    "See $1BE6."
+   ]
+  },
+  "1CE6": {
+   "name": "Layer 2 update VRAM address high",
+   "kind": "byte",
+   "desc": [
+    "High byte of the VRAM address of the pending layer 2 tile update; 0 = no update. Tested by the NMI",
+    "VRAM uploader and written by the layer 2 stripe builders. Partner of $1CE7."
+   ]
+  },
+  "1CE7": {
+   "name": "Layer 2 update VRAM address low",
+   "kind": "byte",
+   "desc": [
+    "Low byte of the pending layer 2 update VRAM address. Read by NMI uploaders, written by the stripe",
+    "builders. See $1CE6."
+   ]
+  },
+  "1CE8": {
+   "name": "Layer 2 update buffer, left column",
+   "kind": "byte table (index X)",
+   "desc": [
+    "Buffer of tile words for the left column of a layer 2 update; word 0 (top-left 8x8 tile) goes here.",
+    "Companion buffer at $1D68."
+   ]
+  },
+  "1D68": {
+   "name": "Layer 2 update buffer, right column",
+   "kind": "byte table (index X)",
+   "desc": [
+    "Second buffer of tile words for a pending layer 2 update, written by the stripe builders ($05:8C52).",
+    "See $1CE8."
+   ]
+  },
+  "1DE8": {
+   "name": "Submap switch state",
+   "kind": "state",
+   "desc": [
+    "Overworld submap switch state. Incremented to advance to the next step (iris, draw map page), cleared",
+    "when the switch finishes. Also read by the NMI handler and the overworld sprite code."
+   ]
+  },
+  "1DE9": {
+   "name": "Scene / event counter",
+   "kind": "counter",
+   "desc": [
+    "Multi-purpose scene counter. In the ending and credits it is the scene number (0 = Lakitu ... 12 = Bowser).",
+    "On the overworld it flags a pending event (0 = none). Also incremented as a transition counter in level",
+    "and cutscene code (probably). Meaning depends on game mode."
+   ]
+  },
+  "1DEA": {
+   "name": "Overworld event number",
+   "kind": "byte",
+   "desc": [
+    "Number of the overworld event being run (for example a path or tile reveal after a level is beaten).",
+    "Read by the event state machine, tile edit, smoke puff and tile replacement routines."
+   ]
+  },
+  "1DEB": {
+   "name": "Overworld event tile index",
+   "kind": "index",
+   "desc": [
+    "Index of the current event tile record. Set to the event's first record, incremented per tile, and",
+    "compared with $1DED to know when the event is finished."
+   ]
+  },
+  "1DED": {
+   "name": "Overworld event end index",
+   "kind": "index",
+   "desc": [
+    "Index one past the last tile record of the current event (the next event's first). See $1DEB."
+   ]
+  },
+  "1DF0": {
+   "name": "Saved overworld X scroll",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Copy of the overworld X scroll saved by the overworld game mode."
+   ]
+  },
+  "1DF2": {
+   "name": "Saved overworld Y scroll",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Copy of the overworld Y scroll saved by the overworld game mode."
+   ]
+  },
+  "1DF5": {
+   "name": "General delay timer",
+   "kind": "timer",
+   "desc": [
+    "Frame countdown used in several non-level modes: Nintendo Presents screen ($40 frames), title demo time",
+    "left, overworld load delay ($B0), level-end walk ($A0). Decremented by those modes."
+   ]
+  },
+  "1DF7": {
+   "name": "Star warp fly speed",
+   "kind": "byte",
+   "desc": [
+    "Speed of the star during the star warp fly-away on the overworld. Cleared when a button is pressed on a",
+    "tile and increased by the level name/star code. Partner of $1DF8."
+   ]
+  },
+  "1DF8": {
+   "name": "Star ground timer",
+   "kind": "timer",
+   "desc": [
+    "Frames the star stays on the ground before flying away on the overworld. Cleared on tile button press,",
+    "incremented by the star code. Partner of $1DF7."
+   ]
+  },
+  "1DF9": {
+   "name": "Sound effect port 1",
+   "kind": "byte (APU I/O mirror)",
+   "desc": [
+    "Sound effect request, port 1 ($2142 mirror). Written with a sound number by Mario, sprites and menus.",
+    "The NMI handler sends it to the APU and clears it. Examples: $0A power-up, $04 pipe, $FF hurry up (music).",
+    "Values: 0 = no request."
+   ]
+  },
+  "1DFA": {
+   "name": "Sound effect port 2",
+   "kind": "byte (APU I/O mirror)",
+   "desc": [
+    "Sound effect request, port 2 ($2141 mirror). Written by Mario (jump, $01), Yoshi mount ($02), grinders",
+    "($04) and others; cleared by the NMI handler after it is sent.",
+    "Values: 0 = no request."
+   ]
+  },
+  "1DFB": {
+   "name": "Music request",
+   "kind": "byte (APU I/O mirror)",
+   "desc": [
+    "Music change request sent to the APU by the NMI handler. Written by level start, power-ups, death, goal",
+    "and boss code. Examples: $09 death, $0B course clear, $0C level clear, $0D star music, $80 fade out.",
+    "Values: 0 = no request."
+   ]
+  },
+  "1DFC": {
+   "name": "Sound effect port 3",
+   "kind": "byte (APU I/O mirror)",
+   "desc": [
+    "Sound effect request, port 3 ($2143 mirror), the most used sound port. Written by Mario, sprites, bosses",
+    "and menus (confirm = 1, door $0F, impact $09). Sent and cleared by the NMI handler.",
+    "Values: 0 = no request."
+   ]
+  },
+  "1E01": {
+   "name": "Debug mode",
+   "kind": "byte",
+   "desc": [
+    "Debug mode cycled by Mario's per-frame handling: 0 -> 1 -> 2 -> 0 each time it is triggered."
+   ]
+  },
+  "1E02": {
+   "name": "Cluster/extended sprite Y low",
+   "kind": "byte table (index X or Y)",
+   "desc": [
+    "Low byte of the Y position of a cluster sprite (or other small sprite slot such as the keyhole and Sumo",
+    "Bro flame). Set at spawn from screen position and data; used by Boo/bat ceiling, 1-up bonus and candle flames.",
+    "Partner high bytes are in separate tables."
+   ]
+  },
+  "1E16": {
+   "name": "Cluster/extended sprite X low",
+   "kind": "byte table (index X or Y)",
+   "desc": [
+    "Low byte of the X position of a cluster sprite or small sprite slot (Sumo Bro flames, keyhole, Boo ring).",
+    "Moved by X speed ($1E66) each frame. Partner of $1E02 (Y low)."
+   ]
+  }
+ }
+}

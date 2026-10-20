@@ -13,6 +13,23 @@ a:hover { text-decoration: underline; }
 .page table { border-collapse: collapse; width: 100%; }
 .page td, .page th { text-align: left; vertical-align: top; padding: .2em .6em; border-bottom: 1px solid #ddd; }
 .c { color: #c00; }
+.page.wide { max-width: 78em; }
+.rv { border-top: 1px solid #ccc; padding: .5em 0 .7em; }
+.rv h3 { margin: 0 0 .3em; font-size: 1rem; }
+.rv .addr { font: 600 1rem ui-monospace, Menlo, Consolas, monospace; }
+.rv .kind { color: #666; font-weight: 400; font-size: .85rem; margin-left: .4em; }
+.rv .desc p { margin: .15em 0; }
+.rv .none { color: #888; font-style: italic; margin: .15em 0; }
+.rv details { margin-top: .35em; }
+.rv summary { cursor: pointer; color: #080; }
+.uses { font: 12.5px/1.4 ui-monospace, Menlo, Consolas, monospace; padding: .3em 0 0 1em; }
+.uses .g { margin-top: .5em; font-weight: 600; font-family: system-ui, sans-serif; font-size: .85rem; }
+.uses .g .n { color: #888; font-weight: 400; }
+.uses .u { white-space: pre-wrap; padding-left: 1em; }
+.m { display: inline-block; min-width: 1.9em; text-align: center; border-radius: 3px; font-size: .75em; color: #fff; }
+.mR { background: #2a7; } .mW { background: #c52; } .mRW { background: #a6a; }
+.jump a { margin-right: .5em; font: 13px ui-monospace, Menlo, Consolas, monospace; }
+.rv.hide { display: none; }
 .op { color: #d70; }
 .d { color: #880; }
 .rom { color: #080; }

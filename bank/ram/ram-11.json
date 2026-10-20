@@ -1,0 +1,384 @@
+{
+ "addresses": {
+  "1422": {
+   "name": "Yoshi coins collected",
+   "kind": "counter (byte)",
+   "desc": [
+    "Number of Yoshi (dragon) coins Mario has collected in the current level. Incremented by the block/coin interaction",
+    "code when a Yoshi coin is touched and read by the status bar to draw the coin count, and by the end-of-level code.",
+    "Values: 0 = none collected."
+   ]
+  },
+  "1423": {
+   "name": "Switch palace color",
+   "kind": "byte (switch palace block/color index)",
+   "desc": [
+    "Which switch palace colour is involved. Cleared to 0 on pipe entry; set by the P-switch/coin tile routine to",
+    "(tile - $EC + 1) when a switch palace tile is processed, and read by Mario block collision to pick the block side.",
+    "Values: 0 = none; 1.. = colour of the switch palace block."
+   ]
+  },
+  "1424": {
+   "name": "Course clear delay timer",
+   "kind": "timer (byte)",
+   "desc": [
+    "Delay used by the level-end tally. The tally state machine loads it with $28 before moving to the next state,",
+    "and course clear state 1 (bonus star line) counts it down. State 2 also reads it to test the saved star count",
+    "(0 = no stars to count up). Both uses are inside the course clear sequence."
+   ]
+  },
+  "1425": {
+   "name": "Bonus game flag",
+   "kind": "flag byte",
+   "desc": [
+    "Probably the 'play the bonus game after this level' flag. The status bar code sets it to $FF when enough bonus",
+    "stars have been collected, and the cutscene level list also sets it to $FF. Level loading, game mode 14 and the",
+    "Mario Start routines read it to decide whether the level ends in the bonus game.",
+    "Values: 0 = no bonus game; $FF = go to the bonus game."
+   ]
+  },
+  "1426": {
+   "name": "Message box trigger",
+   "kind": "byte (message number)",
+   "desc": [
+    "Which message box is showing. Mario's scripted walk and the message-trigger sprites ($19/$3E) increment it to",
+    "start a box, Yoshi sets it to 3 for his message, and the message box routine clears it to 0 when the box closes.",
+    "Values: 0 = no message box; 1 = message 1; 2 = message 2; 3 = Yoshi message."
+   ]
+  },
+  "1427": {
+   "name": "Bowser animation mode",
+   "kind": "byte",
+   "desc": [
+    "Bowser's drawing/animation mode, used by the Mode 7 tilemap routine that positions his picture. Cleared to 0 by",
+    "the main Bowser logic, set by the hurt reaction, and set to 3 while he bounces on the floor (phase 9)."
+   ]
+  },
+  "142A": {
+   "name": "Static camera region centre",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Horizontal centre of the region in which Mario can move without scrolling the screen. Initialised to $0080 at",
+    "level start; L/R scrolling moves it. Scroll code derives the left and right scroll lines [$142C] and [$142E]",
+    "from it. Bit 0 is cleared when L/R scrolling is active (TRB).",
+    "Values: $0080 = default centre."
+   ]
+  },
+  "142C": {
+   "name": "Left scroll line",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Mario's left scroll line, computed each frame as [$142A] - $0C. [$142E] is the right line ([$142A] + $0C).",
+    "Scroll code indexes it with Y (0 = left, 2 = right) to get Mario's distance from the line; zero = no scroll."
+   ]
+  },
+  "1430": {
+   "name": "Sprite tile range, lower bound",
+   "kind": "byte",
+   "desc": [
+    "Set to $C4 by the level buffer setup. Together with $1431 it gives the Map16 tile range that the sprite",
+    "vertical-check and map16 lookup treat specially (probably the slope/solid range sprites react to).",
+    "Read by the sprite check as a lower bound (CMP)."
+   ]
+  },
+  "1431": {
+   "name": "Sprite tile range, upper bound",
+   "kind": "byte",
+   "desc": [
+    "Set to $CA by the level buffer setup. Upper bound (exclusive) of the Map16 tile range tested with $1430;",
+    "the sprite map16 lookup applies the check only if [$1430] <= tile < [$1431]."
+   ]
+  },
+  "1433": {
+   "name": "Iris / keyhole circle size",
+   "kind": "byte",
+   "desc": [
+    "Radius of the circular iris wipe window. The peace pose / iris-out effect sets it to $F0 and shrinks it; the screen",
+    "layer setup stores new sizes; the iris half-width lookup and the keyhole code in the per-frame Mario state read it."
+   ]
+  },
+  "1434": {
+   "name": "Keyhole timer",
+   "kind": "timer (byte)",
+   "desc": [
+    "Keyhole animation timer. The keyhole sprite sets it to $30 for the exit animation; the per-frame Mario state code",
+    "stores into it and counts it, and level start tests it (with $13CF) before choosing the setup path."
+   ]
+  },
+  "1436": {
+   "name": "Keyhole X position, low byte",
+   "kind": "byte",
+   "desc": [
+    "Low byte of the keyhole X position (RAM_KeyHolePos1), written by the keyhole sprite ($01:E227) and by Mario",
+    "animation 0 (together with $14B4). High byte is $1437. Reused as the next free particle slot by the switch",
+    "palace ! block particles routine, and written by the Mode 7 boss room platform code."
+   ]
+  },
+  "1437": {
+   "name": "Keyhole X position, high byte",
+   "kind": "byte",
+   "desc": [
+    "High byte of the keyhole X position ([$1436] is the low byte), set by the keyhole sprite. Also reused as a spawn",
+    "timer by the switch palace ! block particle routine."
+   ]
+  },
+  "1438": {
+   "name": "Keyhole Y position, low byte",
+   "kind": "byte",
+   "desc": [
+    "Low byte of the keyhole Y position (RAM_KeyHolePos2), written by the keyhole sprite and Mario animation 0 (with",
+    "$14B6). High byte is $1439. The switch palace ! block particle routine reuses it to save the OAM offset."
+   ]
+  },
+  "1439": {
+   "name": "Keyhole Y position, high byte",
+   "kind": "byte",
+   "desc": [
+    "High byte of the keyhole Y position ([$1438] is the low byte), set by the keyhole sprite. Also reused as the",
+    "effect phase by the switch palace ! block particle routine."
+   ]
+  },
+  "143A": {
+   "name": "Mario Start graphics upload flag",
+   "kind": "flag byte",
+   "desc": [
+    "Set to 1 by level start setup when the Mario Start! graphics are waiting to be sent by DMA; cleared to 0 in game",
+    "mode 12. The NMI handler and NMI tail read it to decide whether to do that upload.",
+    "Values: 0 = nothing to upload; 1 = upload pending."
+   ]
+  },
+  "143C": {
+   "name": "Message animation position",
+   "kind": "byte",
+   "desc": [
+    "Animation position of the Mario Start / death message. The death routine sets it to $C0; game mode 11 reads it",
+    "and updates it (value must be divisible by 4 per the source comment)."
+   ]
+  },
+  "143E": {
+   "name": "Scroll sprite / cutscene number",
+   "kind": "byte",
+   "desc": [
+    "Shared byte. In levels it is the number of the active layer 2 scroll routine (RAM_ScrollSprNum), cleared at level",
+    "load and set by 'start a scroll command sprite'. In the cutscene/ending code it is the sub-scene number, stepped",
+    "to the next scene by the scripted cutscene movement."
+   ]
+  },
+  "143F": {
+   "name": "Scroll command / cutscene timer",
+   "kind": "timer (byte)",
+   "desc": [
+    "Shared byte. In level scroll code, non-zero means a scroll command is already active (a new one is skipped).",
+    "In cutscene code it is a frame countdown (animation timer, frame duration, scene wait) decremented per frame",
+    "and acted on at zero. Cleared at level load."
+   ]
+  },
+  "1440": {
+   "name": "Auto-scroll command / cutscene frame",
+   "kind": "byte (shared meaning)",
+   "desc": [
+    "Shared byte. In level scroll sprite code it is the current auto-scroll command for layer 1 ([$1441] is the layer 2",
+    "command); the path scroll sets [$1440]/[$1441] from a table. Also indexed as [$1440+X] for the layer 2 ON/OFF",
+    "switch stage index. In cutscene code it is an animation frame or timer ($FF = hidden/first frame)."
+   ]
+  },
+  "1441": {
+   "name": "Layer 2 scroll command / timer",
+   "kind": "byte (shared meaning)",
+   "desc": [
+    "In scroll sprite code: the layer 2 command (companion of $1440), the shake timer for layer 3 handlers, the number",
+    "of entries for the layer 2 smash. In cutscenes: a countdown ($30 loaded, decremented by the colour flash state)."
+   ]
+  },
+  "1442": {
+   "name": "Scroll step / cutscene state",
+   "kind": "byte table (index = layer offset) or byte",
+   "desc": [
+    "Scroll sprites index it per layer (X = 0 layer 1, 4 layer 2) as the current path node or stage, incremented as each",
+    "segment finishes. In cutscene and credits code it is the scene state/substate, incremented to advance",
+    "the scene. Cleared at the start of a scene."
+   ]
+  },
+  "1443": {
+   "name": "Text timer / scroll state",
+   "kind": "byte (shared meaning)",
+   "desc": [
+    "In the cutscene main entry it is the text timer (counts down; bits 7-5 select the text line). In the layer 2 smash",
+    "scroll sprite it is added to [$1442] as a step index into the smash tables, and the ON/OFF switch stores its new",
+    "state here. Also set to $FF by the rising/sideways sprites near Mario."
+   ]
+  },
+  "1444": {
+   "name": "Path segments left / flag",
+   "kind": "byte table (index = layer offset) or flag",
+   "desc": [
+    "Scroll sprites: number of path segments left for layer 1 (and [$1445] for layer 2), also an offset to the first",
+    "table entry. Pause timer for the smash sprite. Overworld: non-zero when a tile step has started. Cutscenes: an",
+    "object-active flag (1 = spawn the falling object)."
+   ]
+  },
+  "1445": {
+   "name": "Path segments left / step counter",
+   "kind": "byte (shared meaning)",
+   "desc": [
+    "Scroll sprites: segments left for layer 2, number of range entries, wait timer for the ON/OFF switch. Cutscenes and",
+    "Mario cutscene animation: a step counter, incremented by script command $21 or counted down as an animation tick."
+   ]
+  },
+  "1446": {
+   "name": "Layer scroll speed X / active flag",
+   "kind": "byte table (index = layer offset, X = 0 or 4)",
+   "desc": [
+    "Horizontal scroll speed word for layers 1/2 used by the scroll sprites, whose sub-pixel accumulator is [$144E]; cleared",
+    "when a path ends. Credits scroll stores speeds here. In cutscenes it is a non-zero flag for the rope column and the",
+    "rising sprite being active."
+   ]
+  },
+  "1447": {
+   "name": "Cutscene fall speed / timer",
+   "kind": "byte",
+   "desc": [
+    "Cutscene object timer and Y speed: the castle scene increases the fall speed by 2, the effects state decrements it,",
+    "and the frame sequence steps it to the next table entry on expiry. Cleared by the scene step routine."
+   ]
+  },
+  "1448": {
+   "name": "Layer Y scroll speed",
+   "kind": "byte table (index = layer offset, X = 0 or 4)",
+   "desc": [
+    "Vertical scroll speed for layer 1 (X = 0) and layer 2 (X = 4) set by the scroll sprite code; cleared on init. Sub-pixel",
+    "accumulator is [$1450]. Layer 3 handlers copy the layer 1 speed here."
+   ]
+  },
+  "1449": {
+   "name": "Rope column pause timer",
+   "kind": "timer (byte)",
+   "desc": [
+    "Pause timer for the three-tile sprite and rope column in the cutscene code; counted down each frame, and the routine",
+    "returns while it is non-zero."
+   ]
+  },
+  "144A": {
+   "name": "Scroll / cutscene object index",
+   "kind": "byte",
+   "desc": [
+    "Cleared by the scroll sprite init routines. Read by the layer 2 ON/OFF switch, and by cutscene code as an index X",
+    "for the carried item sprite and the accessory/rope column draw. Exact purpose differs per user (probably a sprite",
+    "or object index)."
+   ]
+  },
+  "144C": {
+   "name": "Layer 2 Y speed",
+   "kind": "byte",
+   "desc": [
+    "Layer 2 vertical scroll speed (layer 1 uses [$1448]). Cleared by scroll sprites (ON/OFF switch, sink or rise,",
+    "init, and path scroll). The carried item / Mario exit walk also writes it."
+   ]
+  },
+  "144D": {
+   "name": "Cutscene delay timer",
+   "kind": "timer (byte)",
+   "desc": [
+    "Delay counted down every 4th frame by the cutscene main entry while non-zero. The rising/sideways sprite code sets it",
+    "to $D0; the final scene state waits for it and [$1443] to be zero (text and fade finished). Also cleared by the layer 2",
+    "ON/OFF switch scroll sprite."
+   ]
+  },
+  "144E": {
+   "name": "Scroll sub-pixel / limit, idle timer",
+   "kind": "byte table (X/Y = layer offset) or timer",
+   "desc": [
+    "Scroll sprites: sub-pixel accumulator for horizontal scroll (low byte plus speed [$1446]) and, indexed by Y, a position",
+    "limit compared against [$1462+Y]. Credits scroll uses it as an accumulator. Overworld walk: idle timer. Ending scene:",
+    "walk animation timer (6). Overworld load sets it to $0F (purpose unclear)."
+   ]
+  },
+  "144F": {
+   "name": "Walk frame toggle",
+   "kind": "byte",
+   "desc": [
+    "Credits scene walk frame: toggled between 0 and 1 by the substate 0 routine, reset to 0 when the actors are initialised."
+   ]
+  },
+  "1450": {
+   "name": "Layer Y scroll sub-pixel / limit",
+   "kind": "byte table (X/Y = layer offset)",
+   "desc": [
+    "Scroll sprite data cleared on init: layer sub-pixel accumulator for vertical scroll, and a limit compared against",
+    "the position [$1464+Y]. Layer 3 handler compares [$1462+Y] with it."
+   ]
+  },
+  "1454": {
+   "name": "Layer 2 Y sub-pixel",
+   "kind": "byte",
+   "desc": [
+    "Layer 2 vertical sub-pixel position. Only ever cleared (0) by the scroll sprite init, path scroll and the sink or rise",
+    "sprite."
+   ]
+  },
+  "1456": {
+   "name": "Scroll layer offset",
+   "kind": "byte (0 or 4)",
+   "desc": [
+    "Which layer the scroll routines are currently processing, used as an X/Y offset into the per-layer tables.",
+    "Set to 0 for the layer 1 phase and 4 for the layer 2 phase by the scroll run routine.",
+    "Values: 0 = layer 1; 4 = layer 2."
+   ]
+  },
+  "1458": {
+   "name": "Pose / layer X speed",
+   "kind": "byte (shared meaning)",
+   "desc": [
+    "Credits scene: the pose number of the actors, set from actor speeds and counted down by the ending. Layer 3 scroll",
+    "handler: X speed added to the sub-pixel accumulator [$145C]. Cleared at level load and credits init."
+   ]
+  },
+  "1459": {
+   "name": "Pose timer",
+   "kind": "timer (byte)",
+   "desc": [
+    "Pose timer for the credits scene, set to 6 when initialised and reloaded to 6 by the eggshell routine; decremented by the",
+    "landing pose animation."
+   ]
+  },
+  "145A": {
+   "name": "Layer 3 Y speed / visible mask",
+   "kind": "byte (shared meaning)",
+   "desc": [
+    "Layer 3 scroll handler: speed value (multiplied by 16 into the accumulator [$145C]). Credits: bit mask of which of the",
+    "seven actors are visible, set by 'release the seven actors' and used by the egg drawing. Cleared on init."
+   ]
+  },
+  "145B": {
+   "name": "Ending wait timer",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Ending timer. The enemy scene sets it to $00FF as a hold time once the layers meet; the mode entry code counts it down",
+    "and the release routine uses it as the number of actors released so far."
+   ]
+  },
+  "145C": {
+   "name": "Layer 3 sub-pixel accumulator",
+   "kind": "word (little endian, low/high pair)",
+   "desc": [
+    "Sub-pixel accumulator for layer 3 scroll: ([$145C] & $FF) + [$1458], and [$145A] * 16 added, carry kept. Also tested by the",
+    "ending as 'release in progress'. Cleared at level load."
+   ]
+  },
+  "145D": {
+   "name": "Ending stage delay",
+   "kind": "timer (byte)",
+   "desc": [
+    "Delay timer before the next stage of the ending eggshell/Yoshi scene; loaded with $F0."
+   ]
+  },
+  "1460": {
+   "name": "Layer 3 direction",
+   "kind": "byte",
+   "desc": [
+    "Direction value for the layer 3 scroll handler, loaded into Y as an index. Cleared/set at scroll sprite init and updated",
+    "by the layer 3 handler."
+   ]
+  }
+ }
+}

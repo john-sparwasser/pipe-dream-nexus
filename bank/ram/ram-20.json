@@ -1,0 +1,64 @@
+{
+ "addresses": {
+  "7F8387": {
+   "name": "Stripe image record 2 data (tile)",
+   "kind": "byte/word in the stripe image buffer, indexed by buffer offset (X)",
+   "desc": [
+    "Part of the VRAM stripe image buffer that starts at $7F837D ($7F837B holds the current write index).",
+    "X is the buffer index of the record being built, so this is a fixed offset ($0A) into it, not a variable.",
+    "Break bridge stores $38FC here (blank tile $FC, attributes $38) as the data of its second record.",
+    "The Map16 page 1 / wings and event-tile routines write the second record's length word at this offset."
+   ]
+  },
+  "7F8389": {
+   "name": "Stripe image end marker (record 2)",
+   "kind": "byte/word in the stripe image buffer, indexed by buffer offset (X)",
+   "desc": [
+    "Offset in the stripe image buffer ($7F837D+X) where the two-record writers place the terminator.",
+    "Break bridge stores $00FF, i.e. end-of-stripe marker $FF, right after the second record.",
+    "The Map16 page 1 / wings routine and the event-tile routines write their own record data or",
+    "marker at this same offset. The NMI stripe uploader stops when it reads $FF as a record header."
+   ]
+  },
+  "7F838B": {
+   "name": "Stripe image record 3 data",
+   "kind": "byte/word in the stripe image buffer, indexed by buffer offset (X)",
+   "desc": [
+    "Offset $0E into the stripe image buffer ($7F837D+X). Written by the event-tile and Map16 page 1 / wings",
+    "routines as part of the record they build; never read back, the NMI stripe uploader consumes it.",
+    "Exact contents depend on the routine's record layout."
+   ]
+  },
+  "7F838D": {
+   "name": "Stripe image end marker (late)",
+   "kind": "byte in the stripe image buffer, indexed by buffer offset (X)",
+   "desc": [
+    "Stripe image terminator. The Map16 page 1 / wings routine and the event-tile 2x2 draw routine",
+    "store $FF here after their two records so the NMI stripe uploader knows where the batch ends.",
+    "Written only; X is the buffer index taken from $7F837B."
+   ]
+  },
+  "7F83AF": {
+   "name": "Level end tally time digits",
+   "kind": "byte table in the stripe image buffer, indexed by offset (X)",
+   "desc": [
+    "Tile slots of the third text row of the level end tally, in the stripe image buffer ($7F837B index + $34).",
+    "The tally routine copies the time digits [$0F31+Y] into it, two bytes apart (tile, then attribute),",
+    "then replaces leading zero digits with blank tile $FC so the time is not zero-padded.",
+    "Read back once per digit for that leading-zero test."
+   ]
+  },
+  "7FC800": {
+   "name": "Map16 tile high byte table",
+   "kind": "byte table (X = Map16 tile/block offset); high-byte companion of $7EC800",
+   "desc": [
+    "Second half of the level or overworld tile map: the high byte of each entry, with the low byte at",
+    "$7EC800+X. Used for Map16 tile numbers and for the overworld tile layout.",
+    "Cleared or initialised by the level buffer fill routine (Map16 tile pointers), set to 0 for a",
+    "broken bridge tile, written by the boss room tile and overworld setup routines, and read by the",
+    "layer 1 map page draw routine when it builds the tilemap buffer.",
+    "Values: 0 = high byte zero for the tile."
+   ]
+  }
+ }
+}
