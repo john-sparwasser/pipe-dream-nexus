@@ -374,6 +374,7 @@ def main():
                           f'<title>{title}</title><link rel=stylesheet href="bank.css"><script defer src="bank.js"></script></head><body>')
     nav = ('<div id=header><a href=".">Index</a> &mdash; <a href="ram.html">RAM map</a> &mdash; <a href="graph.html">Call graph</a>'
            ' &mdash; <a href="#" onclick="toggleDark();return false;">Toggle dark mode</a>'
+           ' &mdash; <button id=help-btn aria-pressed=false onclick="toggleHelp()">Instruction help</button>'
            ' &mdash; <input id=q placeholder="Search regex (this bank)" size=26> <button onclick="clearSearch()">Clear</button>'
            ' &mdash; <a href="search.html">Search all banks</a></div>')
 
