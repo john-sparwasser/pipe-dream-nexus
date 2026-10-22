@@ -56,9 +56,13 @@ nav .right{display:flex;align-items:center;gap:22px}
 nav .gh{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);border-radius:99px;
   padding:4px 14px;font:500 .75rem var(--mono);color:var(--fg);text-decoration:none}
 nav .gh:hover{border-color:rgba(255,255,255,.3)}
+nav .dc{display:inline-flex;align-items:center;gap:7px;background:#5865F2;color:#fff;border-radius:99px;
+  padding:5px 14px;font-size:.8rem;font-weight:500;text-decoration:none}
+nav .dc:hover{background:#4752C4}
+nav .dc svg{width:16px;height:16px;fill:#fff}
 
 /* hero */
-.hero{position:relative;border-top:0;padding:96px 0 0;overflow:hidden;
+.hero{position:relative;border-top:0;padding:96px 0 80px;overflow:hidden;
   background-image:linear-gradient(to right,rgba(255,255,255,.03) 1px,transparent 1px),
                    linear-gradient(to bottom,rgba(255,255,255,.03) 1px,transparent 1px);
   background-size:32px 32px}
@@ -80,7 +84,7 @@ nav .gh:hover{border-color:rgba(255,255,255,.3)}
 
 /* real screenshots, cropped by the fold */
 .shots{position:relative;max-width:1040px;margin:56px auto 0}
-.frame{border:1px solid var(--line);border-bottom:0;border-radius:16px 16px 0 0;overflow:hidden;
+.frame{border:1px solid var(--line);border-radius:16px;overflow:hidden;
   background:var(--panel);box-shadow:0 -1px 0 rgba(255,255,255,.05) inset,0 24px 80px rgba(0,0,0,.6)}
 .track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none}
 .track::-webkit-scrollbar{display:none}
@@ -107,7 +111,7 @@ nav .gh:hover{border-color:rgba(255,255,255,.3)}
 /* cards */
 .grid{display:grid;gap:14px;margin-top:48px}
 .g6{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-.g3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.05);transition:border-color .15s}
 .card:hover{border-color:rgba(255,255,255,.2)}
@@ -118,6 +122,7 @@ nav .gh:hover{border-color:rgba(255,255,255,.3)}
 .tool .mono{color:var(--dim);display:block;margin-top:2px}
 .tool .st{margin-top:14px}
 .st.live{color:var(--ok)}
+.st.wip{color:#fb923c}
 
 /* feature split */
 .split{display:grid;grid-template-columns:7fr 5fr;gap:48px;align-items:center}
@@ -193,6 +198,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
     <a class="link" href="#install">Install</a>
     <a class="link" href="#resources">Resources</a>
     <a class="gh" href="https://github.com/john-sparwasser/pipe-dream">&#9733; GitHub</a>
+    <a class="dc" href="https://discord.gg/VvvZpaBAg"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>Discord</a>
   </div>
 </div></nav>
 
@@ -207,8 +213,8 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
 
   <div class="hero-copy">
     <h1>The open-source<br>level editor<br>for Mario hacks.</h1>
-    <p class="lede">Edit levels, Map16, graphics and patches in one window. Opens ROMs you already
-       edited in Lunar Magic. Share a project, not a ROM.</p>
+    <p class="lede">Everything Lunar Magic edits, plus custom sprites and patches, in one window.
+       Opens ROMs you already edited in LM. Share a project, not a ROM.</p>
     <div class="cta">
       <a class="btn" id="top-dl" href="https://github.com/john-sparwasser/pipe-dream/releases/latest">Download for Windows</a>
       <a class="link" href="https://github.com/john-sparwasser/pipe-dream">Read the source (MIT) &rarr;</a>
@@ -253,8 +259,8 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
     <div class="card tool"><h3>Lunar Magic</h3><span class="mono">opens as is</span><span class="mono st live">&#9679; live</span></div>
     <div class="card tool"><h3>Asar</h3><span class="mono">patches</span><span class="mono st live">&#9679; live</span></div>
     <div class="card tool"><h3>PIXI</h3><span class="mono">custom sprites</span><span class="mono st live">&#9679; live</span></div>
-    <div class="card tool"><h3>GPS</h3><span class="mono">custom blocks</span><span class="mono st">&#9675; partial</span></div>
-    <div class="card tool"><h3>AddmusicK</h3><span class="mono">custom music</span><span class="mono st">&#9675; in progress</span></div>
+    <div class="card tool"><h3>GPS</h3><span class="mono">custom blocks</span><span class="mono st live">&#9679; live</span></div>
+    <div class="card tool"><h3>AddmusicK</h3><span class="mono">custom music</span><span class="mono st wip">&#9679; in progress</span></div>
     <div class="card tool"><h3>UberASM</h3><span class="mono">custom code</span><span class="mono st">&#9675; planned</span></div>
   </div>
   <div class="prose" style="margin-top:40px">
@@ -287,10 +293,10 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
 </div></section>
 
 <section><div class="wrap">
-  <h2>Gentler on the way in.</h2>
-  <p class="sub">Most people who want to make a Mario level quit somewhere between the fifth
-     download and the first hex offset. Pipe Dream tries to move that wall.</p>
-  <div class="grid g3">
+  <h2>Easier to get started.</h2>
+  <p class="sub">Most people who want to make a Mario level give up somewhere between the fifth
+     download and the first hex offset. Pipe Dream is built so you never hit that point.</p>
+  <div class="grid g4">
     <div class="card"><h3>Nothing to assemble first</h3><p>One install, one window. No tool chain to wire up before you can place a block.</p></div>
     <div class="card"><h3>Guided first run</h3><p>It walks you through pointing at your base ROM and making a project, and recovers on its own when a base goes missing.</p></div>
     <div class="card"><h3>Plain language, not raw bytes</h3><p>Level settings, exits and tile properties are named fields. You shouldn't need a hex table to change the music.</p></div>
@@ -300,12 +306,14 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
 
 <section><div class="wrap">
   <h2>What works today.</h2>
-  <p class="sub">The core loop works: open a ROM, edit a level, save something the game runs.</p>
-  <div class="grid g3">
+  <p class="sub">Everything Lunar Magic edits, edited here, plus the jobs you used to hand to separate tools.</p>
+  <div class="grid g4">
     <div class="card"><h3>Level editing</h3><p>Objects and sprites on a live canvas: place, drag, rubber-band select, undo. Rendered through the real object engine, so what you see is what loads.</p></div>
     <div class="card glow"><h3>Map16 &amp; graphics</h3><p>Map16 pages with tile properties (acts-like, palette, priority, flips), ExGFX import, a GFX browser, palette grids, background picker.</p></div>
+    <div class="card"><h3>Overworld</h3><p>Areas, level tiles, events and transitions, with Lunar Magic's own overworld palettes so every colour edits.</p></div>
     <div class="card"><h3>Exits &amp; entrances</h3><p>Main entrance, secondary entrances, vanilla and LM secondary exits, listed and edited instead of hand-poked in hex.</p></div>
-    <div class="card"><h3>BPS patches</h3><p>Apply and write BPS, so a finished build ships as a patch the way the community expects.</p></div>
+    <div class="card"><h3>Custom sprites</h3><p>Import PIXI sprites, slot them, edit their config and place them like vanilla ones. Up to 255 sprites a level, with our own MIT driver.</p></div>
+    <div class="card"><h3>Patches &amp; BPS</h3><p>A project keeps its Asar patches, applied in order at build, and the build ships as a BPS patch the way the community expects. Asar comes bundled.</p></div>
     <div class="card"><h3>Cross-platform</h3><p>One codebase, no platform-specific editor code. Windows and Linux builds come out of CI on every commit; macOS builds from the same source.</p></div>
     <div class="card"><h3>Scriptable</h3><p>The same executable runs headless for batch jobs and CI: render, diff, self-check, and creating or building projects.</p></div>
   </div>
@@ -317,8 +325,8 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
   <div class="road">
     <div class="row done"><div class="t"><span class="box">&#10003;</span><div><b>Sprite manager</b><small>Install custom sprites and place them like vanilla ones. Their config, table entries and per-level assignment are handled for you.</small></div></div><span class="pill">instead of PIXI</span></div>
     <div class="row done"><div class="t"><span class="box">&#10003;</span><div><b>Updates that install themselves</b><small>Pipe Dream checks for a new release, downloads it, and replaces itself. Your projects and config stay put.</small></div></div><span class="pill">instead of re-downloading</span></div>
-    <div class="row"><div class="t"><span class="box"></span><div><b>Feature parity with Lunar Magic</b><small>Everything LM edits, edited here: the overworld, title screen and credits it still owns, plus the smaller tools you switch back for.</small></div></div><span class="pill">instead of keeping LM open</span></div>
-    <div class="row"><div class="t"><span class="box"></span><div><b>Block manager</b><small>Install a custom block and get all of it: the code, its Map16 entry, its acts-like setting.</small></div></div><span class="pill">instead of GPS</span></div>
+    <div class="row done"><div class="t"><span class="box">&#10003;</span><div><b>Feature parity with Lunar Magic</b><small>Everything LM edits, edited here, overworld included. You no longer need LM open beside it.</small></div></div><span class="pill">instead of keeping LM open</span></div>
+    <div class="row done"><div class="t"><span class="box">&#10003;</span><div><b>Block manager</b><small>Install a custom block and get all of it: the code, its Map16 entry, its acts-like setting.</small></div></div><span class="pill">instead of GPS</span></div>
     <div class="row"><div class="t"><span class="box"></span><div><b>UberASM manager</b><small>Attach custom ASM to a level, a gamemode, or the whole game, from the level you're looking at.</small></div></div><span class="pill">instead of UberASMTool</span></div>
     <div class="row"><div class="t"><span class="box"></span><div><b>Music manager</b><small>Install songs and pick a level's music by name instead of by number. See sample group space before you run out of it.</small></div></div><span class="pill">instead of AddmusicK</span></div>
     <div class="row"><div class="t"><span class="box"></span><div><b>Background manager</b><small>Install a background and get its ExGFX, palette and Map16 pages set up together.</small></div></div><span class="pill">instead of the ExGFX shuffle</span></div>
@@ -337,7 +345,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
       <div class="term">
         <div><u>$</u> <b>git clone https://github.com/john-sparwasser/pipe-dream</b></div>
         <div><u>$</u> <b>cd pipe-dream</b></div>
-        <div><u>$</u> <b>dotnet run --project src</b></div>
+        <div><u>$</u> <b>dotnet run --project src/PipeDream.csproj</b></div>
       </div>
     </div>
     <div class="card side">
@@ -383,11 +391,10 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
 <section><div class="wrap">
   <h2>Status.</h2>
   <div class="prose">
-    <p>Pipe Dream is in very early development. The latest release is
-       <span id="ver">v0.4.1</span>, so treat it accordingly: try it on a copy of a hack rather
-       than the hack. Expect sharp edges, keep backups of any ROM you point it at, and file what
-       breaks. Overworld, title screen and credits editing aren't built yet; they're on the
-       <a href="#roadmap">roadmap</a>.</p>
+    <p>Pipe Dream is pre-release and under active development. It now covers everything Lunar Magic
+       edits; the latest release is <span id="ver">v0.8.0</span>. Try it on a copy of a hack
+       rather than the hack, keep backups of any ROM you point it at, and file what breaks. What's
+       next is on the <a href="#roadmap">roadmap</a>.</p>
     <p>It's MIT licensed and the whole thing is on GitHub. Bug reports from people who got stuck
        in the first ten minutes are the most useful kind. Come say hi and ask questions on
        <a href="https://discord.gg/VvvZpaBAg">the Discord</a>.</p>
@@ -413,7 +420,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
 </div></section>
 
 <section class="final"><div class="wrap">
-  <h2>Stop juggling five tools.</h2>
+  <h2>Stop juggling six tools.</h2>
   <p class="sub" style="margin-left:auto;margin-right:auto">Free, open source, and one install. Bring your own copy of Super Mario World.</p>
   <div class="acts" style="margin-top:32px">
     <a class="btn" href="#install">Download for Windows</a>
