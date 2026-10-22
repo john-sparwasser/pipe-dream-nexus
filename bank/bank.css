@@ -34,6 +34,7 @@ a:hover { text-decoration: underline; }
 .d { color: #880; }
 .rom { color: #080; }
 .ram, a.ram { color: #088; }
+.gut { -webkit-user-select: none; user-select: none; }
 .l:target, tr:target, .hit { background: #ff0; }
 .inverted { filter: hue-rotate(180deg) invert(100%); }
 @media (prefers-color-scheme: dark) {
