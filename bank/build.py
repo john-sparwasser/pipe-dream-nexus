@@ -415,7 +415,7 @@ def main():
             ann = names.get((b, s["anchor"]), {})
             named_count += bool(ann.get("name"))
             toc.append(f';;; <a href="#{anchor}">{rng}</a>: {title} ;;;')
-            body += [f'<span class=c>;;; <a id="{anchor}" href="#{anchor}">{rng}</a>: {title} ;;;</span>', "{"]
+            hdr = [f'<span class=c>;;; <a id="{anchor}" href="#{anchor}">{rng}</a>: {title} ;;;</span>']
             summary = ann.get("summary") or []
             if isinstance(summary, str):
                 summary = summary.splitlines()
@@ -425,7 +425,7 @@ def main():
                     continue
                 indent = len(l) - len(l.lstrip())  # keep "Parameters:" style indents, wrap with a hanging one
                 for i, w in enumerate(textwrap.wrap(l.strip(), WRAP - 3 - indent) or [""]):
-                    body.append(f'<span class=c>;; {" " * (indent + (4 if i else 0))}{linkify(w, b)}</span>')
+                    hdr.append(f'<span class=c>;; {" " * (indent + (4 if i else 0))}{linkify(w, b)}</span>')
             seen, parts = set(), []
             for cb, ca, cs in callers.get((b, s["anchor"]), []):
                 if (cb, ca) not in seen:
@@ -433,11 +433,13 @@ def main():
                     href = f"#{ca & 0xFFFF:04X}" if cb == b else f"{cb}.html#{ca & 0xFFFF:04X}"
                     parts.append(f'<a href="{href}">${cb}:{ca & 0xFFFF:04X}</a>: {html.escape(title_of(cb, cs))}')
             if parts:
-                body.append('<span class=c>;; Called by:</span>')
-                body += [f'<span class=c>;;     {p}</span>' for p in parts[:12]]
+                hdr.append('<span class=c>;; Called by:</span>')
+                hdr += [f'<span class=c>;;     {p}</span>' for p in parts[:12]]
                 if len(parts) > 12:
-                    body.append(f'<span class=c>;;     ... and {len(parts) - 12} more</span>')
-            body += [r for r in (render_line(ln, b) for ln in s["lines"]) if r is not None] + ["}", ""]
+                    hdr.append(f'<span class=c>;;     ... and {len(parts) - 12} more</span>')
+            # One block, newlines included, so bank.css can colour it and keep it out of a drag-select.
+            body.append('<span class=hd>' + "\n".join(hdr) + '</span>')
+            body += [r for r in (render_line(ln, b) for ln in s["lines"]) if r is not None] + [""]
         page = (f'{head(f"SMW ${b}")}\n{nav}\n<div id=body><div id=left><pre id=toc>{chr(10).join(toc)}</pre>'
                 f'<pre id=results hidden></pre></div>\n<div id=right><pre>{chr(10).join(body)}</pre></div></div>\n</body></html>')
         (HERE / f"{b}.html").write_text(page, encoding="utf-8")
