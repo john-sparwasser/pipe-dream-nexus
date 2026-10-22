@@ -57,3 +57,9 @@ a:hover { text-decoration: underline; }
   #body { flex-direction: column; }
   #left { width: auto; max-height: 30vh; border-right: 0; border-bottom: 1px solid #888; }
 }
+/* Instruction help (toggled from the header). */
+#help-btn[aria-pressed=true] { background: #ffe066; border: 1px solid #b8860b; border-radius: 3px; }
+.help .op, .help .d { background: #ffe066; border-radius: 2px; cursor: help; box-shadow: 0 0 0 1px #e0b800; }
+#tip { position: fixed; z-index: 10; max-width: 34em; padding: .45em .65em; white-space: pre-line;
+  background: #222; color: #fff; border-radius: 5px; font: 13px/1.4 system-ui, sans-serif;
+  box-shadow: 0 4px 14px rgba(0,0,0,.3); pointer-events: none; }

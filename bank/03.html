@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width"><title>SMW $03</title><link rel=stylesheet href="bank.css"><script defer src="bank.js"></script></head><body>
-<div id=header><a href=".">Index</a> &mdash; <a href="ram.html">RAM map</a> &mdash; <a href="graph.html">Call graph</a> &mdash; <a href="#" onclick="toggleDark();return false;">Toggle dark mode</a> &mdash; <input id=q placeholder="Search regex (this bank)" size=26> <button onclick="clearSearch()">Clear</button> &mdash; <a href="search.html">Search all banks</a></div>
+<div id=header><a href=".">Index</a> &mdash; <a href="ram.html">RAM map</a> &mdash; <a href="graph.html">Call graph</a> &mdash; <a href="#" onclick="toggleDark();return false;">Toggle dark mode</a> &mdash; <button id=help-btn aria-pressed=false onclick="toggleHelp()">Instruction help</button> &mdash; <input id=q placeholder="Search regex (this bank)" size=26> <button onclick="clearSearch()">Clear</button> &mdash; <a href="search.html">Search all banks</a></div>
 <div id=body><div id=left><pre id=toc>;;; <a href="#s038000">$8000..800E</a>: Football data tables ;;;
 ;;; <a href="#Football">$8012</a>: Football sprite main routine (Football) ;;;
 ;;; <a href="#BigBooBoss">$8087</a>: Big Boo boss main routine (BigBooBoss) ;;;
