@@ -107,7 +107,7 @@ nav .gh:hover{border-color:rgba(255,255,255,.3)}
 /* cards */
 .grid{display:grid;gap:14px;margin-top:48px}
 .g6{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-.g3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.05);transition:border-color .15s}
 .card:hover{border-color:rgba(255,255,255,.2)}
@@ -207,8 +207,8 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
 
   <div class="hero-copy">
     <h1>The open-source<br>level editor<br>for Mario hacks.</h1>
-    <p class="lede">Edit levels, Map16, graphics and patches in one window. Opens ROMs you already
-       edited in Lunar Magic. Share a project, not a ROM.</p>
+    <p class="lede">Everything Lunar Magic edits, plus custom sprites and patches, in one window.
+       Opens ROMs you already edited in LM. Share a project, not a ROM.</p>
     <div class="cta">
       <a class="btn" id="top-dl" href="https://github.com/john-sparwasser/pipe-dream/releases/latest">Download for Windows</a>
       <a class="link" href="https://github.com/john-sparwasser/pipe-dream">Read the source (MIT) &rarr;</a>
@@ -287,10 +287,10 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
 </div></section>
 
 <section><div class="wrap">
-  <h2>Gentler on the way in.</h2>
-  <p class="sub">Most people who want to make a Mario level quit somewhere between the fifth
-     download and the first hex offset. Pipe Dream tries to move that wall.</p>
-  <div class="grid g3">
+  <h2>Easier to get started.</h2>
+  <p class="sub">Most people who want to make a Mario level give up somewhere between the fifth
+     download and the first hex offset. Pipe Dream is built so you never hit that point.</p>
+  <div class="grid g4">
     <div class="card"><h3>Nothing to assemble first</h3><p>One install, one window. No tool chain to wire up before you can place a block.</p></div>
     <div class="card"><h3>Guided first run</h3><p>It walks you through pointing at your base ROM and making a project, and recovers on its own when a base goes missing.</p></div>
     <div class="card"><h3>Plain language, not raw bytes</h3><p>Level settings, exits and tile properties are named fields. You shouldn't need a hex table to change the music.</p></div>
@@ -300,12 +300,14 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
 
 <section><div class="wrap">
   <h2>What works today.</h2>
-  <p class="sub">The core loop works: open a ROM, edit a level, save something the game runs.</p>
-  <div class="grid g3">
+  <p class="sub">Everything Lunar Magic edits, edited here, plus the jobs you used to hand to separate tools.</p>
+  <div class="grid g4">
     <div class="card"><h3>Level editing</h3><p>Objects and sprites on a live canvas: place, drag, rubber-band select, undo. Rendered through the real object engine, so what you see is what loads.</p></div>
     <div class="card glow"><h3>Map16 &amp; graphics</h3><p>Map16 pages with tile properties (acts-like, palette, priority, flips), ExGFX import, a GFX browser, palette grids, background picker.</p></div>
+    <div class="card"><h3>Overworld</h3><p>Areas, level tiles, events and transitions, with Lunar Magic's own overworld palettes so every colour edits.</p></div>
     <div class="card"><h3>Exits &amp; entrances</h3><p>Main entrance, secondary entrances, vanilla and LM secondary exits, listed and edited instead of hand-poked in hex.</p></div>
-    <div class="card"><h3>BPS patches</h3><p>Apply and write BPS, so a finished build ships as a patch the way the community expects.</p></div>
+    <div class="card"><h3>Custom sprites</h3><p>Import PIXI sprites, slot them, edit their config and place them like vanilla ones. Up to 255 sprites a level, with our own MIT driver.</p></div>
+    <div class="card"><h3>Patches &amp; BPS</h3><p>A project keeps its Asar patches, applied in order at build, and the build ships as a BPS patch the way the community expects. Asar comes bundled.</p></div>
     <div class="card"><h3>Cross-platform</h3><p>One codebase, no platform-specific editor code. Windows and Linux builds come out of CI on every commit; macOS builds from the same source.</p></div>
     <div class="card"><h3>Scriptable</h3><p>The same executable runs headless for batch jobs and CI: render, diff, self-check, and creating or building projects.</p></div>
   </div>
@@ -317,7 +319,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
   <div class="road">
     <div class="row done"><div class="t"><span class="box">&#10003;</span><div><b>Sprite manager</b><small>Install custom sprites and place them like vanilla ones. Their config, table entries and per-level assignment are handled for you.</small></div></div><span class="pill">instead of PIXI</span></div>
     <div class="row done"><div class="t"><span class="box">&#10003;</span><div><b>Updates that install themselves</b><small>Pipe Dream checks for a new release, downloads it, and replaces itself. Your projects and config stay put.</small></div></div><span class="pill">instead of re-downloading</span></div>
-    <div class="row"><div class="t"><span class="box"></span><div><b>Feature parity with Lunar Magic</b><small>Everything LM edits, edited here: the overworld, title screen and credits it still owns, plus the smaller tools you switch back for.</small></div></div><span class="pill">instead of keeping LM open</span></div>
+    <div class="row done"><div class="t"><span class="box">&#10003;</span><div><b>Feature parity with Lunar Magic</b><small>Everything LM edits, edited here, overworld included. You no longer need LM open beside it.</small></div></div><span class="pill">instead of keeping LM open</span></div>
     <div class="row"><div class="t"><span class="box"></span><div><b>Block manager</b><small>Install a custom block and get all of it: the code, its Map16 entry, its acts-like setting.</small></div></div><span class="pill">instead of GPS</span></div>
     <div class="row"><div class="t"><span class="box"></span><div><b>UberASM manager</b><small>Attach custom ASM to a level, a gamemode, or the whole game, from the level you're looking at.</small></div></div><span class="pill">instead of UberASMTool</span></div>
     <div class="row"><div class="t"><span class="box"></span><div><b>Music manager</b><small>Install songs and pick a level's music by name instead of by number. See sample group space before you run out of it.</small></div></div><span class="pill">instead of AddmusicK</span></div>
@@ -337,7 +339,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
       <div class="term">
         <div><u>$</u> <b>git clone https://github.com/john-sparwasser/pipe-dream</b></div>
         <div><u>$</u> <b>cd pipe-dream</b></div>
-        <div><u>$</u> <b>dotnet run --project src</b></div>
+        <div><u>$</u> <b>dotnet run --project src/PipeDream.csproj</b></div>
       </div>
     </div>
     <div class="card side">
@@ -383,11 +385,10 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
 <section><div class="wrap">
   <h2>Status.</h2>
   <div class="prose">
-    <p>Pipe Dream is in very early development. The latest release is
-       <span id="ver">v0.4.1</span>, so treat it accordingly: try it on a copy of a hack rather
-       than the hack. Expect sharp edges, keep backups of any ROM you point it at, and file what
-       breaks. Overworld, title screen and credits editing aren't built yet; they're on the
-       <a href="#roadmap">roadmap</a>.</p>
+    <p>Pipe Dream is pre-release and under active development. It now covers everything Lunar Magic
+       edits; the latest release is <span id="ver">v0.8.0</span>. Try it on a copy of a hack
+       rather than the hack, keep backups of any ROM you point it at, and file what breaks. What's
+       next is on the <a href="#roadmap">roadmap</a>.</p>
     <p>It's MIT licensed and the whole thing is on GitHub. Bug reports from people who got stuck
        in the first ten minutes are the most useful kind. Come say hi and ask questions on
        <a href="https://discord.gg/VvvZpaBAg">the Discord</a>.</p>
@@ -413,7 +414,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
 </div></section>
 
 <section class="final"><div class="wrap">
-  <h2>Stop juggling five tools.</h2>
+  <h2>Stop juggling six tools.</h2>
   <p class="sub" style="margin-left:auto;margin-right:auto">Free, open source, and one install. Bring your own copy of Super Mario World.</p>
   <div class="acts" style="margin-top:32px">
     <a class="btn" href="#install">Download for Windows</a>
