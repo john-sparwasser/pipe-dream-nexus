@@ -651,7 +651,7 @@ def main():
 holds and how it is used, then lists every instruction that touches it (expand the list; <b>R</b> reads, <b>W</b> writes,
 <b>RW</b> modifies in place). <code>$00xx</code> is the direct page, <code>$0100</code> and up is normal RAM, and
 <code>$7E:</code> and <code>$7F:</code> are the extended areas. {len(ram_blocks)} addresses, {described} with a written description.
-Descriptions were drafted from the code with Claude. Where the code only shows <i>how</i> a byte is used and not <i>why</i>, the
+Descriptions were drafted from the code. Where the code only shows <i>how</i> a byte is used and not <i>why</i>, the
 text says so.</p>
 <p><input id=rq placeholder="Filter by address, name or words (e.g. 1540, timer, yoshi)" size=48 autofocus>
 <span id=rcount></span>
