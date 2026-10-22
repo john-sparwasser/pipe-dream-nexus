@@ -1,0 +1,3 @@
+{
+  "redirects": [{ "source": "/bank", "destination": "/bank/", "permanent": true }]
+}
