@@ -1,0 +1,109 @@
+<!DOCTYPE html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width"><title>SMW Sprite Engine — Redundancy &amp; Inefficiency Notes</title><link rel=stylesheet href="bank.css"><script defer src="bank.js"></script></head><body>
+<div id=header><a href=".">Index</a> &mdash; <a href="ram.html">RAM map</a> &mdash; <a href="graph.html">Call graph</a> &mdash; Notes: <a href="notes-system.html">system</a> &middot; <a href="notes-snes-hardware.html">SNES hardware</a> &middot; <a href="notes-level-pipeline.html">level pipeline</a> &middot; <a href="notes-sprite-engine.html">sprite engine</a> &mdash; <a href="#" onclick="toggleDark();return false;">Toggle dark mode</a></div>
+<div class="page notes"><h1 id="smw-sprite-engine-redundancy-inefficiency-notes">SMW Sprite Engine — Redundancy &amp; Inefficiency Notes</h1>
+<p>Analysis of sprite handling across <code>bank_00/01/02/03/05/07.asm</code> (2026-07-24). Addresses are SNES (<code>$BB:AAAA</code> collapsed to <code>$BBAAAA</code>), matching the labels in the bank files.</p>
+<h2 id="0-our-copy-of-the-disassembly-had-a-bug-fixed-2026-07-24">0. Our copy of the disassembly had a bug (fixed 2026-07-24)</h2>
+<p>**<code>bank_01.asm</code> contained the same ROM region twice** (the sprite init routines from <code>InitGreyLavaPlat</code>/<a href="01.html#8311">$018311</a> through the <code>SpriteMainPtr</code> table). Same code and addresses, two different comment revisions — an artifact of the original SMWDisC etherpad dump. The stale first copy (older comments, pre-rename labels like <code>DiagBoospeeds</code>/<code>DATA_0183B3</code>) was deleted and the call graph rebuilt with <code>tools/build_disasm_graph.py</code>.</p>
+<h2 id="1-architecture-for-orientation">1. Architecture (for orientation)</h2>
+<ul>
+<li><b>Main loop</b> <code>CODE_0180A7</code>: linear pass over all 12 sprite slots (X=$0B→0) every frame. Per slot: <code>CODE_0180D2</code> (OAM index + timers) → <code>HandleSprite</code> <a href="01.html#8127">$018127</a>.
+</li>
+<li><b>Dispatch</b>: status byte <code>$14C8,X</code> → hardcoded fast paths for 0 (erase) and 8 (main), else <code>ExecutePtr</code> through <code>SpriteStatusRtPtr</code> <a href="01.html#8139">$018139</a>. Status 1/8 route to 201-entry <code>.dw</code> tables <code>SpriteInitPtr</code> <a href="01.html#817D">$01817D</a> / <code>SpriteMainPtr</code> $0185C9 indexed by sprite number <code>$9E</code>.
+</li>
+<li><b>Spawning</b>: <code>LoadSprFromLevel</code> $02A7FB (every other frame) walks the level sprite list, gates on <code>$1938</code> load-status, allocates a slot (<code>LoadNormalSprite</code> $02A8DC), then <code>JSL InitSpriteTables</code> <a href="07.html#F7D2">$07F7D2</a> = <code>ZeroSpriteTables</code> <a href="07.html#F721">$07F721</a> + <code>LoadSpriteTables</code> <a href="07.html#F78B">$07F78B</a>.
+</li>
+<li><b>OAM</b>: static per-slot tile budgets from bank-07 tables keyed by sprite-memory setting <code>$1692</code>. Every frame: clear all 128 OAM entries (generated routine at <code>$7F8000</code>), sprites draw into their fixed windows, high-table repack <code>CODE_008494</code>, full 544-byte DMA <code>DoSomeSpriteDMA</code> $00844A.
+</li></ul>
+<h2 id="2-cross-bank-utility-clones-the-jsr-locality-tax">2. Cross-bank utility clones (the JSR-locality tax)</h2>
+<p><code>JSR</code> can't cross banks, so leaf utilities were copy-pasted per bank instead of made <code>JSL</code>-able. Any bug fix or hack hook must be applied 3–4×:</p>
+<table><tr><th>Routine</th><th>Copies</th><th>Addresses</th></tr><tr><td><code>GetDrawInfo</code> (~130 bytes, the OAM pre-draw setup)</td><td>3</td><td><code>GetDrawInfoBnk1</code> <a href="01.html#A365">$01A365</a>, <code>GetDrawInfo2</code> <a href="02.html#D378">$02D378</a>, <code>GetDrawInfoBnk3</code> <a href="03.html#B760">$03B760</a> — 80+ call sites total</td></tr><tr><td><code>SubOffscreen</code> (4 entry points each, ~200 bytes)</td><td>3</td><td><a href="01.html#AC21">$01AC21</a>.. , $02D016.. , <a href="03.html#B84F">$03B84F</a>.. — ~95% identical; Bnk1 alone has the MagiKoopa-respawn special case</td></tr><tr><td><code>SubHorizPos</code> (Mario-vs-sprite X compare)</td><td>3</td><td><a href="01.html#AD30">$01AD30</a>, <code>SubHorzPosBnk2</code> <a href="02.html#848D">$02848D</a>, <code>SubHorzPosBnk3</code> <a href="03.html#B817">$03B817</a></td></tr><tr><td>vertical twin of SubHorizPos</td><td>2+</td><td><code>CODE_01AD42</code>, <code>SubVertPosBnk3</code> <a href="03.html#B829">$03B829</a> — same 9 instructions with Y-axis addresses</td></tr><tr><td><code>IsSprOffScreen</code> (2 instructions!)</td><td>4</td><td><a href="01.html#80CB">$0180CB</a>, <a href="02.html#849F">$02849F</a> <b>and</b> <a href="02.html#D0C9">$02D0C9</a> (twice in bank 02), <a href="03.html#B8FB">$03B8FB</a></td></tr></table>
+<p>The per-bank <code>DATA_</code> tables these reference (<code>SpriteOffScreen3/4</code> vs <code>DATA_02D007/0F</code> vs <code>DATA_03B83F..</code>) are byte-identical too.</p>
+<p>Counter-example done right: <code>FindFreeSprSlot</code>/<code>FindFreeSlotLowPri</code> <a href="02.html#A9E4">$02A9E4</a>/<a href="02.html#A9DE">$02A9DE</a> share one body (<code>FindFreeSlotRt</code> <a href="02.html#A9EF">$02A9EF</a>) with two prologues, and are <code>JSL</code>'d cross-bank.</p>
+<h2 id="3-per-sprite-gfx-routine-clone-family">3. Per-sprite GFX routine clone family</h2>
+<ul>
+<li><b>~35 hand-rolled OAM-writer clones</b>: ~29 in bank 03 (<code>BowserStatueGfx</code> <a href="03.html#8B3D">$038B3D</a>, <code>TimedPlatformGfx</code> <a href="03.html#8E12">$038E12</a>, <code>WoodSpikeGfx</code> $039420, <code>DinoGfxRt</code> $039B4F, <code>MegaMoleGfxRt</code>, …) and ~6 in bank 02 (<code>HammerBroGfx</code> $02DAF8, <code>SumoBroGfx</code>, <code>TorpedoGfxRt</code>, …). All share the exact skeleton: <code>GetDrawInfo</code> → loop { disp-X/Y add → OAM store, tile store, prop <code>ORA $64</code> store, <code>TYA/LSR/LSR</code> size-index math } → <code>LDY #$FF : LDA #count : JSL FinishOAMWrite</code>. Only the five per-sprite data tables (DispX/DispY/Tiles/Prop/TileSize) and the tile count differ.
+</li>
+<li>Generic writers exist but are underused: <code>GenericSprGfxRt0/1/2</code> (<a href="01.html#8042">$018042</a>/<a href="01.html#9D5F">$019D5F</a>/<a href="01.html#90B2">$0190B2</a>) serve only ~15 sprites; <code>VolcanoLotusGfx</code> <a href="02.html#E7A6">$02E7A6</a> even JSRs into <code>MushroomScaleGfx</code>, proving sharing works.
+</li>
+<li>Inside bank 01 the three "shared" builders triple-compute the same math: <code>SubSprGfx0/1/2</code> each redo the <code>SprTilemapOffset[SpriteNum]</code> tile-base and direction→<code>$40</code> flip-bit logic (<a href="01.html#9D04">$019D04</a> vs <a href="01.html#9D83">$019D83</a> vs <a href="01.html#9F17">$019F17</a>).
+</li>
+<li>Dozens of bank-01 sprite routines additionally inline raw <code>STA OAM_*,Y</code> blocks instead of calling any builder (<a href="01.html#E911">$01E911</a>, <a href="01.html#EE8F">$01EE8F</a>, <a href="01.html#F07D">$01F07D</a>, <a href="01.html#FEC5">$01FEC5</a>, …).
+</li></ul>
+<h2 id="4-dispatch-inefficiency">4. Dispatch inefficiency</h2>
+<ul>
+<li>**<code>Bnk3CallSprMain</code> <a href="03.html#A118">$03A118</a> is a linear CMP/BNE chain over ~30 sprite numbers** ($A1–$C8), run per sprite per frame — worst case ~30 compares, with the <code>PLB/RTL</code> epilogue copy-pasted into every arm. The same bank uses proper <code>ExecutePtr</code> jump tables elsewhere (<code>BowserFightPtrs</code> $03A32B). Single biggest per-frame dispatch waste.
+</li>
+<li><code>HandleSprite</code> hardcodes statuses 0 and 8, yet <code>SpriteStatusRtPtr</code> still carries those two (now-unreachable) entries.
+</li>
+<li>Pointer-table padding: <code>GeneratorPtrs</code> has 3 slots all → <code>GenParaEnemy</code>; <code>BounceSpritePtrs</code> slots 01–06 all → <code>BounceBlockSpr</code>; the 201-entry init/main tables are largely <code>Return0185C2</code>/<code>InitStandardSprite</code> filler (the price of O(1) dispatch — fine, but relevant when counting "real" sprites).
+</li></ul>
+<h2 id="5-spawn-path-waste">5. Spawn-path waste</h2>
+<ul>
+<li><code>ZeroSpriteTables</code> <a href="07.html#F721">$07F721</a>: <b>35 unrolled stores per spawn</b>, of which the 5 tweaker-table STZs (<a href="07.html#F767">$07F767</a>–<a href="07.html#F773">$07F773</a>: <code>$1656/$1662/$166E/$167A/$1686</code>) are dead work — <code>LoadTweakerBytes</code> <a href="07.html#F7A0">$07F7A0</a> overwrites all five immediately after.
+</li>
+<li><code>Sprite166EVals</code> is long-indexed <b>twice</b> per spawn (<a href="07.html#F790">$07F790</a> palette nibble, <a href="07.html#F7BA">$07F7BA</a> tweaker), and both <code>LoadSpriteTables</code> and <code>LoadTweakerBytes</code> independently re-fetch <code>SpriteNum</code> and rebuild the index.
+</li>
+<li><b>9 generator routines, one skeleton</b> (<code>GenerateFire</code> <a href="02.html#B035">$02B035</a>, <code>GenerateBullet</code> <a href="02.html#B07C">$02B07C</a>, <code>GenMultiBullets</code> <a href="02.html#B0CD">$02B0CD</a>, <code>GenerateDolphin</code> <a href="02.html#B26C">$02B26C</a>, <code>GenerateEerie</code> <a href="02.html#B2D6">$02B2D6</a>, <code>GenParaEnemy</code> <a href="02.html#B329">$02B329</a>, …): frame-gate → <code>FindFreeSlotLowPri</code> → status/sprite-num → <code>InitSpriteTables</code> → RNG placement. <code>GenerateFire</code> vs <code>GenerateBullet</code> are ~95% identical. Note: the label <code>GenerateBullet</code> is <b>defined twice</b> (<a href="02.html#B07C">$02B07C</a> and <a href="02.html#B4A7">$02B4A7</a> — Torpedo Ted's spawn) — an annotation collision in the disassembly.
+</li>
+<li>Ad-hoc free-slot scanners bypass the shared one: <code>DropRiFindSlot</code> <a href="02.html#8019">$028019</a>, <code>GenSpriteFromBlk</code>, and the inline loop in <code>LoadNormalSprite</code> <a href="02.html#A916">$02A916</a> each hand-roll <code>LDX #$0B / LDA $14C8,X / DEX</code>.
+</li>
+<li>The <code>$1938</code> load-status contract (set on spawn, clear to allow respawn) is open-coded at ~10 sites across banks 01/02/03 (<a href="01.html#AC9E">$01AC9E</a>, <a href="02.html#A8BB">$02A8BB</a>, <a href="02.html#AB9B">$02AB9B</a>, <a href="02.html#D08A">$02D08A</a>, <a href="03.html#8714">$038714</a>, <a href="03.html#B8BC">$03B8BC</a>, …).
+</li>
+<li><code>InitSpriteTables</code> is <code>JSL</code>'d from ~65 sites, including two adjacent branches at <a href="02.html#A9B9">$02A9B9</a>/<a href="02.html#A9C9">$02A9C9</a> that could converge before the call; callers also set fields it then re-clears/re-sets (status at <a href="02.html#A975">$02A975</a>, <code>OffscreenHorz</code> at <a href="02.html#A9CD">$02A9CD</a>).
+</li></ul>
+<h2 id="6-per-frame-structural-costs">6. Per-frame structural costs</h2>
+<ul>
+<li>**<code>SubSprSprInteract</code> <a href="01.html#A40D">$01A40D</a> is an O(n²) all-pairs scan** — 66 pair checks across 12 slots every other frame (frame-parity gate only, no spatial pruning).
+</li>
+<li><code>CODE_0180D2</code> recomputes each slot's OAM index from <code>DATA_07F0B4[$1692]</code> + <code>DATA_07F000</code> every slot every frame, though <code>$1692</code> is constant for the whole level. 7 unrolled timer-decrement blocks also run 12×/frame even for empty slots.
+</li>
+<li><code>LoadSprFromLevel</code> $02A7FB restarts the level-sprite-list walk <b>from index 0</b> every other frame — O(total sprites in level), no cursor; only saved by the early <code>BCS</code> once past the boundary column.
+</li>
+<li>OAM fixed costs: boot builds a 384-byte unrolled clear routine in <code>$7F8000</code> (called from 11+ sites), high-table repack <a href="00.html#8494">$008494</a> rebuilds all 128 entries' size/X-high bits each frame, and <code>DoSomeSpriteDMA</code> $00844A DMAs the full $220 bytes unconditionally.
+</li>
+<li><code>FinishOAMWriteRt</code> <a href="01.html#B7BA">$01B7BA</a> is reached three different ways (13× JSR, 7× JMP tail-call, 1× via the <code>FinishOAMWrite</code> JSL wrapper) — the JSR+RTS sites could all be tail-calls.
+</li>
+<li><code>JumpOverShells</code> (~<a href="01.html#870A">$01870A</a>) linear-scans all slots per qualifying Koopa to find shells.
+</li></ul>
+<h2 id="7-data-layout-costs">7. Data-layout costs</h2>
+<ul>
+<li><b>Split lo/hi coordinate tables</b> (<code>XLo $E4</code>/<code>XHi $14E0</code>, <code>YLo $D8</code>/<code>YHi $14D4</code>) force manual byte-wise carry propagation everywhere; the 16-bit reconstruct idiom is re-implemented in at least 6 core routines (<code>GetDrawInfoBnk1</code>, <code>FinishOAMWriteRt</code>, both <code>SubOffscreen</code> axes, <code>SubSprYPosNoGrvty</code>, <code>KoopaWingGfxRt</code>) and inline in every generator ("boundary + offset → pos" with <code>ADC #$00</code>). Caveat: the layout is load-bearing — X tables sit exactly +$0C after Y tables so <code>SubSprXPosNoGrvty</code> <a href="01.html#ABCC">$01ABCC</a> can reuse the Y routine by index offset.
+</li>
+<li>Direction-flip idiom <code>EOR #$FF / INC A</code> open-coded ~32× in bank 02 alone; bank 01 wraps it in <code>InvertAccum</code> <a href="01.html#804A">$01804A</a> — a 3-byte routine whose JSR costs as much as inlining (used twice).
+</li>
+<li><b>Six parallel 256-byte tweaker tables</b> (<a href="07.html#F26C">$07F26C</a>/<a href="07.html#F335">$07F335</a>/<a href="07.html#F3FE">$07F3FE</a>/<a href="07.html#F4C7">$07F4C7</a>/<a href="07.html#F590">$07F590</a>/<a href="07.html#F659">$07F659</a>) store per-sprite-number constants column-major; every spawn does 6 separate long-indexed loads instead of one 6-byte-stride row read.
+</li>
+<li>**<code>CircleCoords</code> <a href="07.html#F7DB">$07F7DB</a> stores 512 bytes for a half-sine whose second half mirrors the first** — 2× (arguably 4×, with quarter symmetry) larger than needed.
+</li>
+<li>The 8-byte power-of-two mask table <code>80 40 20 ... 01</code> exists 3× (<a href="00.html#C005">$00C005</a>, <a href="00.html#C0AA">$00C0AA</a>, <a href="05.html#B35B">$05B35B</a>).
+</li>
+<li>Offscreen boundary constants are split into 4 tables by axis × lo/hi (<code>SpriteOffScreen1/2/3/4</code> <a href="01.html#AC0D">$01AC0D</a>–<a href="01.html#AC19">$01AC19</a>), forcing the <code>$03</code> stride-flag indirection that is the whole reason <code>SubOffscreen</code> needs 4 entry points.
+</li>
+<li>Vestigial: 163 bytes of <code>$FF</code> filler mid-bank-05 (<code>Empty05D665</code>); <code>ImagePointers[0]</code> $00857D marked "Not used?".
+</li></ul>
+<h2 id="8-if-we-ever-ship-optimization-patches-ranked">8. If we ever ship optimization patches (ranked)</h2>
+<ol>
+<li>**<code>Bnk3CallSprMain</code> → <code>ExecutePtr</code> jump table** — removes ~30 compares/sprite/frame; mechanical.
+</li>
+<li><b>Hoist the OAM-index computation to level load</b> — <code>$15EA</code> per-slot values are level-constant.
+</li>
+<li><b>Drop the 5 dead tweaker STZs</b> in <code>ZeroSpriteTables</code> — free 15 bytes + ~30 cycles/spawn.
+</li>
+<li><b>Merge the utility clones behind JSL</b> (<code>GetDrawInfo</code>, <code>SubOffscreen</code>, <code>SubHorizPos</code>, <code>IsSprOffScreen</code>) — ~600+ bytes freed, one patch point instead of 3–4. Costs JSL/RTL overhead (+~2 cycles/call); hacks (SA-1 etc.) do exactly this.
+</li>
+<li><b>Table-driven generic GFX writer</b> replacing the ~35 clones — biggest byte win (est. 1.5–2 KB), but touches every sprite's draw path; highest risk.
+</li>
+<li>Halve <code>CircleCoords</code> with a mirror lookup; dedupe the mask tables.
+</li></ol>
+<h2 id="9-what-this-means-for-pipe-dream">9. What this means for pipe-dream</h2>
+<ul>
+<li><b>Sprite rendering is more data than code.</b> The ~35 GFX clones differ only in their 5 data tables (DispX/DispY/Tiles/Prop/TileSize) + <code>GetDrawInfo</code>'s screen-relative setup. An editor-side renderer that emulates "generic OAM writer + per-sprite tables" covers most enemies without per-sprite code.
+</li>
+<li><b>The tweaker tables (<a href="07.html#F26C">$07F26C</a>..) are the canonical per-sprite-number property source</b> (palette, interaction, process-offscreen bit <code>$167A &amp; 4</code>, etc.) — index by sprite number, 6 bytes per sprite.
+</li>
+<li><b>Treat clone families as one logical routine when navigating</b>: <code>GetDrawInfo*</code>, <code>SubOffscreen*</code>, <code>SubHorzPos*</code>, <code>IsSprOffScreen*</code> each have 3–4 addresses for the same logic. Graph queries and breakpoints should cover all copies.
+</li>
+<li><b>Spawn semantics</b> (for accurate sprite placement/preview): sprites spawn when their screen column crosses the boundary, gated by <code>$1938</code>; slot ranges depend on the level's sprite-memory header via <code>SpriteSlotMax/Start[$1692]</code> — the same setting that fixes each slot's OAM budget, which is why sprite-memory settings cause visible tile-limit differences per level.
+</li>
+<li><b>Repo hygiene</b>: done — bank_01.asm de-duplicated and the disasm graph rebuilt (§0). The graph is now regenerable via <code>tools/build_disasm_graph.py</code> instead of a lost one-off.
+</li></ul></div></body></html>

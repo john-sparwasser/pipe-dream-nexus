@@ -39,7 +39,6 @@ DATA_BANKS = {
            ("0A", "Graphics (GFX20&ndash;GFX2F)"), ("0B", "Graphics (GFX30&ndash;GFX31, Mario/Yoshi tiles)")],
     "0D": [("0E", "Music data + SPC700 sound engine (uploaded to the APU at boot)"), ("0F", "BRR sample data for the SPC700")],
 }
-GITHUB = "https://github.com/john-sparwasser/pipe-dream/blob/main/reference/smw-disasm"
 
 AUTO = re.compile(r"^(CODE|DATA|ADDR|Return|Empty)_?([0-9A-F]{6})$")
 TRAIL6 = re.compile(r"([0-9A-F]{6})$")
@@ -250,6 +249,95 @@ def load_annotations():
             except ValueError:
                 pass
     return names, comments
+
+
+NOTES = {"SYSTEM_NOTES": "system", "SNES_HARDWARE_NOTES": "SNES hardware",
+         "LEVEL_PIPELINE_NOTES": "level pipeline", "SPRITE_ENGINE_NOTES": "sprite engine"}
+notes_page = lambda stem: "notes-" + stem[:-len("_NOTES")].lower().replace("_", "-") + ".html"
+
+
+def md_inline(t, post):
+    """Inline markdown: `code`, **bold**, *italic*. post() adds links to the escaped text."""
+    out = []
+    for i, part in enumerate(t.split("`")):
+        if i % 2:
+            out.append(f"<code>{post(html.escape(part))}</code>")
+        else:
+            part = html.escape(part, quote=False)
+            part = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", part)
+            part = re.sub(r"(?<![*\w])\*(?![\s*])(.+?)(?<![\s*])\*(?![*\w])", r"<i>\1</i>", part)
+            out.append(post(part))
+    return "".join(out)
+
+
+def md_to_html(text, post=lambda s: s):
+    """Just enough markdown for the notes files: headings, paragraphs, nested lists, tables, code fences.
+    ponytail: hand-rolled because no markdown package is installed; swap in one if the notes outgrow this."""
+    lines, out, para, i = text.splitlines(), [], [], 0
+    inl = lambda t: md_inline(t, post)
+    item = re.compile(r"^(\s*)([-*]|(\d+)\.)\s+(.*)")
+
+    def flush():
+        if para:
+            out.append(f"<p>{inl(' '.join(para))}</p>")
+            para.clear()
+
+    while i < len(lines):
+        ln = lines[i]
+        if not ln.strip():
+            flush(); i += 1
+        elif ln.startswith("```"):
+            flush()
+            j = next((k for k in range(i + 1, len(lines)) if lines[k].startswith("```")), len(lines))
+            out.append(f"<pre class=md>{html.escape(chr(10).join(lines[i + 1:j]))}</pre>")
+            i = j + 1
+        elif m := re.match(r"^(#{1,6})\s+(.*)", ln):
+            flush()
+            n, slug = len(m.group(1)), re.sub(r"[^a-z0-9]+", "-", m.group(2).lower()).strip("-")
+            out.append(f"<h{n} id=\"{slug}\">{inl(m.group(2))}</h{n}>")
+            i += 1
+        elif ln.startswith("|") and i + 1 < len(lines) and re.match(r"^\|[\s:|-]+\|\s*$", lines[i + 1]):
+            flush()
+            cells = lambda r: [c.strip() for c in r.strip().strip("|").split("|")]
+            rows = [f"<tr>{''.join(f'<th>{inl(c)}</th>' for c in cells(ln))}</tr>"]
+            i += 2
+            while i < len(lines) and lines[i].startswith("|"):
+                rows.append(f"<tr>{''.join(f'<td>{inl(c)}</td>' for c in cells(lines[i]))}</tr>")
+                i += 1
+            out.append(f"<table>{''.join(rows)}</table>")
+        elif item.match(ln):
+            flush()
+            items = []  # [indent, tag, start, text]
+            while i < len(lines) and lines[i].strip():
+                m = item.match(lines[i])
+                if m:
+                    items.append([len(m.group(1)), "ol" if m.group(3) else "ul", m.group(3), m.group(4)])
+                else:  # continuation line of the last item
+                    items[-1][3] += " " + lines[i].strip()
+                i += 1
+            stack = []
+            for ind, tag, start, txt in items:
+                while stack and ind < stack[-1][0]:
+                    out.append(f"</li></{stack.pop()[1]}>")
+                if stack and ind == stack[-1][0]:
+                    out.append("</li>")
+                else:
+                    out.append(f"<{tag}{f' start={start}' if start and start != '1' else ''}>")
+                    stack.append((ind, tag))
+                out.append(f"<li>{inl(txt)}")
+            while stack:
+                out.append(f"</li></{stack.pop()[1]}>")
+        else:
+            para.append(ln.strip()); i += 1
+    flush()
+    return "\n".join(out)
+
+
+def _md_check():
+    h = md_to_html("# T\n\nA *b* **c** `d*`\n\n1. one\n   more\n2. two\n  - sub\n3. three\n\n| a | b |\n|---|---|\n| 1 | 2 |\n\n```\nx < y\n```")
+    assert '<h1 id="t">T</h1>' in h and "<i>b</i>" in h and "<b>c</b>" in h and "<code>d*</code>" in h, h
+    assert "<ol><li>one more</li><li>two<ul><li>sub</li></ul></li><li>three</li></ol>" in h.replace("\n", ""), h
+    assert "<td>2</td>" in h and "<pre class=md>x &lt; y</pre>" in h, h
 
 
 def main():
@@ -574,15 +662,30 @@ registers show their name on hover. {nsec} sections across {len(parsed)} banks, 
 <li><a href="search.html">Search all banks</a> &ndash; one regex across every page</li>
 <li><a href="ram.html">RAM map</a> &ndash; what every RAM address does, with the instructions that touch it</li>
 <li><a href="graph.html">Call graph</a> &ndash; interactive graph of the named routines (735 nodes, 53 communities)</li>
-<li>Notes: <a href="{GITHUB}/SYSTEM_NOTES.md">system</a>, <a href="{GITHUB}/SNES_HARDWARE_NOTES.md">SNES hardware</a>,
-<a href="{GITHUB}/LEVEL_PIPELINE_NOTES.md">level pipeline</a>, <a href="{GITHUB}/SPRITE_ENGINE_NOTES.md">sprite engine</a></li>
-<li><a href="{GITHUB}">Source bank_XX.asm files</a></li>
+<li>Notes: {", ".join(f'<a href="{notes_page(k)}">{v}</a>' for k, v in NOTES.items())} &ndash; how the game runs, traced from the code</li>
 </ul>
 <h2>Credits</h2>
 <p>SMWDisC was written on etherpad by Smallhacker, 1024, lolcats439, Roy, YoshiCookieZeus, Imamelia, Nicol Bolas, Buster Beetle,
 Gekko, Kernigh, Maxx, Edit1754, Alcaro and others; all.log by MikeyK250. English routine names, summaries and rewritten comments
 were produced with Claude and reviewed against the code. Super Mario World is &copy; Nintendo.</p>
 </div></body></html>""", encoding="utf-8")
+
+    # Notes: the markdown write-ups next to the disassembly, as pages here. $BBAAAA addresses link to their
+    # line, and a mention of another notes file links to its page.
+    def note_links(t):
+        t = re.sub(r"\$([0-9A-F]{2})([0-9A-F]{4})\b", lambda m: f'<a href="{m.group(1)}.html#{m.group(2)}">{m.group(0)}</a>'
+                   if m.group(1) in parsed and int(m.group(2), 16) in addrs[m.group(1)] else m.group(0), t)
+        return re.sub(r"\b(\w+_NOTES)\.md\b", lambda m: f'<a href="{notes_page(m.group(1))}">{m.group(0)}</a>'
+                      if m.group(1) in NOTES else m.group(0), t)
+    notes_nav = ('<div id=header><a href=".">Index</a> &mdash; <a href="ram.html">RAM map</a> &mdash; <a href="graph.html">Call graph</a>'
+                 ' &mdash; Notes: ' + " &middot; ".join(f'<a href="{notes_page(k)}">{v}</a>' for k, v in NOTES.items())
+                 + ' &mdash; <a href="#" onclick="toggleDark();return false;">Toggle dark mode</a></div>')
+    for stem in NOTES:
+        md_src = (SRC / f"{stem}.md").read_text(encoding="utf-8")
+        title = next((l[2:].strip() for l in md_src.splitlines() if l.startswith("# ")), stem)
+        (HERE / notes_page(stem)).write_text(f"""{head(html.escape(title))}
+{notes_nav}
+<div class="page notes">{md_to_html(md_src, note_links)}</div></body></html>""", encoding="utf-8")
 
     g = SRC / "graph" / "graph.html"
     if g.exists():
@@ -592,4 +695,5 @@ were produced with Claude and reviewed against the code. Super Mario World is &c
 
 
 if __name__ == "__main__":
+    _md_check()
     main()
