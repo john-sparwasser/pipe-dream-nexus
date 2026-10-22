@@ -5685,21 +5685,21 @@
 <span class=c>;;; $0B =&gt; carried by Mario</span>
 <span class=c>;;;   See http://www.smwcentral.net/?p=thread&amp;id=11960 for other values.</span>
 
-<span class=c>;; X position of carried sprite relative to Mario,</span>
-<span class=c>;; in table indexed by <a class=ram href="ram.html#0076" title="Mario facing direction">RAM_MarioDirection</a> $76.</span>
-<span class=c>;;</span>
-<span class=c>;; <a href="#9F67">$9F67</a>,0 with <a href="#9F69">$9F69</a>,0 = position when facing left</span>
-<span class=c>;; <a href="#9F67">$9F67</a>,1 with <a href="#9F69">$9F69</a>,1 = position when facing right</span>
-<span class=c>;;</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; X position of carried sprite relative to Mario,</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; in table indexed by <a class=ram href="ram.html#0076" title="Mario facing direction">RAM_MarioDirection</a> $76.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; <a href="#9F67">$9F67</a>,0 with <a href="#9F69">$9F69</a>,0 = position when facing left</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; <a href="#9F67">$9F67</a>,1 with <a href="#9F69">$9F69</a>,1 = position when facing right</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 <span id="9F67" class=l><span class=gut><span class=rom>$01:9F67</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> $F3,<a class=ram href="ram.html#000D" title="Scratch byte $0D">$0D</a>                     </span><span class=c>; Drop X offset low: -13 (facing left), 13 (facing right)</span></span>
 <span id="9F69" class=l><span class=gut><span class=rom>$01:9F69</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> $FF,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>                     </span><span class=c>; Drop X offset high bytes</span></span>
 
-<span class=c>;; Sprite X speed when kicking a sprite.</span>
-<span class=c>;; Index 0 =&gt; Mario faces left, no <a href="#Yoshi">Yoshi</a></span>
-<span class=c>;;       1 =&gt; Mario faces right, no <a href="#Yoshi">Yoshi</a></span>
-<span class=c>;;       2 =&gt; Mario and <a href="#Yoshi">Yoshi</a> face left</span>
-<span class=c>;;       3 =&gt; Mario and <a href="#Yoshi">Yoshi</a> face right</span>
-<span class=c>;;</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Sprite X speed when kicking a sprite.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Index 0 =&gt; Mario faces left, no <a href="#Yoshi">Yoshi</a></span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;       1 =&gt; Mario faces right, no <a href="#Yoshi">Yoshi</a></span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;       2 =&gt; Mario and <a href="#Yoshi">Yoshi</a> face left</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;       3 =&gt; Mario and <a href="#Yoshi">Yoshi</a> face right</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 
 <span class=hd><span class=c>;;; <a id="ShellSpeedX" href="#ShellSpeedX">$9F6B</a>: Table: kick X speeds (ShellSpeedX) ;;;</span>
 <span class=c>;; Also includes <a href="#9F67">$9F67</a>/019F69 above (sprite X offset when dropped: -13/+13). Index: 0 left, 1 right, +2</span>
@@ -5752,9 +5752,9 @@
 <span id="9F96" class=l><span class=gut><span class=rom>$01:9F96</span> <span class=hx>85 64       </span> </span><span class=cd><span class=op>STA</span> <a class=ram href="ram.html#0064" title="Sprite priority bits">RAM_SpriteProp</a>              </span><span class=c>; / Restore sprite property bits</span></span>
 <span id="9F98" class=l><span class=gut><span class=rom>$01:9F98</span> <span class=hx>60          </span> </span><span class=cd><span class=op>RTS</span>                             </span><span class=c>; Return</span></span>
 
-<span class=c>;; Sprite X speed relative to Mario X speed when dropping a</span>
-<span class=c>;; carried sprite in table indexed by <a class=ram href="ram.html#0076" title="Mario facing direction">RAM_MarioDirection</a> $76.</span>
-<span class=c>;;</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Sprite X speed relative to Mario X speed when dropping a</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; carried sprite in table indexed by <a class=ram href="ram.html#0076" title="Mario facing direction">RAM_MarioDirection</a> $76.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 
 <span class=hd><span class=c>;;; <a id="s019F99" href="#s019F99">$9F99..9F99</a>: Table: drop X speed relative to Mario ;;;</span>
 <span class=c>;; Index by Mario direction: -4 (left), +4 (right).</span></span>
@@ -5785,12 +5785,12 @@
 <span id="9FB7" class=l><span class=gut><span class=rom>$01:9FB7</span> <span class=hx>F0 02       </span> </span><span class=cd><span class=op>BEQ</span> <a href="#9FBB">$9FBB</a>                       </span><span class=c>; } Low timer: Y = 1 or 9, alternating every 4 ticks</span></span>
 <span id="9FB9" class=l><span class=gut><span class=rom>$01:9FB9</span> <span class=hx>A0 09       </span> </span><span class=cd><span class=op>LDY.B</span> #$09                      </span><span class=c>; /</span></span>
 <span id="9FBB" class=l><span class=gut><span class=rom>$01:9FBB</span> <span class=hx>8C F3 13    </span> </span><span class=cd><span class=op>STY.W</span> <a class=ram href="ram.html#13F3" title="Mario balloon pose / P-balloon">$13F3</a>                     </span><span class=c>; [$13F3] = Y (balloon pose, makes Mario flash his pose)</span></span>
-<span class=c>;; Come here if skipping ahead</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Come here if skipping ahead</span></span></span>
 <span id="9FBE" class=l><span class=gut><span class=rom>$01:9FBE</span> <span class=hx>A5 71       </span> </span><span class=cd><span class=op>LDA</span> <a class=ram href="ram.html#0071" title="Mario animation state">RAM_MarioAnimation</a>          </span><span class=c>; \</span></span>
 <span id="9FC0" class=l><span class=gut><span class=rom>$01:9FC0</span> <span class=hx>C9 01       </span> </span><span class=cd><span class=op>CMP.B</span> #$01                      </span><span class=c>; } No Mario animation running: keep the balloon</span></span>
 <span id="9FC2" class=l><span class=gut><span class=rom>$01:9FC2</span> <span class=hx>90 06       </span> </span><span class=cd><span class=op>BCC</span> <a href="#BalloonActive">BalloonActive</a>               </span><span class=c>; /</span></span>
-<span class=c>;; If animating Mario, then fall through to kill the P-balloon.</span>
-<span class=c>;; For example, if Mario grows into Super Mario then he loses the balloon.</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; If animating Mario, then fall through to kill the P-balloon.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; For example, if Mario grows into Super Mario then he loses the balloon.</span></span></span>
 
 <span class=hd><span class=c>;;; <a id="BalloonExpired" href="#BalloonExpired">$9FC4</a>: P-balloon expired (BalloonExpired) ;;;</span>
 <span class=c>;; Clears [$13F3] and erases the balloon sprite (tail call, returns from <a href="#9F9B">$9F9B</a>).</span></span>
@@ -5809,11 +5809,11 @@
 <span id="9FCF" class=l><span class=gut><span class=rom>$01:9FCF</span> <span class=hx>22 14 D2 02 </span> </span><span class=cd><span class=op>JSL.L</span> <a href="02.html#ControlSprCarried">ControlSprCarried</a>         </span><span class=c>; Control sprite from the controller (<a href="02.html#ControlSprCarried">ControlSprCarried</a>)</span></span>
 <span id="9FD3" class=l><span class=gut><span class=rom>$01:9FD3</span> <span class=hx>AB          </span> </span><span class=cd><span class=op>PLB</span>                             </span><span class=c>; Restore data bank</span></span>
 <span id="9FD4" class=l><span class=gut><span class=rom>$01:9FD4</span> <span class=hx>20 B1 A0    </span> </span><span class=cd><span class=op>JSR.W</span> <a href="#A0B1">$A0B1</a>                     </span><span class=c>; Position the sprite at Mario (<a href="#A0B1">$A0B1</a>)</span></span>
-<span class=c>;;</span>
-<span class=c>;; RAM $7E0200..$7E041F is a mirror of OAM. This code uses $0301,Y</span>
-<span class=c>;; which would be the Y-position (relative to the screen) of the</span>
-<span class=c>;; sprite with OAM slot = (Y / 4) + 64. (TODO - is this correct?)</span>
-<span class=c>;;</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; RAM $7E0200..$7E041F is a mirror of OAM. This code uses $0301,Y</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; which would be the Y-position (relative to the screen) of the</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; sprite with OAM slot = (Y / 4) + 64. (TODO - is this correct?)</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 <span id="9FD7" class=l><span class=gut><span class=rom>$01:9FD7</span> <span class=hx>BC EA 15    </span> </span><span class=cd><span class=op>LDY.W</span> <a class=ram href="ram.html#15EA" title="Sprite OAM index">RAM_SprOAMIndex</a>,X         </span><span class=c>; \</span></span>
 <span id="9FDA" class=l><span class=gut><span class=rom>$01:9FDA</span> <span class=hx>A9 F0       </span> </span><span class=cd><span class=op>LDA.B</span> #$F0                      </span><span class=c>; } Y = OAM index, OAM Y = $F0 (hide the balloon sprite)</span></span>
 <span id="9FDC" class=l><span class=gut><span class=rom>$01:9FDC</span> <span class=hx>99 01 03    </span> </span><span class=cd><span class=op>STA.W</span> OAM_DispY,Y               </span><span class=c>; /</span></span>
@@ -5836,11 +5836,11 @@
 <span id="9FE7" class=l><span class=gut><span class=rom>$01:9FE7</span> <span class=hx>90 0B       </span> </span><span class=cd><span class=op>BCC</span> <a href="#9FF4">$9FF4</a>                       </span><span class=c>; /</span></span>
 <span id="9FE9" class=l><span class=gut><span class=rom>$01:9FE9</span> <span class=hx>AD 19 14    </span> </span><span class=cd><span class=op>LDA.W</span> <a class=ram href="ram.html#1419" title="Yoshi / pipe entry flag">RAM_YoshiInPipe</a>           </span><span class=c>; \</span></span>
 <span id="9FEC" class=l><span class=gut><span class=rom>$01:9FEC</span> <span class=hx>D0 06       </span> </span><span class=cd><span class=op>BNE</span> <a href="#9FF4">$9FF4</a>                       </span><span class=c>; / In a pipe: skip to <a href="01.html#9FF4">$019FF4</a></span></span>
-<span class=c>;; We are animating Mario and are not in a pipe</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; We are animating Mario and are not in a pipe</span></span></span>
 <span id="9FEE" class=l><span class=gut><span class=rom>$01:9FEE</span> <span class=hx>A9 09       </span> </span><span class=cd><span class=op>LDA.B</span> #$09                      </span><span class=c>; \</span></span>
 <span id="9FF0" class=l><span class=gut><span class=rom>$01:9FF0</span> <span class=hx>9D C8 14    </span> </span><span class=cd><span class=op>STA.W</span> <a class=ram href="ram.html#14C8" title="Sprite status">RAM_SpriteAction</a>,X        </span><span class=c>; / Mario is animating: sprite status = 9 (stunned, drops from Mario)</span></span>
 <span id="9FF3" class=l><span class=gut><span class=rom>$01:9FF3</span> <span class=hx>60          </span> </span><span class=cd><span class=op>RTS</span>                             </span><span class=c>; Return</span></span>
-<span class=c>;; Come here if we are not animating Mario or we are in a pipe</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Come here if we are not animating Mario or we are in a pipe</span></span></span>
 <span id="9FF4" class=l><span class=gut><span class=rom>$01:9FF4</span> <span class=hx>BD C8 14    </span> </span><span class=cd><span class=op>LDA.W</span> <a class=ram href="ram.html#14C8" title="Sprite status">RAM_SpriteAction</a>,X        </span><span class=c>; \</span></span>
 <span id="9FF7" class=l><span class=gut><span class=rom>$01:9FF7</span> <span class=hx>C9 08       </span> </span><span class=cd><span class=op>CMP.B</span> #$08                      </span><span class=c>; } Return if sprite status is 8 (normal)</span></span>
 <span id="9FF9" class=l><span class=gut><span class=rom>$01:9FF9</span> <span class=hx>F0 19       </span> </span><span class=cd><span class=op>BEQ</span> <a href="#A014">$A014</a>                       </span><span class=c>; /</span></span>
@@ -5856,9 +5856,9 @@
 <span id="A011" class=l><span class=gut><span class=rom>$01:A011</span> <span class=hx>20 B1 A0    </span> </span><span class=cd><span class=op>JSR.W</span> <a href="#A0B1">$A0B1</a>                     </span><span class=c>; Position sprite at Mario (<a href="#A0B1">$A0B1</a>)</span></span>
 <span id="A014" class=l><span class=gut><span class=rom>$01:A014</span> <span class=hx>60          </span> </span><span class=cd><span class=op>RTS</span>                             </span><span class=c>; Return</span></span>
 
-<span class=c>;; Mario carries a sprite but the player released the Y or X</span>
-<span class=c>;; button, so release the sprite.</span>
-<span class=c>;;</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Mario carries a sprite but the player released the Y or X</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; button, so release the sprite.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 
 <span class=hd><span class=c>;;; <a id="ReleaseSprCarried" href="#ReleaseSprCarried">$A015</a>: Release carried sprite (ReleaseSprCarried) ;;;</span>
 <span class=c>;; Sets status 9 (stunned), then chooses: up held = toss up, sprite &lt; $15 kicks unless down held, sprite &gt;=</span>
@@ -5872,24 +5872,24 @@
 <span id="A020" class=l><span class=gut><span class=rom>$01:A020</span> <span class=hx>A5 72       </span> </span><span class=cd><span class=op>LDA</span> <a class=ram href="ram.html#0072" title="Mario in-air state">RAM_IsFlying</a>                </span><span class=c>; |</span></span>
 <span id="A022" class=l><span class=gut><span class=rom>$01:A022</span> <span class=hx>D0 02       </span> </span><span class=cd><span class=op>BNE</span> <a href="#A026">$A026</a>                       </span><span class=c>; } Goomba released while Mario is on the ground: Y = -20 (dead code, no effect)</span></span>
 <span id="A024" class=l><span class=gut><span class=rom>$01:A024</span> <span class=hx>A0 EC       </span> </span><span class=cd><span class=op>LDY.B</span> #$EC                      </span><span class=c>; /</span></span>
-<span class=c>;;</span>
-<span class=c>;; The next line only affects kicked sprites. Later code will</span>
-<span class=c>;; set the vertical speed of tossed-up or dropped sprites.</span>
-<span class=c>;; Thus edits to address $01A019 affect only kicked sprites.</span>
-<span class=c>;;</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; The next line only affects kicked sprites. Later code will</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; set the vertical speed of tossed-up or dropped sprites.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Thus edits to address $01A019 affect only kicked sprites.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 <span id="A026" class=l><span class=gut><span class=rom>$01:A026</span> <span class=hx>94 AA       </span> </span><span class=cd><span class=op>STY</span> <a class=ram href="ram.html#00AA" title="Sprite Y speed">RAM_SpriteSpeedY</a>,X          </span><span class=c>; Sprite Y speed = Y</span></span>
 <span id="A028" class=l><span class=gut><span class=rom>$01:A028</span> <span class=hx>A9 09       </span> </span><span class=cd><span class=op>LDA.B</span> #$09                      </span><span class=c>; \</span></span>
 <span id="A02A" class=l><span class=gut><span class=rom>$01:A02A</span> <span class=hx>9D C8 14    </span> </span><span class=cd><span class=op>STA.W</span> <a class=ram href="ram.html#14C8" title="Sprite status">RAM_SpriteAction</a>,X        </span><span class=c>; / Sprite status = 9 (stunned)</span></span>
-<span class=c>;;</span>
-<span class=c>;; Decide whether to branch to the code for tossing up the sprite,</span>
-<span class=c>;; branch to the code for kicking the sprite, or continue with the</span>
-<span class=c>;; code for normally dropping the sprite.</span>
-<span class=c>;;</span>
-<span class=c>;; Bob-ombs $OD, Goombas $0F, Buzzy Beetles $11 are &lt; $15.</span>
-<span class=c>;; Koopa shells are also &lt; $15.</span>
-<span class=c>;; Most other carried sprites, like springboards $2F and</span>
-<span class=c>;;   P-switches $3E are &gt;= $15.</span>
-<span class=c>;; </span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Decide whether to branch to the code for tossing up the sprite,</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; branch to the code for kicking the sprite, or continue with the</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; code for normally dropping the sprite.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Bob-ombs $OD, Goombas $0F, Buzzy Beetles $11 are &lt; $15.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Koopa shells are also &lt; $15.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Most other carried sprites, like springboards $2F and</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;   P-switches $3E are &gt;= $15.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 <span id="A02D" class=l><span class=gut><span class=rom>$01:A02D</span> <span class=hx>A5 15       </span> </span><span class=cd><span class=op>LDA</span> <a class=ram href="ram.html#0015" title="Controller 1 held (byetUDLR)">RAM_ControllerA</a>             </span><span class=c>; \</span></span>
 <span id="A02F" class=l><span class=gut><span class=rom>$01:A02F</span> <span class=hx>29 08       </span> </span><span class=cd><span class=op>AND.B</span> #$08                      </span><span class=c>; } Up held: toss the sprite up</span></span>
 <span id="A031" class=l><span class=gut><span class=rom>$01:A031</span> <span class=hx>D0 35       </span> </span><span class=cd><span class=op>BNE</span> <a href="#TossUpSprCarried">TossUpSprCarried</a>            </span><span class=c>; /</span></span>
@@ -5903,17 +5903,17 @@
 <span id="A041" class=l><span class=gut><span class=rom>$01:A041</span> <span class=hx>A5 15       </span> </span><span class=cd><span class=op>LDA</span> <a class=ram href="ram.html#0015" title="Controller 1 held (byetUDLR)">RAM_ControllerA</a>             </span><span class=c>; \</span></span>
 <span id="A043" class=l><span class=gut><span class=rom>$01:A043</span> <span class=hx>29 03       </span> </span><span class=cd><span class=op>AND.B</span> #$03                      </span><span class=c>; } Sprite &gt;= $15: kick if left or right is held</span></span>
 <span id="A045" class=l><span class=gut><span class=rom>$01:A045</span> <span class=hx>D0 32       </span> </span><span class=cd><span class=op>BNE</span> <a href="#KickSprCarried">KickSprCarried</a>              </span><span class=c>; /</span></span>
-<span class=c>;;</span>
-<span class=c>;; Continue if not tossing up nor kicking the sprite.</span>
-<span class=c>;; Drop the sprite.</span>
-<span class=c>;;</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Continue if not tossing up nor kicking the sprite.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Drop the sprite.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 <span id="A047" class=l><span class=gut><span class=rom>$01:A047</span> <span class=hx>A4 76       </span> </span><span class=cd><span class=op>LDY</span> <a class=ram href="ram.html#0076" title="Mario facing direction">RAM_MarioDirection</a>          </span><span class=c>; Y = Mario direction (0 left, 1 right)</span></span>
 <span id="A049" class=l><span class=gut><span class=rom>$01:A049</span> <span class=hx>A5 D1       </span> </span><span class=cd><span class=op>LDA</span> <a class=ram href="ram.html#00D1" title="Mario X position copy, low">$D1</a>                         </span><span class=c>; \</span></span>
 <span id="A04B" class=l><span class=gut><span class=rom>$01:A04B</span> <span class=hx>18          </span> </span><span class=cd><span class=op>CLC</span>                             </span><span class=c>; |</span></span>
 <span id="A04C" class=l><span class=gut><span class=rom>$01:A04C</span> <span class=hx>79 67 9F    </span> </span><span class=cd><span class=op>ADC.W</span> <a href="#9F67">$9F67</a>,Y                   </span><span class=c>; |</span></span>
 <span id="A04F" class=l><span class=gut><span class=rom>$01:A04F</span> <span class=hx>95 E4       </span> </span><span class=cd><span class=op>STA</span> <a class=ram href="ram.html#00E4" title="Sprite X position low">RAM_SpriteXLo</a>,X             </span><span class=c>; |</span></span>
 <span id="A051" class=l><span class=gut><span class=rom>$01:A051</span> <span class=hx>A5 D2       </span> </span><span class=cd><span class=op>LDA</span> <a class=ram href="ram.html#00D2" title="Mario X position copy, high">$D2</a>                         </span><span class=c>; |</span></span>
-<span class=c>;; carry for 16-bit add   ;  |</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; carry for 16-bit add</span>         </span><span class=c>;  |</span></span>
 <span id="A053" class=l><span class=gut><span class=rom>$01:A053</span> <span class=hx>79 69 9F    </span> </span><span class=cd><span class=op>ADC.W</span> <a href="#9F69">$9F69</a>,Y                   </span><span class=c>; } Sprite X = Mario X +/- 13 (16-bit)</span></span>
 <span id="A056" class=l><span class=gut><span class=rom>$01:A056</span> <span class=hx>9D E0 14    </span> </span><span class=cd><span class=op>STA.W</span> <a class=ram href="ram.html#14E0" title="Sprite X position high">RAM_SpriteXHi</a>,X           </span><span class=c>; /</span></span>
 <span id="A059" class=l><span class=gut><span class=rom>$01:A059</span> <span class=hx>20 30 AD    </span> </span><span class=cd><span class=op>JSR.W</span> <a href="#SubHorizPos">SubHorizPos</a>               </span><span class=c>; Y = which side of the sprite Mario is on (<a href="#SubHorizPos">SubHorizPos</a>)</span></span>
@@ -5924,9 +5924,9 @@
 <span id="A064" class=l><span class=gut><span class=rom>$01:A064</span> <span class=hx>74 AA       </span> </span><span class=cd><span class=op>STZ</span> <a class=ram href="ram.html#00AA" title="Sprite Y speed">RAM_SpriteSpeedY</a>,X          </span><span class=c>; Sprite Y speed = 0</span></span>
 <span id="A066" class=l><span class=gut><span class=rom>$01:A066</span> <span class=hx>80 3E       </span> </span><span class=cd><span class=op>BRA</span> <a href="#StartKickPose">StartKickPose</a>               </span><span class=c>; Show Mario&#x27;s kick pose and finish</span></span>
 
-<span class=c>;; Mario released the sprite, but the player held up from the</span>
-<span class=c>;; Control Pad, so we need to toss the sprite in the air.</span>
-<span class=c>;;</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Mario released the sprite, but the player held up from the</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Control Pad, so we need to toss the sprite in the air.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 
 <span class=hd><span class=c>;;; <a id="TossUpSprCarried" href="#TossUpSprCarried">$A068</a>: Toss carried sprite upward (TossUpSprCarried) ;;;</span>
 <span class=c>;; Plays kick sound and smoke, sprite Y speed = -112, X speed = Mario X speed / 2. Falls to <a href="#StartKickPose">StartKickPose</a>.</span></span>
@@ -5939,8 +5939,8 @@
 <span id="A075" class=l><span class=gut><span class=rom>$01:A075</span> <span class=hx>76 B6       </span> </span><span class=cd><span class=op>ROR</span> <a class=ram href="ram.html#00B6" title="Sprite X speed">RAM_SpriteSpeedX</a>,X          </span><span class=c>; /</span></span>
 <span id="A077" class=l><span class=gut><span class=rom>$01:A077</span> <span class=hx>80 2D       </span> </span><span class=cd><span class=op>BRA</span> <a href="#StartKickPose">StartKickPose</a>               </span><span class=c>; Show Mario&#x27;s kick pose and finish</span></span>
 
-<span class=c>;; Mario released and kicked the sprite.</span>
-<span class=c>;;</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Mario released and kicked the sprite.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 
 <span class=hd><span class=c>;;; <a id="KickSprCarried" href="#KickSprCarried">$A079</a>: Kick carried sprite (KickSprCarried) ;;;</span>
 <span class=c>;; Plays kick sound and smoke, status = $0A (kicked), X speed from <a href="#ShellSpeedX">ShellSpeedX</a> indexed by direction (+2 on</span>
@@ -5967,14 +5967,14 @@
 <span id="A0A0" class=l><span class=gut><span class=rom>$01:A0A0</span> <span class=hx>18          </span> </span><span class=cd><span class=op>CLC</span>                             </span><span class=c>; |</span></span>
 <span id="A0A1" class=l><span class=gut><span class=rom>$01:A0A1</span> <span class=hx>79 6B 9F    </span> </span><span class=cd><span class=op>ADC.W</span> <a href="#ShellSpeedX">ShellSpeedX</a>,Y             </span><span class=c>; } Sprite X speed += Mario X speed / 2</span></span>
 <span id="A0A4" class=l><span class=gut><span class=rom>$01:A0A4</span> <span class=hx>95 B6       </span> </span><span class=cd><span class=op>STA</span> <a class=ram href="ram.html#00B6" title="Sprite X speed">RAM_SpriteSpeedX</a>,X          </span><span class=c>; /</span></span>
-<span class=c>;; fall through to <a href="#StartKickPose">StartKickPose</a></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; fall through to <a href="#StartKickPose">StartKickPose</a></span></span></span>
 
-<span class=c>;; Give the released sprite some time to move away from Mario.</span>
-<span class=c>;; (If Mario tries to toss up or drop a Koopa shell, we do want</span>
-<span class=c>;;  the collision code to immediately kick the shell.)</span>
-<span class=c>;;</span>
-<span class=c>;; Show the pose of Mario kicking the sprite with the foot.</span>
-<span class=c>;;</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Give the released sprite some time to move away from Mario.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; (If Mario tries to toss up or drop a Koopa shell, we do want</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;  the collision code to immediately kick the shell.)</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Show the pose of Mario kicking the sprite with the foot.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 
 <span class=hd><span class=c>;;; <a id="StartKickPose" href="#StartKickPose">$A0A6</a>: Start Mario kick pose and carry positioning (StartKickPose) ;;;</span>
 <span class=c>;; <a href="01.html#A0A6">$01A0A6</a>: disables Mario contact with the sprite for 16 frames and shows the kick pose for 12 frames</span>
@@ -6057,15 +6057,15 @@
 <span class=c>;;; The next code is part of subroutine <a href="#A187">$A187</a>. The code is before the start of the subroutine</span>
 <span class=c>;;; so that branch instructions (having range -128..127) can reach the code.</span>
 
-<span class=c>;; Show a stunned (stationary or carried) Goomba. The sprite</span>
-<span class=c>;; appears vertically flipped (up-side-down) and moves its legs,</span>
-<span class=c>;; alternating its image after every 8 frames.</span>
-<span class=c>;;</span>
-<span class=c>;; The timer at table $1540 counts the frames until the Goomba</span>
-<span class=c>;; walks. If the timer is below 48, then the Goomba hastens its</span>
-<span class=c>;; animation, alternating its image after every 4 frames, to warn</span>
-<span class=c>;; the player that it will soon walk.</span>
-<span class=c>;;</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Show a stunned (stationary or carried) Goomba. The sprite</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; appears vertically flipped (up-side-down) and moves its legs,</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; alternating its image after every 8 frames.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; The timer at table $1540 counts the frames until the Goomba</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; walks. If the timer is below 48, then the Goomba hastens its</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; animation, alternating its image after every 4 frames, to warn</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; the player that it will soon walk.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 
 <span class=hd><span class=c>;;; <a id="StunGoomba" href="#StunGoomba">$A12F</a>: Draw stunned Goomba (StunGoomba) ;;;</span>
 <span class=c>;; Animates the upside-down Goomba (frame 0/1 every 8 frames, every 4 below timer 48 in [$1540]). At timer 8</span>
@@ -6089,12 +6089,12 @@
 <span id="A14D" class=l><span class=gut><span class=rom>$01:A14D</span> <span class=hx>A9 80       </span> </span><span class=cd><span class=op>LDA.B</span> #$80                      </span><span class=c>; A = $80 (Y flip, extra property bits)</span></span>
 <span id="A14F" class=l><span class=gut><span class=rom>$01:A14F</span> <span class=hx>4C 09 9F    </span> </span><span class=cd><span class=op>JMP.W</span> <a href="#SubSprGfx2Entry0">SubSprGfx2Entry0</a>          </span><span class=c>; Draw the upside-down Goomba</span></span>
 
-<span class=c>;; Show a stunned (stationary or carried) Mecha Koopa. The sprite</span>
-<span class=c>;; appears flattened. If the timer is below 48, then the Mecha</span>
-<span class=c>;; Koopa shakes to warn the player that it will soon walk. To</span>
-<span class=c>;; shake the sprite, we temporily move layer 1 left or right by</span>
-<span class=c>;; one pixel.</span>
-<span class=c>;;</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Show a stunned (stationary or carried) Mecha Koopa. The sprite</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; appears flattened. If the timer is below 48, then the Mecha</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Koopa shakes to warn the player that it will soon walk. To</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; shake the sprite, we temporily move layer 1 left or right by</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; one pixel.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 
 <span class=hd><span class=c>;;; <a id="StunMechaKoopa" href="#StunMechaKoopa">$A152</a>: Draw stunned Mecha Koopa (StunMechaKoopa) ;;;</span>
 <span class=c>;; Below timer 48 in [$1540], shakes it by toggling bit 0 of the screen X boundary during the draw. Carried:</span>
@@ -6107,7 +6107,7 @@
 <span id="A15C" class=l><span class=gut><span class=rom>$01:A15C</span> <span class=hx>29 01       </span> </span><span class=cd><span class=op>AND.B</span> #$01                      </span><span class=c>; \</span></span>
 <span id="A15E" class=l><span class=gut><span class=rom>$01:A15E</span> <span class=hx>45 1A       </span> </span><span class=cd><span class=op>EOR</span> <a class=ram href="ram.html#001A" title="Layer 1 X position (low)">RAM_ScreenBndryXLo</a>          </span><span class=c>; } Odd timer: screen X boundary XOR 1 (1-pixel shake)</span></span>
 <span id="A160" class=l><span class=gut><span class=rom>$01:A160</span> <span class=hx>85 1A       </span> </span><span class=cd><span class=op>STA</span> <a class=ram href="ram.html#001A" title="Layer 1 X position (low)">RAM_ScreenBndryXLo</a>          </span><span class=c>; /</span></span>
-<span class=c>;; Come here if timer &gt;= 48</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Come here if timer &gt;= 48</span></span></span>
 <span id="A162" class=l><span class=gut><span class=rom>$01:A162</span> <span class=hx>22 07 B3 03 </span> </span><span class=cd><span class=op>JSL.L</span> <a href="03.html#B307">$B307</a>                     </span><span class=c>; Draw the Mecha Koopa (bank 3 wrapper, probably the graphics)</span></span>
 <span id="A166" class=l><span class=gut><span class=rom>$01:A166</span> <span class=hx>68          </span> </span><span class=cd><span class=op>PLA</span>                             </span><span class=c>; \</span></span>
 <span id="A167" class=l><span class=gut><span class=rom>$01:A167</span> <span class=hx>85 1A       </span> </span><span class=cd><span class=op>STA</span> <a class=ram href="ram.html#001A" title="Layer 1 X position (low)">RAM_ScreenBndryXLo</a>          </span><span class=c>; / Restore screen X boundary</span></span>
@@ -6119,7 +6119,7 @@
 <span id="A174" class=l><span class=gut><span class=rom>$01:A174</span> <span class=hx>9D 7C 15    </span> </span><span class=cd><span class=op>STA.W</span> <a class=ram href="ram.html#157C" title="Sprite facing direction">RAM_SpriteDir</a>,X           </span><span class=c>; /</span></span>
 <span id="A177" class=l><span class=gut><span class=rom>$01:A177</span> <span class=hx>60          </span> </span><span class=cd><span class=op>RTS</span>                             </span><span class=c>; Return</span></span>
 
-<span class=c>;; Draw a stunned Cheep-Cheep. (TODO - what is this?)</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Draw a stunned Cheep-Cheep. (TODO - what is this?)</span></span></span>
 
 <span class=hd><span class=c>;;; <a id="StunFish" href="#StunFish">$A178</a>: Draw stunned Cheep Cheep (StunFish) ;;;</span>
 <span class=c>;; Advances the animation, sets palette bit 7 and draws with <a href="#SubSprGfx2Entry1">SubSprGfx2Entry1</a>.</span></span>
@@ -6146,15 +6146,15 @@
 <span id="A187" class=l><span class=gut><span class=rom>$01:A187</span> <span class=hx>BD 7A 16    </span> </span><span class=cd><span class=op>LDA.W</span> <a class=ram href="ram.html#167A" title="Sprite tweaker: Mario interaction">RAM_Tweaker167A</a>,X         </span><span class=c>; \</span></span>
 <span id="A18A" class=l><span class=gut><span class=rom>$01:A18A</span> <span class=hx>29 08       </span> </span><span class=cd><span class=op>AND.B</span> #$08                      </span><span class=c>; } Sprite does not turn into a shell: skip to default drawing</span></span>
 <span id="A18C" class=l><span class=gut><span class=rom>$01:A18C</span> <span class=hx>F0 42       </span> </span><span class=cd><span class=op>BEQ</span> <a href="#A1D0">$A1D0</a>                       </span><span class=c>; /</span></span>
-<span class=c>;;</span>
-<span class=c>;; Given a sprite number, branch to the correct case (so that at a</span>
-<span class=c>;; shell looks like a shell, not a springboard). We have here a</span>
-<span class=c>;; sequence of comparisons instead of a jump table.</span>
-<span class=c>;;</span>
-<span class=c>;; http://www.smwcentral.net/?p=thread&amp;id=7562 is a list of sprite</span>
-<span class=c>;; numbers. Sprite $53 is not in the list, but we verified that it</span>
-<span class=c>;; is a grab block (aka a throw block).</span>
-<span class=c>;;</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Given a sprite number, branch to the correct case (so that at a</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; shell looks like a shell, not a springboard). We have here a</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; sequence of comparisons instead of a jump table.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; http://www.smwcentral.net/?p=thread&amp;id=7562 is a list of sprite</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; numbers. Sprite $53 is not in the list, but we verified that it</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; is a grab block (aka a throw block).</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 <span id="A18E" class=l><span class=gut><span class=rom>$01:A18E</span> <span class=hx>B5 9E       </span> </span><span class=cd><span class=op>LDA</span> <a class=ram href="ram.html#009E" title="Sprite number">RAM_SpriteNum</a>,X             </span><span class=c>; A = sprite number</span></span>
 <span id="A190" class=l><span class=gut><span class=rom>$01:A190</span> <span class=hx>C9 A2       </span> </span><span class=cd><span class=op>CMP.B</span> #$A2                      </span><span class=c>; \</span></span>
 <span id="A192" class=l><span class=gut><span class=rom>$01:A192</span> <span class=hx>F0 BE       </span> </span><span class=cd><span class=op>BEQ</span> <a href="#StunMechaKoopa">StunMechaKoopa</a>              </span><span class=c>; / $A2 Mecha Koopa</span></span>
@@ -6190,11 +6190,11 @@
 <span id="A1D0" class=l><span class=gut><span class=rom>$01:A1D0</span> <span class=hx>20 06 98    </span> </span><span class=cd><span class=op>JSR.W</span> <a href="#9806">$9806</a>                     </span><span class=c>; Draw all other sprites (<a href="#9806">$9806</a>)</span></span>
 <span id="A1D3" class=l><span class=gut><span class=rom>$01:A1D3</span> <span class=hx>60          </span> </span><span class=cd><span class=op>RTS</span>                             </span><span class=c>; Return</span></span>
 
-<span class=c>;; Draw a grab block (aka throw block) that is carried or is</span>
-<span class=c>;; stationary after being carried. In Super Mario World, grab</span>
-<span class=c>;; blocks start as blocks but become common sprites when someone</span>
-<span class=c>;; grabs them. As sprites, they blink by changing palettes.</span>
-<span class=c>;;</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Draw a grab block (aka throw block) that is carried or is</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; stationary after being carried. In Super Mario World, grab</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; blocks start as blocks but become common sprites when someone</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; grabs them. As sprites, they blink by changing palettes.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 
 <span class=hd><span class=c>;;; <a id="StunThrowBlock" href="#StunThrowBlock">$A1D4</a>: Draw grab block (blinking) (StunThrowBlock) ;;;</span>
 <span class=c>;; Below timer $40 in [$1540], changes the palette every other frame (+2 mod $10) to blink, then draws like</span>
@@ -6211,10 +6211,10 @@
 <span id="A1E2" class=l><span class=gut><span class=rom>$01:A1E2</span> <span class=hx>1A          </span> </span><span class=cd><span class=op>INC</span> A                           </span><span class=c>; |</span></span>
 <span id="A1E3" class=l><span class=gut><span class=rom>$01:A1E3</span> <span class=hx>29 0F       </span> </span><span class=cd><span class=op>AND.B</span> #$0F                      </span><span class=c>; } Sprite palette = ([palette] + 2) AND $0F (blink)</span></span>
 <span id="A1E5" class=l><span class=gut><span class=rom>$01:A1E5</span> <span class=hx>9D F6 15    </span> </span><span class=cd><span class=op>STA.W</span> <a class=ram href="ram.html#15F6" title="Sprite palette and properties">RAM_SpritePal</a>,X           </span><span class=c>; /</span></span>
-<span class=c>;; fall through to <a href="#StunYoshiEgg">StunYoshiEgg</a></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; fall through to <a href="#StunYoshiEgg">StunYoshiEgg</a></span></span></span>
 
-<span class=c>;; For <a href="#Yoshi">Yoshi</a> egg: call <a href="#SubSprGfx2Entry1">SubSprGfx2Entry1</a> immediately.</span>
-<span class=c>;; For grab block: call it after running above code.</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; For <a href="#Yoshi">Yoshi</a> egg: call <a href="#SubSprGfx2Entry1">SubSprGfx2Entry1</a> immediately.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; For grab block: call it after running above code.</span></span></span>
 
 <span class=hd><span class=c>;;; <a id="StunYoshiEgg" href="#StunYoshiEgg">$A1E8</a>: Draw Yoshi egg (StunYoshiEgg) ;;;</span>
 <span class=c>;; Draws one 16x16 tile via <a href="#SubSprGfx2Entry1">SubSprGfx2Entry1</a>.</span></span>

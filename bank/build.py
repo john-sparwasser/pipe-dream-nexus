@@ -50,6 +50,7 @@ ADDR6 = re.compile(r"\$([0-9A-F]{2})([89A-F][0-9A-F]{3})\b")
 BRANCH_TGT = re.compile(r"\[\$([0-9A-F]{4})\]")
 RAMHEX = re.compile(r"(?<![\w$#:;])\$(?:(7[EF]):)?([0-9A-F]{4}|[0-9A-F]{2})(?![0-9A-F:])(?!,s\b)")
 HWREG = re.compile(r"\$((?:21[0-4][0-9A-F])|(?:42[01][0-9A-F])|(?:43[0-7][0-9A-F]))\b")
+SRC_HEX_COL, SRC_CODE_COL, SRC_COM_COL = 20, 34, 60  # columns of the source .asm: hex bytes, instruction, comment
 CODE_COL = 32   # width of the instruction field; comments start in the same column on every row (~97% of rows fit)
 WRAP = 110      # wrap ;; summary text at this width
 CALLS = {"JSR", "JSL", "JMP", "JML"}
@@ -380,7 +381,23 @@ def main():
         if ln.kind == "blank":
             return ""
         if ln.kind == "comment":
-            return f'<span class=c>{linkify(ln.comment, b)}</span>'
+            ind = len(ln.raw) - len(ln.raw.lstrip())
+            if ind < SRC_HEX_COL:  # flush-left block comment between routines
+                return f'<span class=c>{linkify(ln.comment, b)}</span>'
+            # Comment-only row indented into the code area: map the source's code and comment columns onto
+            # ours, so its "; |" lines up with the comments above and below.
+            if ind >= SRC_COM_COL - 6:  # starts in the comment column already
+                split = ind
+            else:  # starts in the code column; a later "; " near the comment column is its trailing comment
+                split = next((i for i in range(SRC_COM_COL - 6, len(ln.raw))
+                              if ln.raw[i] == ";" and ln.raw[i - 1] == " "), None)
+            left = ln.raw[ind:split].rstrip()
+            right = ln.raw[split:] if split is not None else ""
+            left = " " * max(0, ind - SRC_CODE_COL) + left
+            pad = " " * max(1, CODE_COL - len(left)) if right else ""
+            return (f'<span class=l><span class=gut><span class=rom>{" " * 8}</span> <span class=hx>{" " * 12}</span> </span>'
+                    f'<span class=cd><span class=c>{linkify(left, b)}</span>{pad}</span>'
+                    + (f'<span class=c>{linkify(right.rstrip(), b)}</span>' if right else "") + '</span>')
         if ln.kind == "raw":  # stray prose left in the dump: show it as a comment, not bare text
             return f'<span class=c>; {html.escape(ln.raw.strip())}</span>'
         idattr = f' id="{ln.addr & 0xFFFF:04X}"' if ln.addr is not None else ""

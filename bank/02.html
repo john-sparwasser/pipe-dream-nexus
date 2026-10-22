@@ -600,12 +600,12 @@
 <span id="801E" class=l><span class=gut><span class=rom>$02:801E</span> <span class=hx>CA          </span> </span><span class=cd><span class=op>DEX</span>                             </span><span class=c>; \</span></span>
 <span id="801F" class=l><span class=gut><span class=rom>$02:801F</span> <span class=hx>10 F8       </span> </span><span class=cd><span class=op>BPL</span> <a href="#DropRiFindSlot">DropRiFindSlot</a>              </span><span class=c>; / X--, loop while X &gt;= 0</span></span>
 
-<span class=c>;; If we are here, then all 12 sprite slots are full. We delete</span>
-<span class=c>;; one of the twelve sprites so that we have a slot for the item</span>
-<span class=c>;; falling from the item box. To delete the sprite, we store its</span>
-<span class=c>;; slot number in X and fall through to the code that creates the</span>
-<span class=c>;; new sprite.</span>
-<span class=c>;;</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; If we are here, then all 12 sprite slots are full. We delete</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; one of the twelve sprites so that we have a slot for the item</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; falling from the item box. To delete the sprite, we store its</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; slot number in X and fall through to the code that creates the</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; new sprite.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 <span id="8021" class=l><span class=gut><span class=rom>$02:8021</span> <span class=hx>CE 61 18    </span> </span><span class=cd><span class=op>DEC.W</span> <a class=ram href="ram.html#1861" title="Spawn-from-block slot toggle">$1861</a>                     </span><span class=c>; \</span></span>
 <span id="8024" class=l><span class=gut><span class=rom>$02:8024</span> <span class=hx>10 05       </span> </span><span class=cd><span class=op>BPL</span> <a href="#802B">$802B</a>                       </span><span class=c>; |</span></span>
 <span id="8026" class=l><span class=gut><span class=rom>$02:8026</span> <span class=hx>A9 01       </span> </span><span class=cd><span class=op>LDA.B</span> #$01                      </span><span class=c>; } Toggle [$1861] between 0 and 1 (decrement, wrap to 1)</span></span>
@@ -622,9 +622,9 @@
 <span id="803D" class=l><span class=gut><span class=rom>$02:803D</span> <span class=hx>D0 03       </span> </span><span class=cd><span class=op>BNE</span> <a href="#DropRiHaveSlot">DropRiHaveSlot</a>              </span><span class=c>; / Not status $0B (carried by Mario): reuse the slot as is</span></span>
 <span id="803F" class=l><span class=gut><span class=rom>$02:803F</span> <span class=hx>9C F3 13    </span> </span><span class=cd><span class=op>STZ.W</span> <a class=ram href="ram.html#13F3" title="Mario balloon pose / P-balloon">$13F3</a>                     </span><span class=c>; P-balloon was being carried: [$13F3] = 0 (probably Mario&#x27;s balloon pose)</span></span>
 
-<span class=c>;; X is now an empty sprite slot. We occupy the slot with a sprite</span>
-<span class=c>;; of the item falling from the item box.</span>
-<span class=c>;; </span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; X is now an empty sprite slot. We occupy the slot with a sprite</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; of the item falling from the item box.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 
 <span class=hd><span class=c>;;; <a id="DropRiHaveSlot" href="#DropRiHaveSlot">$8042</a>: Create falling item sprite (DropRiHaveSlot) ;;;</span>
 <span class=c>;; Sets the slot to status 8, sprite number = item + $73, initializes it, positions it near the top of the</span>
@@ -641,7 +641,7 @@
 <span id="8054" class=l><span class=gut><span class=rom>$02:8054</span> <span class=hx>65 1A       </span> </span><span class=cd><span class=op>ADC</span> <a class=ram href="ram.html#001A" title="Layer 1 X position (low)">RAM_ScreenBndryXLo</a>          </span><span class=c>; |</span></span>
 <span id="8056" class=l><span class=gut><span class=rom>$02:8056</span> <span class=hx>95 E4       </span> </span><span class=cd><span class=op>STA</span> <a class=ram href="ram.html#00E4" title="Sprite X position low">RAM_SpriteXLo</a>,X             </span><span class=c>; |</span></span>
 <span id="8058" class=l><span class=gut><span class=rom>$02:8058</span> <span class=hx>A5 1B       </span> </span><span class=cd><span class=op>LDA</span> <a class=ram href="ram.html#001B" title="Layer 1 X position (high)">RAM_ScreenBndryXHi</a>          </span><span class=c>; |</span></span>
-<span class=c>;; carry                  ;  |   $78 + X_pos of screen</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; carry</span>                        </span><span class=c>;  |   $78 + X_pos of screen</span></span>
 <span id="805A" class=l><span class=gut><span class=rom>$02:805A</span> <span class=hx>69 00       </span> </span><span class=cd><span class=op>ADC.B</span> #$00                      </span><span class=c>; } Sprite X position = screen X + $78 (16-bit)</span></span>
 <span id="805C" class=l><span class=gut><span class=rom>$02:805C</span> <span class=hx>9D E0 14    </span> </span><span class=cd><span class=op>STA.W</span> <a class=ram href="ram.html#14E0" title="Sprite X position high">RAM_SpriteXHi</a>,X           </span><span class=c>; /</span></span>
 <span id="805F" class=l><span class=gut><span class=rom>$02:805F</span> <span class=hx>A9 20       </span> </span><span class=cd><span class=op>LDA.B</span> #$20                      </span><span class=c>; \</span></span>
@@ -649,7 +649,7 @@
 <span id="8062" class=l><span class=gut><span class=rom>$02:8062</span> <span class=hx>65 1C       </span> </span><span class=cd><span class=op>ADC</span> <a class=ram href="ram.html#001C" title="Layer 1 Y position (low)">RAM_ScreenBndryYLo</a>          </span><span class=c>; |</span></span>
 <span id="8064" class=l><span class=gut><span class=rom>$02:8064</span> <span class=hx>95 D8       </span> </span><span class=cd><span class=op>STA</span> <a class=ram href="ram.html#00D8" title="Sprite Y position low">RAM_SpriteYLo</a>,X             </span><span class=c>; |</span></span>
 <span id="8066" class=l><span class=gut><span class=rom>$02:8066</span> <span class=hx>A5 1D       </span> </span><span class=cd><span class=op>LDA</span> <a class=ram href="ram.html#001D" title="Layer 1 Y position (high)">RAM_ScreenBndryYHi</a>          </span><span class=c>; |</span></span>
-<span class=c>;; carry                  ;  |   $20 + Y_pos of screen</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; carry</span>                        </span><span class=c>;  |   $20 + Y_pos of screen</span></span>
 <span id="8068" class=l><span class=gut><span class=rom>$02:8068</span> <span class=hx>69 00       </span> </span><span class=cd><span class=op>ADC.B</span> #$00                      </span><span class=c>; } Sprite Y position = screen Y + $20 (16-bit)</span></span>
 <span id="806A" class=l><span class=gut><span class=rom>$02:806A</span> <span class=hx>9D D4 14    </span> </span><span class=cd><span class=op>STA.W</span> <a class=ram href="ram.html#14D4" title="Sprite Y position high">RAM_SpriteYHi</a>,X           </span><span class=c>; /</span></span>
 <span id="806D" class=l><span class=gut><span class=rom>$02:806D</span> <span class=hx>FE 34 15    </span> </span><span class=cd><span class=op>INC.W</span> <a class=ram href="ram.html#1534" title="Sprite misc table 3">RAM_BlinkFallFlag</a>,X       </span><span class=c>; [<a class=ram href="ram.html#1534" title="Sprite misc table 3">RAM_BlinkFallFlag</a>] = 1: sprite blinks and falls through tiles</span></span>
@@ -12197,20 +12197,20 @@
 <span class=c>;;; <a href="#D25F">$D25F</a> =&gt; <a href="#CscNotLakituCloud">CscNotLakituCloud</a></span>
 <span class=c>;;; <a href="#D26F">$D26F</a> =&gt; <a href="#CscHandleY">CscHandleY</a></span>
 
-<span class=c>;; Tables for horizontal movement of the P-balloon or the <a href="01.html#Lakitu">Lakitu</a></span>
-<span class=c>;; cloud, indexed by Y = 1 (going right) or Y = 2 (going left).</span>
-<span class=c>;;</span>
-<span class=c>;; <a href="#ControlSprCarried">ControlSprCarried</a> requires that data bank register = $02</span>
-<span class=c>;; because the code uses the 16-bit address of these tables.</span>
-<span class=c>;;</span>
-<span class=c>;; <a href="#D20F">$D20F</a>,Y = delta for horizontal movement</span>
-<span class=c>;; <a href="#D20F">$D20F</a>,1 = +1 to move right</span>
-<span class=c>;; <a href="#D20F">$D20F</a>,2 = -1 to move left</span>
-<span class=c>;;</span>
-<span class=c>;; <a href="#D211">$D211</a>,Y = horizontal speed limit</span>
-<span class=c>;; <a href="#D211">$D211</a>,1 = +16 when moving right</span>
-<span class=c>;; <a href="#D211">$D211</a>,2 = -16 when moving left</span>
-<span class=c>;;</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Tables for horizontal movement of the P-balloon or the <a href="01.html#Lakitu">Lakitu</a></span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; cloud, indexed by Y = 1 (going right) or Y = 2 (going left).</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; <a href="#ControlSprCarried">ControlSprCarried</a> requires that data bank register = $02</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; because the code uses the 16-bit address of these tables.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; <a href="#D20F">$D20F</a>,Y = delta for horizontal movement</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; <a href="#D20F">$D20F</a>,1 = +1 to move right</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; <a href="#D20F">$D20F</a>,2 = -1 to move left</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; <a href="#D211">$D211</a>,Y = horizontal speed limit</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; <a href="#D211">$D211</a>,1 = +16 when moving right</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; <a href="#D211">$D211</a>,2 = -16 when moving left</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 <span class=c>;;; <a href="#D20F">$D20F</a>:   6B            RTL                       ; Return </span>
 
 <span class=hd><span class=c>;;; <a id="s02D210" href="#s02D210">$D210..D211</a>: Table: balloon/cloud speed deltas and limits ;;;</span></span>
@@ -12245,8 +12245,8 @@
 <span id="D214" class=l><span class=gut><span class=rom>$02:D214</span> <span class=hx>A5 15       </span> </span><span class=cd><span class=op>LDA</span> <a class=ram href="ram.html#0015" title="Controller 1 held (byetUDLR)">RAM_ControllerA</a>             </span><span class=c>; \</span></span>
 <span id="D216" class=l><span class=gut><span class=rom>$02:D216</span> <span class=hx>29 03       </span> </span><span class=cd><span class=op>AND.B</span> #$03                      </span><span class=c>; / A = Control Pad left/right bits</span></span>
 <span id="D218" class=l><span class=gut><span class=rom>$02:D218</span> <span class=hx>D0 0E       </span> </span><span class=cd><span class=op>BNE</span> <a href="#CscGoLeftOrRight">CscGoLeftOrRight</a>            </span><span class=c>; Pressing left or right: go to <a href="02.html#D228">$02D228</a></span></span>
-<span class=c>;;; Fall through if player not pressing left or right.</span>
-<span class=c>;;; Come here if sprite is over horizontal speed limit.</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;; Fall through if player not pressing left or right.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;; Come here if sprite is over horizontal speed limit.</span></span></span>
 
 <span class=hd><span class=c>;;; <a id="CscSlowSpeedX" href="#CscSlowSpeedX">$D21A</a>: Move X speed toward zero (CscSlowSpeedX) ;;;</span></span>
 <span id="D21A" class=l><span class=gut><span class=rom>$02:D21A</span> <span class=hx>B5 B6       </span> </span><span class=cd><span class=op>LDA</span> <a class=ram href="ram.html#00B6" title="Sprite X speed">RAM_SpriteSpeedX</a>,X          </span><span class=c>; A = sprite X speed</span></span>
@@ -12262,43 +12262,43 @@
 <span id="D228" class=l><span class=gut><span class=rom>$02:D228</span> <span class=hx>A8          </span> </span><span class=cd><span class=op>TAY</span>                             </span><span class=c>; Y = Control Pad bits (1 = right, 2 = left)</span></span>
 <span id="D229" class=l><span class=gut><span class=rom>$02:D229</span> <span class=hx>C0 01       </span> </span><span class=cd><span class=op>CPY.B</span> #$01                      </span><span class=c>; \</span></span>
 <span id="D22B" class=l><span class=gut><span class=rom>$02:D22B</span> <span class=hx>D0 0B       </span> </span><span class=cd><span class=op>BNE</span> CscGoLeft                   </span><span class=c>; / Not pressing right: go to <a href="02.html#D238">$02D238</a></span></span>
-<span class=c>;; Here Y = 1</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Here Y = 1</span></span></span>
 <span id="D22D" class=l><span class=gut><span class=rom>$02:D22D</span> <span class=hx>B5 B6       </span> </span><span class=cd><span class=op>LDA</span> <a class=ram href="ram.html#00B6" title="Sprite X speed">RAM_SpriteSpeedX</a>,X          </span><span class=c>; \</span></span>
 <span id="D22F" class=l><span class=gut><span class=rom>$02:D22F</span> <span class=hx>D9 11 D2    </span> </span><span class=cd><span class=op>CMP.W</span> <a href="#D211">$D211</a>,Y                   </span><span class=c>; / Compare X speed with the limit</span></span>
 <span id="D232" class=l><span class=gut><span class=rom>$02:D232</span> <span class=hx>F0 13       </span> </span><span class=cd><span class=op>BEQ</span> <a href="#CscDecideY">CscDecideY</a>                  </span><span class=c>; At the limit: skip</span></span>
 <span id="D234" class=l><span class=gut><span class=rom>$02:D234</span> <span class=hx>10 E4       </span> </span><span class=cd><span class=op>BPL</span> <a href="#CscSlowSpeedX">CscSlowSpeedX</a>               </span><span class=c>; Over the limit: slow down</span></span>
 <span id="D236" class=l><span class=gut><span class=rom>$02:D236</span> <span class=hx>80 09       </span> </span><span class=cd><span class=op>BRA</span> <a href="#CscUnderLimitX">CscUnderLimitX</a>              </span><span class=c>; Under the limit: speed up</span></span>
 
-<span class=c>;; Here Y = 2</span>
-<span class=c>;; (Y = 3 is impossible from the SNES controller)</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Here Y = 2</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; (Y = 3 is impossible from the SNES controller)</span></span></span>
 
 <span class=hd><span class=c>;;; <a id="CscGoRight" href="#CscGoRight">$D238</a>: Handle left pressed: compare with limit (CscGoRight) ;;;</span></span>
 <span id="D238" class=l><span class=gut><span class=rom>$02:D238</span> <span class=hx>B5 B6       </span> </span><span class=cd><span class=op>LDA</span> <a class=ram href="ram.html#00B6" title="Sprite X speed">RAM_SpriteSpeedX</a>,X          </span><span class=c>; \</span></span>
 <span id="D23A" class=l><span class=gut><span class=rom>$02:D23A</span> <span class=hx>D9 11 D2    </span> </span><span class=cd><span class=op>CMP.W</span> <a href="#D211">$D211</a>,Y                   </span><span class=c>; / Compare X speed with the left limit</span></span>
 <span id="D23D" class=l><span class=gut><span class=rom>$02:D23D</span> <span class=hx>F0 08       </span> </span><span class=cd><span class=op>BEQ</span> <a href="#CscDecideY">CscDecideY</a>                  </span><span class=c>; At the limit: skip</span></span>
 <span id="D23F" class=l><span class=gut><span class=rom>$02:D23F</span> <span class=hx>30 D9       </span> </span><span class=cd><span class=op>BMI</span> <a href="#CscSlowSpeedX">CscSlowSpeedX</a>               </span><span class=c>; Over the limit: slow down</span></span>
-<span class=c>;; Fall through if &gt;</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Fall through if &gt;</span></span></span>
 
-<span class=c>;; Here Y = 1 (pressing right) or Y = 2 (pressing left)</span>
-<span class=c>;; Here A = X_speed</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Here Y = 1 (pressing right) or Y = 2 (pressing left)</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Here A = X_speed</span></span></span>
 
 <span class=hd><span class=c>;;; <a id="CscUnderLimitX" href="#CscUnderLimitX">$D241</a>: Add speed delta for the direction (CscUnderLimitX) ;;;</span></span>
 <span id="D241" class=l><span class=gut><span class=rom>$02:D241</span> <span class=hx>18          </span> </span><span class=cd><span class=op>CLC</span>                             </span><span class=c>; \</span></span>
 <span id="D242" class=l><span class=gut><span class=rom>$02:D242</span> <span class=hx>79 0F D2    </span> </span><span class=cd><span class=op>ADC.W</span> <a href="#D20F">$D20F</a>,Y                   </span><span class=c>; / X speed += delta for the direction</span></span>
 <span id="D245" class=l><span class=gut><span class=rom>$02:D245</span> <span class=hx>95 B6       </span> </span><span class=cd><span class=op>STA</span> <a class=ram href="ram.html#00B6" title="Sprite X speed">RAM_SpriteSpeedX</a>,X          </span><span class=c>; Store the new X speed</span></span>
-<span class=c>;; Fall through to <a href="#CscDecideY">CscDecideY</a></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Fall through to <a href="#CscDecideY">CscDecideY</a></span></span></span>
 
-<span class=c>;; Now consider the vertical speed. Positive speed goes down.</span>
-<span class=c>;; First set the Y register to the target speed.</span>
-<span class=c>;;</span>
-<span class=c>;;                    Down            Neutral         Up</span>
-<span class=c>;; <a href="01.html#Lakitu">Lakitu</a> cloud       Y = +16         Y = 0           Y = -16</span>
-<span class=c>;; P-balloon          Y = +8          Y = -8          Y = -16</span>
-<span class=c>;;</span>
-<span class=c>;; The <a href="01.html#Lakitu">Lakitu</a> cloud goes up and down as well as it goes left and</span>
-<span class=c>;; right, but the P-balloon goes down more slowly. The P-balloon</span>
-<span class=c>;; also floats up if the player releases the Control Pad.</span>
-<span class=c>;;</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Now consider the vertical speed. Positive speed goes down.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; First set the Y register to the target speed.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;                    Down            Neutral         Up</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; <a href="01.html#Lakitu">Lakitu</a> cloud       Y = +16         Y = 0           Y = -16</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; P-balloon          Y = +8          Y = -8          Y = -16</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; The <a href="01.html#Lakitu">Lakitu</a> cloud goes up and down as well as it goes left and</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; right, but the P-balloon goes down more slowly. The P-balloon</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; also floats up if the player releases the Control Pad.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 
 <span class=hd><span class=c>;;; <a id="CscDecideY" href="#CscDecideY">$D247</a>: Choose target Y speed (CscDecideY) ;;;</span>
 <span class=c>;; <a href="01.html#Lakitu">Lakitu</a> cloud: -16 / 0 / +16 for up / neutral / down. P-balloon: -16 up, -8 neutral, +8 down.</span></span>
@@ -12325,7 +12325,7 @@
 <span id="D269" class=l><span class=gut><span class=rom>$02:D269</span> <span class=hx>29 08       </span> </span><span class=cd><span class=op>AND.B</span> #$08                      </span><span class=c>; \</span></span>
 <span id="D26B" class=l><span class=gut><span class=rom>$02:D26B</span> <span class=hx>D0 02       </span> </span><span class=cd><span class=op>BNE</span> <a href="#D26F">$D26F</a>                       </span><span class=c>; / Up pressed: keep</span></span>
 <span id="D26D" class=l><span class=gut><span class=rom>$02:D26D</span> <span class=hx>A0 08       </span> </span><span class=cd><span class=op>LDY.B</span> #$08                      </span><span class=c>; Y = +8 (down)</span></span>
-<span class=c>;; Player pressing down. Fall through</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Player pressing down. Fall through</span></span></span>
 
 
 <span class=hd><span class=c>;;; <a id="CscHandleY" href="#CscHandleY">$D26F</a>: Move Y speed toward target, copy to Mario (CscHandleY) ;;;</span></span>

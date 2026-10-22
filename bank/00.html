@@ -1434,10 +1434,10 @@
 <span class=c>;;     <a href="01.html#CE61">$01:CE61</a>: Pointer table: wall Koopa Kid main states (MortonPtrs1)</span>
 <span class=c>;;     ... and 54 more</span></span>
 <span id="86DF" class=l><span class=gut><span class=rom>$00:86DF</span> <span class=hx>84 03       </span> </span><span class=cd><span class=op>STY</span> <a class=ram href="ram.html#0003" title="Scratch byte $03">$03</a>                         </span><span class=c>; Save Y in [$03] (the stack holds the return address)</span></span>
-<span class=c>;;</span>
-<span class=c>;; JSL <a href="#ExecutePtr">ExecutePtr</a> pushes return address - 1 to the stack. The stack grows down,</span>
-<span class=c>;; so we pull the low byte, then the high byte, then the bank byte.</span>
-<span class=c>;;</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; JSL <a href="#ExecutePtr">ExecutePtr</a> pushes return address - 1 to the stack. The stack grows down,</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; so we pull the low byte, then the high byte, then the bank byte.</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;;</span></span></span>
 <span id="86E1" class=l><span class=gut><span class=rom>$00:86E1</span> <span class=hx>7A          </span> </span><span class=cd><span class=op>PLY</span>                             </span><span class=c>; \</span></span>
 <span id="86E2" class=l><span class=gut><span class=rom>$00:86E2</span> <span class=hx>84 00       </span> </span><span class=cd><span class=op>STY</span> <a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>                         </span><span class=c>; / [$00] = low byte of the pushed return address (table address - 1)</span></span>
 <span id="86E4" class=l><span class=gut><span class=rom>$00:86E4</span> <span class=hx>C2 30       </span> </span><span class=cd><span class=op>REP</span> #$30                        </span><span class=c>; A, X and Y 16-bit</span></span>
@@ -1505,7 +1505,7 @@
 <span id="8701" class=l><span class=gut><span class=rom>$00:8701</span> <span class=hx>29 FF 00    </span> </span><span class=cd><span class=op>AND.W</span> #$00FF                    </span><span class=c>; Clear the high byte of the index</span></span>
 <span id="8704" class=l><span class=gut><span class=rom>$00:8704</span> <span class=hx>85 03       </span> </span><span class=cd><span class=op>STA</span> <a class=ram href="ram.html#0003" title="Scratch byte $03">$03</a>                         </span><span class=c>; [$03] = index</span></span>
 <span id="8706" class=l><span class=gut><span class=rom>$00:8706</span> <span class=hx>0A          </span> </span><span class=cd><span class=op>ASL</span>                             </span><span class=c>; \</span></span>
-<span class=c>;; carry flag is clear    ;  |           3-byte addresses}</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; carry flag is clear</span>          </span><span class=c>;  |           3-byte addresses}</span></span>
 <span id="8707" class=l><span class=gut><span class=rom>$00:8707</span> <span class=hx>65 03       </span> </span><span class=cd><span class=op>ADC</span> <a class=ram href="ram.html#0003" title="Scratch byte $03">$03</a>                         </span><span class=c>; |</span></span>
 <span id="8709" class=l><span class=gut><span class=rom>$00:8709</span> <span class=hx>A8          </span> </span><span class=cd><span class=op>TAY</span>                             </span><span class=c>; / Y = index * 3 (3-byte table entries; ASL leaves carry clear)</span></span>
 <span id="870A" class=l><span class=gut><span class=rom>$00:870A</span> <span class=hx>68          </span> </span><span class=cd><span class=op>PLA</span>                             </span><span class=c>; \</span></span>
@@ -4789,8 +4789,8 @@
 <span id="A096" class=l><span class=gut><span class=rom>$00:A096</span> <span class=hx>AD 09 01    </span> </span><span class=cd><span class=op>LDA.W</span> <a class=ram href="ram.html#0109" title="Intro level override">$0109</a>                     </span><span class=c>; A = [$0109]</span></span>
 <span id="A099" class=l><span class=gut><span class=rom>$00:A099</span> <span class=hx>F0 15       </span> </span><span class=cd><span class=op>BEQ</span> <a href="#A0B0">$A0B0</a>                       </span><span class=c>; Zero: enter the overworld normally</span></span>
 
-<span class=c>;; | only runs if using RAM $0109 to bypass the world map</span>
-<span class=c>;; V</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; | only runs if using RAM $0109 to bypass the world map</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; V</span></span></span>
 <span id="A09B" class=l><span class=gut><span class=rom>$00:A09B</span> <span class=hx>A9 B0       </span> </span><span class=cd><span class=op>LDA.B</span> #$B0                      </span><span class=c>; A = $B0</span></span>
 <span id="A09D" class=l><span class=gut><span class=rom>$00:A09D</span> <span class=hx>8D F5 1D    </span> </span><span class=cd><span class=op>STA.W</span> <a class=ram href="ram.html#1DF5" title="General delay timer">$1DF5</a>                     </span><span class=c>; [$1DF5] = $B0 (delay timer)</span></span>
 <span id="A0A0" class=l><span class=gut><span class=rom>$00:A0A0</span> <span class=hx>9C 11 1F    </span> </span><span class=cd><span class=op>STZ.W</span> <a class=ram href="ram.html#1F11" title="Player&#x27;s current submap">$1F11</a>                     </span><span class=c>; Mario&#x27;s submap [$1F11] = 0</span></span>
@@ -4800,9 +4800,9 @@
 <span id="A0AA" class=l><span class=gut><span class=rom>$00:A0AA</span> <span class=hx>8D 00 01    </span> </span><span class=cd><span class=op>STA.W</span> <a class=ram href="ram.html#0100" title="Game mode">RAM_GameMode</a>              </span><span class=c>; Game mode = $10 (skip the map, straight to Mario Start)</span></span>
 <span id="A0AD" class=l><span class=gut><span class=rom>$00:A0AD</span> <span class=hx>4C F7 93    </span> </span><span class=cd><span class=op>JMP.W</span> <a href="#Mode04Finish">Mode04Finish</a>              </span><span class=c>; Enable NMI and return</span></span>
 
-<span class=c>;; | runs if entering the world map</span>
-<span class=c>;; |   (after opening save, completing level, or dying)</span>
-<span class=c>;; V</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; | runs if entering the world map</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; |   (after opening save, completing level, or dying)</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; V</span></span></span>
 <span id="A0B0" class=l><span class=gut><span class=rom>$00:A0B0</span> <span class=hx>20 FA 85    </span> </span><span class=cd><span class=op>JSR.W</span> <a href="#85FA">$85FA</a>                     </span><span class=c>; Clear BG3 and sprites (<a href="#85FA">$85FA</a>)</span></span>
 <span id="A0B3" class=l><span class=gut><span class=rom>$00:A0B3</span> <span class=hx>20 0E 81    </span> </span><span class=cd><span class=op>JSR.W</span> <a href="#UploadMusicBank1">UploadMusicBank1</a>          </span><span class=c>; Upload music bank 1 (overworld music)</span></span>
 <span id="A0B6" class=l><span class=gut><span class=rom>$00:A0B6</span> <span class=hx>20 79 8A    </span> </span><span class=cd><span class=op>JSR.W</span> <a href="#SetUpScreen">SetUpScreen</a>               </span><span class=c>; Set up the PPU registers (<a href="#SetUpScreen">SetUpScreen</a>)</span></span>
@@ -4829,8 +4829,8 @@
 <span id="A0EE" class=l><span class=gut><span class=rom>$00:A0EE</span> <span class=hx>AC C9 13    </span> </span><span class=cd><span class=op>LDY.W</span> <a class=ram href="ram.html#13C9" title="Continue/End menu flag">$13C9</a>                     </span><span class=c>; Y = [$13C9] (CONTINUE/END flag)</span></span>
 <span id="A0F1" class=l><span class=gut><span class=rom>$00:A0F1</span> <span class=hx>F0 28       </span> </span><span class=cd><span class=op>BEQ</span> <a href="#A11B">$A11B</a>                       </span><span class=c>; Not returning after a game over: skip ahead</span></span>
 
-<span class=c>;; | runs if returning to world map after Game Over</span>
-<span class=c>;; V</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; | runs if returning to world map after Game Over</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; V</span></span></span>
 <span id="A0F3" class=l><span class=gut><span class=rom>$00:A0F3</span> <span class=hx>20 95 A1    </span> </span><span class=cd><span class=op>JSR.W</span> <a href="#ConfMapFromSave">ConfMapFromSave</a>           </span><span class=c>; Revert to the saved overworld data</span></span>
 <span id="A0F6" class=l><span class=gut><span class=rom>$00:A0F6</span> <span class=hx>AD 2E 1F    </span> </span><span class=cd><span class=op>LDA.W</span> <a class=ram href="ram.html#1F2E">$1F2E</a>                     </span><span class=c>; A = number of exits cleared</span></span>
 <span id="A0F9" class=l><span class=gut><span class=rom>$00:A0F9</span> <span class=hx>D0 06       </span> </span><span class=cd><span class=op>BNE</span> <a href="#A101">$A101</a>                       </span><span class=c>; Non-zero: show the CONTINUE/END menu</span></span>
@@ -4847,10 +4847,10 @@
 <span id="A115" class=l><span class=gut><span class=rom>$00:A115</span> <span class=hx>85 44       </span> </span><span class=cd><span class=op>STA</span> <a class=ram href="ram.html#0044" title="Color math select mirror (CGWSEL)">$44</a>                         </span><span class=c>; Color math window [$44] = $20</span></span>
 <span id="A117" class=l><span class=gut><span class=rom>$00:A117</span> <span class=hx>A9 B3       </span> </span><span class=cd><span class=op>LDA.B</span> #$B3                      </span><span class=c>; A = $B3: CGADSUB</span></span>
 <span id="A119" class=l><span class=gut><span class=rom>$00:A119</span> <span class=hx>A2 17       </span> </span><span class=cd><span class=op>LDX.B</span> #$17                      </span><span class=c>; X = $17: main screen layers</span></span>
-<span class=c>;; fall through</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; fall through</span></span></span>
 
-<span class=c>;; |  If continuing after Game Over: A = $B3, X = $17</span>
-<span class=c>;; V If came here by skipping ahead: A = $30, X = $15</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; |  If continuing after Game Over: A = $B3, X = $17</span></span></span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; V If came here by skipping ahead: A = $30, X = $15</span></span></span>
 <span id="A11B" class=l><span class=gut><span class=rom>$00:A11B</span> <span class=hx>A0 02       </span> </span><span class=cd><span class=op>LDY.B</span> #$02                      </span><span class=c>; Y = 2: sub screen layers (BG2)</span></span>
 <span id="A11D" class=l><span class=gut><span class=rom>$00:A11D</span> <span class=hx>20 FD 93    </span> </span><span class=cd><span class=op>JSR.W</span> <a href="#ScreenSettings">ScreenSettings</a>            </span><span class=c>; Set CGADSUB, main and sub screens (<a href="#ScreenSettings">ScreenSettings</a>)</span></span>
 <span id="A120" class=l><span class=gut><span class=rom>$00:A120</span> <span class=hx>8E 2E 21    </span> </span><span class=cd><span class=op>STX.W</span> <span class=hw title="TMW: main screen window mask">$212E</span>                     </span><span class=c>; Main screen window mask = X</span></span>
@@ -10302,7 +10302,7 @@
 <span class=c>;;     walk, right run; rows indexed by slope/state.</span>
 <span class=c>;; The listing rows are offset by one byte from the real row starts.</span></span>
 <span id="D345" class=l><span class=gut><span class=rom>$00:D345</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> <a class=ram href="ram.html#0080" title="Mario Y on screen">$80</a>                         </span><span class=c>; Walk/run accelerations start here: 4 words per row (left walk, left run, right walk, right run)</span></span>
-<span class=c>; remember little endian, (db $12,$34 = dw $3412) &lt; = left, &gt; = right, W = walk, R = run</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>                                    </span> </span><span class=c>; remember little endian, (db $12,$34 = dw $3412) &lt; = left, &gt; = right, W = walk, R = run</span></span>
 
 <span class=hd><span class=c>;;; <a id="MarioAccel2?" href="#MarioAccel2?">$D346</a>: Table: walk and run accelerations (MarioAccel2?) ;;;</span></span>
 <span id="D346" class=l><span class=gut><span class=rom>$00:D346</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> $FE,<a class=ram href="ram.html#0080" title="Mario Y on screen">$80</a>,$FE,<a class=ram href="ram.html#0080" title="Mario Y on screen">$80</a>,<a class=ram href="ram.html#0001" title="Scratch byte $01">$01</a>,<a class=ram href="ram.html#0080" title="Mario Y on screen">$80</a>,<a class=ram href="ram.html#0001" title="Scratch byte $01">$01</a>,<a class=ram href="ram.html#0080" title="Mario Y on screen">$80</a> </span><span class=c>;&gt;00D346</span></span>
@@ -15338,7 +15338,7 @@
 
 <span class=c>;;; SNES header, see http://romhack.wikia.com/wiki/SNES_header</span>
 <span class=c>;;;</span>
-<span class=c>;; Name of ROM. &quot;SUPER MARIOWORLD     &quot; in ASCII, 21 characters.</span>
+<span class=l><span class=gut><span class=rom>        </span> <span class=hx>            </span> </span><span class=cd><span class=c>;; Name of ROM. &quot;SUPER MARIOWORLD     &quot; in ASCII, 21 characters.</span></span></span>
 <span id="FFC0" class=l><span class=gut><span class=rom>$00:FFC0</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> <a class=ram href="ram.html#0053">$53</a>,<a class=ram href="ram.html#0055" title="Screen scroll direction (layer 1)">$55</a>,$50,<a class=ram href="ram.html#0045" title="Layer 1 tile column range, left">$45</a>,$52,<a class=ram href="ram.html#0020" title="Layer 2 Y position (low)">$20</a>,<a class=ram href="ram.html#004D" title="Last loaded column, layer 1">$4D</a>,<a class=ram href="ram.html#0041" title="Window mask mirror, BG1/BG2">$41</a>,$52,<a class=ram href="ram.html#0049" title="Layer 2 tile column range, left">$49</a>,<a class=ram href="ram.html#004F" title="Last loaded column, layer 1 (second)">$4F</a> </span><span class=c>; &quot;SUPER MARIO&quot;</span></span>
 <span id="FFCB" class=l><span class=gut><span class=rom>$00:FFCB</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> <a class=ram href="ram.html#0057" title="Object position in Map16 buffer">$57</a>,<a class=ram href="ram.html#004F" title="Last loaded column, layer 1 (second)">$4F</a>,$52,$4C,<a class=ram href="ram.html#0044" title="Color math select mirror (CGWSEL)">$44</a>,<a class=ram href="ram.html#0020" title="Layer 2 Y position (low)">$20</a>,<a class=ram href="ram.html#0020" title="Layer 2 Y position (low)">$20</a>,<a class=ram href="ram.html#0020" title="Layer 2 Y position (low)">$20</a>,<a class=ram href="ram.html#0020" title="Layer 2 Y position (low)">$20</a>,<a class=ram href="ram.html#0020" title="Layer 2 Y position (low)">$20</a> </span><span class=c>; &quot;WORLD     &quot;</span></span>
 <span id="FFD5" class=l><span class=gut><span class=rom>$00:FFD5</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> <a class=ram href="ram.html#0020" title="Layer 2 Y position (low)">$20</a>                         </span><span class=c>; ROM status: slow LoROM</span></span>
