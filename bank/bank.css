@@ -63,3 +63,8 @@ a:hover { text-decoration: underline; }
 #tip { position: fixed; z-index: 10; max-width: 34em; padding: .45em .65em; white-space: pre-line;
   background: #222; color: #fff; border-radius: 5px; font: 13px/1.4 system-ui, sans-serif;
   box-shadow: 0 4px 14px rgba(0,0,0,.3); pointer-events: none; }
+/* Notes pages (rendered from the markdown write-ups). */
+.notes h1 { font-size: 1.6rem; } .notes h2 { margin-top: 1.6em; border-bottom: 1px solid #ddd; padding-bottom: .2em; }
+.notes code { font: .88em ui-monospace, Menlo, Consolas, monospace; background: #f3f3f5; padding: 0 .25em; border-radius: 3px; }
+.notes pre.md { font: 13px/1.4 ui-monospace, Menlo, Consolas, monospace; background: #f6f6f8; padding: .8em 1em; overflow: auto; border-radius: 4px; }
+.notes li { margin: .2em 0; }
