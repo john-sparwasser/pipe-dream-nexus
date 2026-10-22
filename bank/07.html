@@ -19,7 +19,6 @@
 ;;; <a href="#CircleCoords">$F7DB</a>: Sine table and line-guide path data (CircleCoords) ;;;
 ;;; <a href="#s07FC90">$FC90..FFF8</a>: Freespace (filled with $FF) ;;;</pre><pre id=results hidden></pre></div>
 <div id=right><pre><span class=c>;;; <a id="LevelData078000" href="#LevelData078000">$8000</a>: Level layer 1 object streams (overflow) (LevelData078000) ;;;</span>
-{
 <span class=c>;; Overflow level layer-1 object streams for bank 06 levels (see <a href="05.html#Layer1Ptrs">Layer1Ptrs</a>). Each stream: 5-byte primary</span>
 <span class=c>;;     header, then 3-byte objects</span>
 <span class=c>;; until $FF. Header: screens, level mode, sprite GFX, music, tileset. Object: byte1 [new scr|obj hi|Y], byte2</span>
@@ -74,10 +73,8 @@
 <span id="80F5" class=l><span class=gut><span class=rom>$07:80F5</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF</span></span>
 <span id="80FD" class=l><span class=gut><span class=rom>$07:80FD</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> $FF,$FF,$FF</span></span>
 
-}
 
 <span class=c>;;; <a id="LevelData078100" href="#LevelData078100">$8100</a>: Level object streams (bank 07 overflow) (LevelData078100) ;;;</span>
-{
 <span class=c>;; Overflow Layer 1/Layer 2 level data for 34 levels that did not fit in bank 06. Each stream = 5-byte primary</span>
 <span class=c>;;     header,</span>
 <span class=c>;; then 3-byte objects (byte1 = N BB H YYYY: new-screen flag, object# bits 5-6, hi-coord flag, Y; byte2 = NNNN</span>
@@ -1318,10 +1315,8 @@
 <span id="A5F1" class=l><span class=gut><span class=rom>$07:A5F1</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF</span></span>
 <span id="A5F9" class=l><span class=gut><span class=rom>$07:A5F9</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> $FF,$FF,$FF,$FF,$FF,$FF,$FF</span></span>
 
-}
 
 <span class=c>;;; <a id="LevelDataSpr07A600" href="#LevelDataSpr07A600">$A600</a>: Overflow level layer-1 object data (LevelDataSpr07A600) ;;;</span>
-{
 <span class=c>;; Layer-1 level streams for levels whose data did not fit in bank 06 (pointed to by <a href="05.html#Layer1Ptrs">Layer1Ptrs</a> <a href="05.html#E000">$05E000</a>). 35</span>
 <span class=c>;;     streams, <a href="07.html#A600">$07A600</a>-<a href="07.html#C225">$07C225</a>,</span>
 <span class=c>;; each: 5-byte primary header, then 3-byte objects (4 bytes for screen exit), terminated by $FF.</span>
@@ -2311,10 +2306,8 @@
 <span id="C2F6" class=l><span class=gut><span class=rom>$07:C2F6</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF</span></span>
 <span id="C2FE" class=l><span class=gut><span class=rom>$07:C2FE</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> $FF,$FF</span></span>
 
-}
 
 <span class=c>;;; <a id="LevelDataSpr07C300" href="#LevelDataSpr07C300">$C300</a>: Sprite lists, goal bonus digits (LevelDataSpr07C300) ;;;</span>
-{
 <span class=c>;; Level sprite lists (<a href="07.html#C300">$07C300</a>-<a href="07.html#E76D">$07E76D</a>): one list per level, pointed to by <a href="05.html#Ptrs05EC00">Ptrs05EC00</a> (indexed by level</span>
 <span class=c>;;     number). 12 lists are unreferenced.</span>
 <span class=c>;; List format: 1 header byte (bits 0-5 sprite memory setting [$1692], bits 6-7 buoyancy [$190E]), then 3-byte</span>
@@ -4146,16 +4139,12 @@
 <span id="F24D" class=l><span class=gut><span class=rom>$07:F24D</span> <span class=hx>60          </span> </span><span class=cd><span class=op>RTS</span>                             </span><span class=c>; Return</span></span>
 
 
-}
 
 <span class=c>;;; <a id="s07F24E" href="#s07F24E">$F24E..F24E</a>: Table: effect tile numbers ;;;</span>
-{
 <span id="F24E" class=l><span class=gut><span class=rom>$07:F24E</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> <a class=ram href="ram.html#0066" title="Level data pointer (high byte of word)">$66</a>,<a class=ram href="ram.html#0066" title="Level data pointer (high byte of word)">$66</a>,<a class=ram href="ram.html#006E" title="Map16 high-byte pointer">$6E</a>,$FF             </span><span class=c>; Tile numbers $66,$66,$6E, then $FF terminator; indexed by [X]/4 (see <a href="#F226">$F226</a>)</span></span>
 
-}
 
 <span class=c>;;; <a id="s07F252" href="#s07F252">$F252</a>: Set score value from height and give points ;;;</span>
-{
 <span class=c>;; Called from bank 01 ($01:C11F) after a sprite stores a height value in [$1594,X].</span>
 <span class=c>;; Looks up [$1594,X]/4 in the score-value table at <a href="07.html#F1AA">$07F1AA</a>, stores it in $1900 and, if the value is $50,</span>
 <span class=c>;;     awards points ($0A).</span>
@@ -4177,10 +4166,8 @@
 <span id="F26B" class=l><span class=gut><span class=rom>$07:F26B</span> <span class=hx>6B          </span> </span><span class=cd><span class=op>RTL</span>                             </span><span class=c>; Return</span></span>
 
 
-}
 
 <span class=c>;;; <a id="Sprite1656Vals" href="#Sprite1656Vals">$F26C</a>: Table: sprite tweaker $1656 by sprite number (Sprite1656Vals) ;;;</span>
-{
 <span class=c>;; One byte per sprite number $00-$C8; copied into <a class=ram href="ram.html#1656" title="Sprite tweaker byte 1">RAM_Tweaker1656</a>,X by <a href="#LoadTweakerBytes">LoadTweakerBytes</a>.</span>
 <span class=c>;; Per-sprite object interaction / clipping property flags.</span>
 <span id="F26C" class=l><span class=gut><span class=rom>$07:F26C</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> <a class=ram href="ram.html#0070" title="Map16 high-byte pointer bank">$70</a>,<a class=ram href="ram.html#0070" title="Map16 high-byte pointer bank">$70</a>,<a class=ram href="ram.html#0070" title="Map16 high-byte pointer bank">$70</a>,<a class=ram href="ram.html#0070" title="Map16 high-byte pointer bank">$70</a>,<a class=ram href="ram.html#0010" title="Frame-ready flag">$10</a>,<a class=ram href="ram.html#0010" title="Frame-ready flag">$10</a>,<a class=ram href="ram.html#0010" title="Frame-ready flag">$10</a>,<a class=ram href="ram.html#0010" title="Frame-ready flag">$10</a> </span><span class=c>; Sprites 00-07</span></span>
@@ -4210,10 +4197,8 @@
 <span id="F32C" class=l><span class=gut><span class=rom>$07:F32C</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> <a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,$FF,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a> </span><span class=c>; Sprites C0-C7</span></span>
 <span id="F334" class=l><span class=gut><span class=rom>$07:F334</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> <a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>                         </span><span class=c>; Sprites C8-C8</span></span>
 
-}
 
 <span class=c>;;; <a id="Sprite1662Vals" href="#Sprite1662Vals">$F335</a>: Table: sprite tweaker $1662 by sprite number (Sprite1662Vals) ;;;</span>
-{
 <span class=c>;; One byte per sprite number $00-$C8; copied into <a class=ram href="ram.html#1662" title="Sprite tweaker: clipping and death">RAM_Tweaker1662</a>,X. Low bits select the sprite clipping</span>
 <span class=c>;;     (hitbox) shape; upper bits are behaviour flags.</span>
 <span id="F335" class=l><span class=gut><span class=rom>$07:F335</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> <a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0040" title="Color math mirror (CGADSUB)">$40</a>,<a class=ram href="ram.html#0040" title="Color math mirror (CGADSUB)">$40</a>,<a class=ram href="ram.html#0040" title="Color math mirror (CGADSUB)">$40</a>,<a class=ram href="ram.html#0040" title="Color math mirror (CGADSUB)">$40</a> </span><span class=c>; Sprites 00-07</span></span>
@@ -4243,10 +4228,8 @@
 <span id="F3F5" class=l><span class=gut><span class=rom>$07:F3F5</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> <a class=ram href="ram.html#0032">$32</a>,<a class=ram href="ram.html#0031">$31</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0033">$33</a>,<a class=ram href="ram.html#0007" title="Scratch byte $07">$07</a>,$FF,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a> </span><span class=c>; Sprites C0-C7</span></span>
 <span id="F3FD" class=l><span class=gut><span class=rom>$07:F3FD</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> <a class=ram href="ram.html#000C" title="Scratch byte $0C">$0C</a>                         </span><span class=c>; Sprites C8-C8</span></span>
 
-}
 
 <span class=c>;;; <a id="Sprite166EVals" href="#Sprite166EVals">$F3FE</a>: Table: sprite tweaker $166E by sprite number (Sprite166EVals) ;;;</span>
-{
 <span class=c>;; One byte per sprite number $00-$C8; copied into <a class=ram href="ram.html#166E" title="Sprite tweaker: interaction and palette">RAM_Tweaker166E</a>,X. Low nibble = palette (bits 1-3) and</span>
 <span class=c>;;     graphics page (bit 0),</span>
 <span class=c>;; also loaded into <a class=ram href="ram.html#15F6" title="Sprite palette and properties">RAM_SpritePal</a> by <a href="#LoadSpriteTables">LoadSpriteTables</a>; upper bits are interaction flags (fireball, cape, water</span>
@@ -4278,10 +4261,8 @@
 <span id="F4BE" class=l><span class=gut><span class=rom>$07:F4BE</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> $F5,$F5,<a class=ram href="ram.html#00CB" title="Bonus game flag">$CB</a>,$CD,$F3,<a class=ram href="ram.html#003F" title="OAM address (priority index)">$3F</a>,$FF,<a class=ram href="ram.html#0020" title="Layer 2 Y position (low)">$20</a> </span><span class=c>; Sprites C0-C7</span></span>
 <span id="F4C6" class=l><span class=gut><span class=rom>$07:F4C6</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> <a class=ram href="ram.html#0038" title="Mode 7 scale">$38</a>                         </span><span class=c>; Sprites C8-C8</span></span>
 
-}
 
 <span class=c>;;; <a id="Sprite167AVals" href="#Sprite167AVals">$F4C7</a>: Table: sprite tweaker $167A by sprite number (Sprite167AVals) ;;;</span>
-{
 <span class=c>;; One byte per sprite number $00-$C8; copied into <a class=ram href="ram.html#167A" title="Sprite tweaker: Mario interaction">RAM_Tweaker167A</a>,X. Behaviour flags (e.g. processing off</span>
 <span class=c>;;     screen, star/<a href="01.html#Yoshi">Yoshi</a> interaction).</span>
 <span id="F4C7" class=l><span class=gut><span class=rom>$07:F4C7</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> <a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a> </span><span class=c>; Sprites 00-07</span></span>
@@ -4311,10 +4292,8 @@
 <span id="F587" class=l><span class=gut><span class=rom>$07:F587</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> $A2,$A2,<a class=ram href="ram.html#0001" title="Scratch byte $01">$01</a>,<a class=ram href="ram.html#0001" title="Scratch byte $01">$01</a>,$A2,$A3,$FF,<a class=ram href="ram.html#0082" title="Slope shape table pointer">$82</a> </span><span class=c>; Sprites C0-C7</span></span>
 <span id="F58F" class=l><span class=gut><span class=rom>$07:F58F</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> $A2                         </span><span class=c>; Sprites C8-C8</span></span>
 
-}
 
 <span class=c>;;; <a id="Sprite1686Vals" href="#Sprite1686Vals">$F590</a>: Table: sprite tweaker $1686 by sprite number (Sprite1686Vals) ;;;</span>
-{
 <span class=c>;; One byte per sprite number $00-$C8; copied into <a class=ram href="ram.html#1686" title="Sprite tweaker: sprite interaction">RAM_Tweaker1686</a>,X. Behaviour/inedible/sprite-interaction</span>
 <span class=c>;;     flags.</span>
 <span id="F590" class=l><span class=gut><span class=rom>$07:F590</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> <a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0002" title="Scratch byte $02">$02</a>,<a class=ram href="ram.html#0002" title="Scratch byte $02">$02</a>,<a class=ram href="ram.html#0002" title="Scratch byte $02">$02</a>,<a class=ram href="ram.html#0002" title="Scratch byte $02">$02</a> </span><span class=c>; Sprites 00-07</span></span>
@@ -4344,10 +4323,8 @@
 <span id="F650" class=l><span class=gut><span class=rom>$07:F650</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> <a class=ram href="ram.html#0099" title="Block Y position, high">$99</a>,<a class=ram href="ram.html#0099" title="Block Y position, high">$99</a>,<a class=ram href="ram.html#0010" title="Frame-ready flag">$10</a>,<a class=ram href="ram.html#0090" title="Mario Y offset in block">$90</a>,$A9,$B9,$FF,<a class=ram href="ram.html#0039" title="Mode 7 scale (second)">$39</a> </span><span class=c>; Sprites C0-C7</span></span>
 <span id="F658" class=l><span class=gut><span class=rom>$07:F658</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> <a class=ram href="ram.html#0019" title="Mario power-up">$19</a>                         </span><span class=c>; Sprites C8-C8</span></span>
 
-}
 
 <span class=c>;;; <a id="Sprite190FVals" href="#Sprite190FVals">$F659</a>: Table: sprite tweaker $190F by sprite number (Sprite190FVals) ;;;</span>
-{
 <span class=c>;; One byte per sprite number $00-$C8; copied into <a class=ram href="ram.html#190F" title="Sprite tweaker byte 190F">RAM_Tweaker190F</a>,X. Misc flags (e.g. wall/ledge handling,</span>
 <span class=c>;;     cape and silver-coin behaviour).</span>
 <span id="F659" class=l><span class=gut><span class=rom>$07:F659</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> <a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,$A0,$A0,$A0,$A0 </span><span class=c>; Sprites 00-07</span></span>
@@ -4377,10 +4354,8 @@
 <span id="F719" class=l><span class=gut><span class=rom>$07:F719</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> <a class=ram href="ram.html#0047" title="Layer 1 tile column range, right">$47</a>,<a class=ram href="ram.html#0045" title="Layer 1 tile column range, left">$45</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0000" title="Scratch byte $00">$00</a>,<a class=ram href="ram.html#0041" title="Window mask mirror, BG1/BG2">$41</a>,<a class=ram href="ram.html#0041" title="Window mask mirror, BG1/BG2">$41</a>,$FF,<a class=ram href="ram.html#0040" title="Color math mirror (CGADSUB)">$40</a> </span><span class=c>; Sprites C0-C7</span></span>
 <span id="F721" class=l><span class=gut><span class=rom>$07:F721</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> <a class=ram href="ram.html#0040" title="Color math mirror (CGADSUB)">$40</a>                         </span><span class=c>; Sprites C8-C8</span></span>
 
-}
 
 <span class=c>;;; <a id="ZeroSpriteTables" href="#ZeroSpriteTables">$F722</a>: Clear per-sprite state tables (ZeroSpriteTables) ;;;</span>
-{
 <span class=c>;; Zeroes the sprite state, timers, speeds, direction and miscellaneous per-slot tables for sprite slot X,</span>
 <span class=c>;;     then sets the offscreen-horizontal flag to 1.</span>
 <span class=c>;; Parameters: X = sprite slot. Does not clear sprite number, position or status.</span>
@@ -4424,10 +4399,8 @@
 <span id="F787" class=l><span class=gut><span class=rom>$07:F787</span> <span class=hx>9D A0 15    </span> </span><span class=cd><span class=op>STA.W</span> <a class=ram href="ram.html#15A0" title="Sprite off-screen horizontal flag">RAM_OffscreenHorz</a>,X       </span><span class=c>; Offscreen horizontal flag = 1 (treated as off screen until processed)</span></span>
 <span id="F78A" class=l><span class=gut><span class=rom>$07:F78A</span> <span class=hx>6B          </span> </span><span class=cd><span class=op>RTL</span>                             </span><span class=c>; Return</span></span>
 
-}
 
 <span class=c>;;; <a id="LoadSpriteTables" href="#LoadSpriteTables">$F78B</a>: Load sprite palette and tweaker bytes (LoadSpriteTables) ;;;</span>
-{
 <span class=c>;; Sets <a class=ram href="ram.html#15F6" title="Sprite palette and properties">RAM_SpritePal</a>,X from the low nibble of the sprite&#x27;s $166E tweaker value, then calls <a href="#LoadTweakerBytes">LoadTweakerBytes</a>.</span>
 <span class=c>;; Parameters: X = sprite slot (sprite number already in <a class=ram href="ram.html#009E" title="Sprite number">RAM_SpriteNum</a>,X). Preserves X and Y.</span>
 <span class=c>;; Called by:</span>
@@ -4453,10 +4426,8 @@
 <span id="F79E" class=l><span class=gut><span class=rom>$07:F79E</span> <span class=hx>7A          </span> </span><span class=cd><span class=op>PLY</span>                             </span><span class=c>; Restore Y</span></span>
 <span id="F79F" class=l><span class=gut><span class=rom>$07:F79F</span> <span class=hx>6B          </span> </span><span class=cd><span class=op>RTL</span>                             </span><span class=c>; Return</span></span>
 
-}
 
 <span class=c>;;; <a id="LoadTweakerBytes" href="#LoadTweakerBytes">$F7A0</a>: Copy tweaker bytes into sprite slot (LoadTweakerBytes) ;;;</span>
-{
 <span class=c>;; Copies the six tweaker bytes of the slot&#x27;s sprite number from the Sprite*Vals tables into</span>
 <span class=c>;;     $1656/$1662/$166E/$167A/$1686/$190F,X.</span>
 <span class=c>;; Parameters: X = sprite slot. Preserves X and Y.</span>
@@ -4483,10 +4454,8 @@
 <span id="F7D0" class=l><span class=gut><span class=rom>$07:F7D0</span> <span class=hx>7A          </span> </span><span class=cd><span class=op>PLY</span>                             </span><span class=c>; Restore Y</span></span>
 <span id="F7D1" class=l><span class=gut><span class=rom>$07:F7D1</span> <span class=hx>6B          </span> </span><span class=cd><span class=op>RTL</span>                             </span><span class=c>; Return</span></span>
 
-}
 
 <span class=c>;;; <a id="InitSpriteTables" href="#InitSpriteTables">$F7D2</a>: Initialise sprite slot tables (InitSpriteTables) ;;;</span>
-{
 <span class=c>;; Runs <a href="#ZeroSpriteTables">ZeroSpriteTables</a> then <a href="#LoadSpriteTables">LoadSpriteTables</a> for sprite slot X.</span>
 <span class=c>;; Called by:</span>
 <span class=c>;;     <a href="00.html#FA75">$00:FA75</a>: Spawn Flat Palace Switch (FlatPalaceSwitch)</span>
@@ -4535,10 +4504,8 @@
 <span class=c>;;- RealWorldDegrees = SMWDegrees*360/512</span>
 <span class=c>;;- SMWDegrees = RealWorldDegrees*512/360</span>
 <span class=c>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</span>
-}
 
 <span class=c>;;; <a id="CircleCoords" href="#CircleCoords">$F7DB</a>: Sine table and line-guide path data (CircleCoords) ;;;</span>
-{
 <span class=c>;; <a href="07.html#F7DB">$07F7DB</a>-$07F9DA: 256 16-bit sine/cosine values (sin x 256) for angles 0-255 over half a circle; index with</span>
 <span class=c>;;     [angle]*2.</span>
 <span class=c>;; <a href="07.html#F9DB">$07F9DB</a>-$07FBF2: 32 packed paths (probably 4-bit X/Y positions) for line-guided sprites; pointers in the</span>
@@ -4734,10 +4701,8 @@
 <span id="FC8F" class=l><span class=gut><span class=rom>$07:FC8F</span> <span class=hx>6B          </span> </span><span class=cd><span class=op>RTL</span>                             </span><span class=c>; Return</span></span>
 
 
-}
 
 <span class=c>;;; <a id="s07FC90" href="#s07FC90">$FC90..FFF8</a>: Freespace (filled with $FF) ;;;</span>
-{
 <span id="FC90" class=l><span class=gut><span class=rom>$07:FC90</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF</span></span>
 <span id="FC98" class=l><span class=gut><span class=rom>$07:FC98</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF</span></span>
 <span id="FCA0" class=l><span class=gut><span class=rom>$07:FCA0</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF</span></span>
@@ -4849,6 +4814,5 @@
 <span id="FFF0" class=l><span class=gut><span class=rom>$07:FFF0</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF</span></span>
 <span id="FFF8" class=l><span class=gut><span class=rom>$07:FFF8</span> <span class=hx>            </span> </span><span class=cd><span class=d>.db</span> $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF</span></span>
 
-}
 </pre></div></div>
 </body></html>
