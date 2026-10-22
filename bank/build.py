@@ -399,7 +399,8 @@ def main():
             return f'<span class=c>;{linkify(comment, b)}</span>' if comment else None
         vis = len(html.unescape(re.sub(r"<[^>]+>", "", codeh)))  # visible width: links shorten labels
         com = f'{" " * max(1, CODE_COL - vis)}<span class=c>;{linkify(comment, b)}</span>' if comment else ""
-        return f'<span{idattr} class=l>{addr} {(ln.hex or ""):<12} {codeh}{com}</span>'
+        # Address and opcode bytes sit in an unselectable gutter, so a copied block is just the code and comments.
+        return f'<span{idattr} class=l><span class=gut>{addr} {(ln.hex or ""):<12} </span>{codeh}{com}</span>'
 
     named_count = 0
     for b, secs in parsed.items():
