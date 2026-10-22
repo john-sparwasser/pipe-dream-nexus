@@ -1,0 +1,148 @@
+<!DOCTYPE html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width"><title>GPS</title><link rel=stylesheet href="bank.css"><script defer src="bank.js"></script></head><body>
+<div id=header><a href=".">Index</a> &mdash; <a href="ram.html">RAM map</a> &mdash; <a href="graph.html">Call graph</a> &mdash; Notes: <a href="notes-system.html">system</a> &middot; <a href="notes-snes-hardware.html">SNES hardware</a> &middot; <a href="notes-level-pipeline.html">level pipeline</a> &middot; <a href="notes-sprite-engine.html">sprite engine</a> &mdash; Lunar Magic: <a href="lm-hooks.html">hooks</a> &middot; <a href="lm-contract.html">ROM format contract</a> &middot; <a href="lm-parity.html">what LM writes</a> &middot; <a href="lm-exanimation.html">ExAnimation</a> &middot; <a href="lm-overworld.html">overworld</a> &middot; <a href="lm-file-formats.html">file formats</a> &mdash; Tools: <a href="tool-pixi.html">PIXI</a> &middot; <a href="tool-addmusick.html">AddmusicK</a> &middot; <a href="tool-gps.html">GPS</a> &mdash; <a href="#" onclick="toggleDark();return false;">Toggle dark mode</a></div>
+<div class="page notes"><h1 id="gps">GPS</h1>
+<p>Gopher Popcorn Stew (GPS) is the standard custom block inserter for Super Mario World. It assembles each block's ASM with Asar, puts it in free space, and makes a chosen Map16 tile run that code whenever Mario or a sprite touches it. It also sets the tile's acts-like. This page describes GPS V1.4.5, with <code>main.asm</code> and the tool's <code>src.zip</code> (<code>main.cpp</code> plus Asar's DLL loader). GPS 1.4.5 ships Asar 1.91's DLL.</p>
+<p>GPS's files carry no licence text, so this page describes behaviour and formats in its own words and quotes none of GPS's code. The findings come from GPS's documented formats, from its files, and from its observed output on LM-edited ROMs.</p>
+<p>A clean-room reimplementation of the block driver and inserter exists in Pipe Dream.</p>
+<h2 id="files">Files</h2>
+<table><tr><th>File</th><th>What it is</th></tr><tr><td><code>list.txt</code></td><td>The insertion list: Map16 tile (or range) → block <code>.asm</code>, with an optional acts-like. The shipped copy is empty apart from a comment</td></tr><tr><td><code>blocks/</code></td><td>One <code>.asm</code> file per block</td></tr><tr><td><code>blocks/template.asm</code></td><td>The block API contract: the header and one entry point per contact, each a bare <code>RTL</code></td></tr><tr><td><code>main.asm</code></td><td>The block driver: the dispatch stubs, <code>block_execute</code> and the tables</td></tr><tr><td><code>defines.asm</code></td><td>The address map that blocks are written against. It is SA-1 aware, and it is the important one</td></tr><tr><td><code>routines/</code></td><td>The shared routine library: 27 routines covering Map16 changes, spawning, shattering and score</td></tr><tr><td><code>src.zip</code></td><td>The tool's source (<code>main.cpp</code>, about 30 KB)</td></tr><tr><td><code>README.txt</code>, <code>Changes.txt</code></td><td>The format and command-line docs</td></tr></table>
+<h2 id="what-gps-does-step-by-step">What GPS does, step by step</h2>
+<ol>
+<li>Reads <code>list.txt</code>. Each line maps a Map16 tile, a range (<code>R203-214</code>) or a rectangle to a block file, optionally with an acts-like after a colon (<code>200:0130 above.asm</code>).
+</li>
+<li>Assembles each block with Asar. It runs one Asar patch per block file, so a hack with a couple of hundred block files takes seconds to insert.
+</li>
+<li>Puts each routine from <code>routines/</code> that a block calls (as <code>%name()</code>) into free space once. Blocks get a macro that <code>JSL</code>s to it.
+</li>
+<li>Writes the per-tile tables (<code>block_bank_byte</code>, <code>block_pointers_1</code>, <code>block_pointers_2</code>) and the contact stubs at $06F690. The driver is <code>main.asm</code>.
+</li>
+<li>Sets each tile's acts-like.
+</li>
+<li>On re-insertion, finds the previous run by its <code>&quot;GPS_VeRsIoN&quot;</code> marker and frees what that run claimed (RATS, Asar's <code>autoclean</code>) before claiming space again. Asar frees autocleaned space in its first pass, so a new insertion can reuse the old space.
+</li></ol>
+<p>Two tiles that list the same block file share one copy of its code at one address.</p>
+<h2 id="block-ids">Block IDs</h2>
+<ul>
+<li>Custom block IDs run from <code>0x200</code> to <code>0x7FFF</code>, and acts-like must be below <code>0x8000</code>. The README only implies these bounds.
+</li>
+<li>IDs of <code>$4000</code> and above (Lunar Magic's FG pages 40-7F) use the second pointer table. Pages 40 and up need LM to have created them: GPS checks that $06F63C is not <code>FF</code>.
+</li></ul>
+<h2 id="the-block-format-and-api">The block format and API</h2>
+<p>A block begins with a one-byte header, followed by one three-byte <code>JMP</code> per contact type. Each entry point is a routine that ends in <code>RTL</code>. An entry whose <code>JMP</code> lands on a bare <code>RTL</code> handles nothing.</p>
+<table><tr><th>Header</th><th>Meaning</th></tr><tr><td><code>db $42</code></td><td>A normal block: the ten standard contacts</td></tr><tr><td><code>db $37</code></td><td>A wall-run block: the ten standard contacts plus WallFeet and WallBody</td></tr></table>
+<p>The entry points, in header order, are:</p>
+<table><tr><th>#</th><th>Contact</th><th>Offset (<code>id*3+1</code>)</th></tr><tr><td>0</td><td>Mario below</td><td><code>$01</code></td></tr><tr><td>1</td><td>Mario above</td><td><code>$04</code></td></tr><tr><td>2</td><td>Mario side</td><td><code>$07</code></td></tr><tr><td>3</td><td>Sprite vertical</td><td><code>$0A</code></td></tr><tr><td>4</td><td>Sprite horizontal</td><td><code>$0D</code></td></tr><tr><td>5</td><td>Cape</td><td><code>$10</code></td></tr><tr><td>6</td><td>Fireball</td><td><code>$13</code></td></tr><tr><td>7</td><td>Mario top corner</td><td><code>$16</code></td></tr><tr><td>8</td><td>Mario body inside</td><td><code>$19</code></td></tr><tr><td>9</td><td>Mario head inside</td><td><code>$1C</code></td></tr><tr><td>10</td><td>WallFeet (<code>$37</code> only)</td><td><code>$1F</code></td></tr><tr><td>11</td><td>WallBody (<code>$37</code> only)</td><td><code>$22</code></td></tr></table>
+<p>The order comes from GPS's documented header layout. The offsets are derived from it, because <code>db $xx</code> is followed by three-byte <code>JMP</code>s.</p>
+<p>A block's first <code>print</code> statement serves as its description.</p>
+<h3 id="inputs-a-block-can-rely-on">Inputs a block can rely on</h3>
+<ul>
+<li>The block's position is in <code>$98-$99</code> (Y) and <code>$9A-$9B</code> (X), in level coordinates. <code>$1933</code> is the layer being processed.
+</li>
+<li><code>X</code> holds the value from <code>$15E9</code> (the current sprite slot), loaded by <code>block_execute</code> before it jumps.
+</li>
+<li>In a vertical level (<code>$5B</code> bit 0 set), the routines <code>get_map16</code> and <code>change_map16</code> swap <code>$99</code> and <code>$9B</code> internally. A <code>swap_XY</code> routine exists only to undo that swap. Check which convention a routine uses before trusting it.
+</li></ul>
+<h2 id="the-driver-how-a-block-is-reached">The driver: how a block is reached</h2>
+<p>GPS blocks run through Lunar Magic's custom-block contact handlers. GPS refuses a ROM that LM has not saved, because it reads LM's acts-like pointer at $06F624. It also repoints that pointer to its own table.</p>
+<h3 id="the-contact-stubs">The contact stubs</h3>
+<p>GPS writes twelve identical 16-byte stubs in $06F690-$06F7E0, one per contact type (Below, Above, Side, SpriteV, SpriteH, WallFeet, WallBody, ...). LM's dispatch calls into this range when Mario or a sprite touches a custom tile. Each stub:</p>
+<ol>
+<li>loads <code>id*3+1</code>, the byte offset of that contact type's <code>JMP</code> in the block header;
+</li>
+<li>does <code>JSL block_execute</code>.
+</li></ol>
+<p>The stubs only run on a ROM that carries LM's custom-block dispatch. On a base without it, nothing calls them, and blocks never fire [MEASURED].</p>
+<h3 id="block-execute"><code>block_execute</code></h3>
+<ol>
+<li>Checks <code>block_bank_byte</code> for the tile. A value of 0 means no block is inserted there.
+</li>
+<li>Fetches a 16-bit pointer from <code>block_pointers_1</code>. For IDs of <code>$4000</code> and up it uses <code>block_pointers_2-$8000</code> instead. The already-shifted index is negative for those IDs, and that negative value is itself the range test.
+</li>
+<li>Adds the contact offset.
+</li>
+<li>Runs <code>LDX $15E9</code>.
+</li>
+<li>Jumps through <code>JML [$0000|!dp]</code> into the block.
+</li></ol>
+<h3 id="wall-run">Wall-run</h3>
+<p>Contact offsets of <code>#$001E</code> and above (WallFeet and WallBody) are honoured only when the block's first byte is <code>$37</code>. That byte is the whole opt-in mechanism. Two extra hijacks support wall-run:</p>
+<table><tr><th>Address</th><th>Hijack</th></tr><tr><td>$06F67B</td><td><code>WallRun</code>, a <code>JML</code> into the driver</td></tr><tr><td>$06F717</td><td><code>FixSpriteH</code>, a <code>JML</code> into the driver</td></tr></table>
+<h2 id="the-on-rom-format-and-markers">The on-ROM format and markers</h2>
+<ul>
+<li><b>The <code>&quot;GPS_VeRsIoN&quot;</code> marker.</b> GPS finds its own data in an already-patched ROM through this string. The table addresses and sizes are embedded after it.
+<ul>
+<li>Asm version 1 has no pages-40+ byte.
+</li>
+<li>Asm version 2 and later carry that byte and both pointer tables.
+</li>
+<li>One LM-edited hack examined used asm version 3 with the pages-40+ layout. It had 965 blocks over 229 code addresses, 606 of them on FG pages 40-7F.
+</li></ul>
+</li>
+<li><b>Cross-check.</b> Following the <code>JSL</code> in the $06F690 stub leads to <code>block_execute</code>, whose operands name the same tables the marker gives.
+</li>
+<li><b>The tables.</b>
+<ul>
+<li><code>block_bank_byte</code> holds one bank byte per tile, where 0 means not inserted.
+</li>
+<li><code>block_pointers_1</code> holds the 16-bit pointers for IDs below <code>$4000</code>.
+</li>
+<li><code>block_pointers_2</code> holds those for IDs <code>$4000</code> and up.
+</li></ul>
+</li>
+<li><b>The acts-like table pointer</b> at $06F624 is repointed by GPS. GPS writes the bank byte at $06F626 as a FastROM mirror (<code>$91</code>). LM's Map16 save normalises it to <code>$11</code>, which names the same table.
+</li>
+<li><b>BTSD removal.</b> GPS can detect Blocktool Super Deluxe by scanning for the string "Blocktool Super Deluxe" and strip it, but only BTSD hack version <code>$3136</code>.
+</li></ul>
+<h3 id="what-lunar-magic-does-to-a-gps-insertion">What Lunar Magic does to a GPS insertion</h3>
+<p>The following comes from a controlled before/after test in LM 3.40 [MEASURED]. The test covered a level save, the 16x16 editor's F9, <code>-ImportLevel</code> and <code>-ImportAllMap16</code>.</p>
+<ul>
+<li>None of these saves touch GPS's bytes. The stubs at $06F690 and up, the two <code>JML</code> hijacks at $06F67B and $06F717, the marker, the tables and the block code are all byte-identical afterwards. The four acts-like sites still <code>JSL</code> to LM's trampolines.
+</li>
+<li>The two Map16 routes (F9 and <code>-ImportAllMap16</code>, which give identical diffs) upgrade the LM dispatch they find:
+<ul>
+<li>the dispatch marker goes from <code>LM 11 01</code> to <code>LM 12 01</code>;
+</li>
+<li>the fourth trampoline, at $06F7A0, is rewritten to LM 3.40's 20-byte shape;
+</li>
+<li>$06F626 is normalised from <code>$91</code> to <code>$11</code>.
+</li></ul>
+</li>
+<li>Blocks keep working through all four saves.
+</li></ul>
+<h2 id="sa-1-handling">SA-1 handling</h2>
+<p><code>defines.asm</code> resolves SA-1 at assembly time, the same way UberASMTool does.</p>
+<ul>
+<li><code>read1(<a href="00.html#FFD5">$00FFD5</a>)==$23</code> detects SA-1.
+</li>
+<li><code><a href="00.html#FFD7">$00FFD7</a>==$0D</code> then picks <code>fullsa1rom</code> over <code>sa1rom</code>.
+</li>
+<li>The detection flips these defines:
+</li></ul>
+<table><tr><th>Define</th><th>LoROM</th><th>SA-1</th></tr><tr><td><code>!dp</code></td><td><code>$0000</code></td><td><code>$3000</code></td></tr><tr><td><code>!addr</code></td><td><code>$0000</code></td><td><code>$6000</code></td></tr><tr><td><code>!bank</code></td><td><code>$800000</code></td><td><code>$000000</code></td></tr><tr><td><code>!sprite_slots</code></td><td><code>$0C</code></td><td><code>$16</code></td></tr></table>
+<p>The <code>define_sprite_table</code> macro emits two aliases for each sprite table, a named one (<code>!sprite_status</code>) and a raw one (<code>!14C8</code>). That is why routines can be written with raw vanilla addresses and still be SA-1 correct. No SA-1 ROM has been checked against GPS's output here.</p>
+<h2 id="command-line-and-build-quirks">Command line and build quirks</h2>
+<ul>
+<li><b><code>-O2</code> is a documented crash risk.</b> It truncates the bank-byte table, so undefined block IDs end up with no bank byte, and they <b>crash if Mario touches them</b>.
+</li>
+<li><b><code>-O2</code> silently implies <code>-O1</code>.</b> The README does not say so.
+</li>
+<li><b><code>-O3</code> is accepted by the parser,</b> but it then errors as unimplemented.
+</li>
+<li><b>The README is out of date on <code>-nw</code>.</b> The option was added in V1.4.5. It appears in the tool's own <code>-h</code> output but not in the README.
+</li>
+<li><b>GPS works in the current directory.</b> It expects <code>main.asm</code>, <code>defines.asm</code>, <code>routines/</code>, <code>blocks/</code> and <code>list.txt</code> beside the executable and the Asar library.
+</li>
+<li><b><code>main.cpp</code> is portable.</b> Its Asar loader <code>dlopen</code>s <code>./libasar.dylib</code> on macOS, and it expects Asar API 303. It builds from <code>src.zip</code> against an Asar 1.9x shared library and runs on macOS. <code>main.cpp</code> is dated the day before the shipped <code>gps.exe</code>, and the two builds have not been byte-compared.
+</li>
+<li><b>The ROM has to be ready.</b> GPS refuses a ROM Lunar Magic has not saved, so it will not insert into a vanilla ROM. Pages 40 and up need LM to have created them.
+</li>
+<li><b>One Asar patch per block file.</b> Because each file is its own patch, macros and defines in one block file never leak into another [INFERRED].
+</li></ul>
+<h2 id="sharp-edges-in-the-routine-library">Sharp edges in the routine library</h2>
+<ul>
+<li><code>$185E</code> is used for different things in three routines.
+</li>
+<li><code>move_spawn_above_block</code> does a <code>TAX</code> with no <code>PHX</code>, so it clobbers the caller's X. Its four sibling routines all preserve X.
+</li>
+<li><code>rainbow_shatter_block</code> differs from <code>shatter_block</code> by exactly one omitted <code>LDA #$00</code>.
+</li></ul></div></body></html>

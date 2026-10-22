@@ -4,7 +4,7 @@ body { display: flex; flex-direction: column; padding: .5em; font: 13px/1.35 ui-
 pre { margin: 0; padding: 0 1em; font: inherit; }
 a { color: #080; text-decoration: none; }
 a:hover { text-decoration: underline; }
-#header { display: flex; justify-content: center; align-items: center; gap: .5em; flex-wrap: wrap; height: 2em; font-family: system-ui, sans-serif; }
+#header { display: flex; justify-content: center; align-items: center; gap: .5em; flex-wrap: wrap; min-height: 2em; padding: .2em 0; flex-shrink: 0; font-family: system-ui, sans-serif; }
 #body { display: flex; flex: 1; min-height: 0; overflow: clip; }
 #toc, #results { white-space: pre-wrap; overflow-wrap: anywhere; }
 #left { width: 32vw; overflow: auto; border-right: 1px solid #888; }

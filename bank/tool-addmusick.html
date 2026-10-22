@@ -1,0 +1,263 @@
+<!DOCTYPE html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width"><title>AddmusicK</title><link rel=stylesheet href="bank.css"><script defer src="bank.js"></script></head><body>
+<div id=header><a href=".">Index</a> &mdash; <a href="ram.html">RAM map</a> &mdash; <a href="graph.html">Call graph</a> &mdash; Notes: <a href="notes-system.html">system</a> &middot; <a href="notes-snes-hardware.html">SNES hardware</a> &middot; <a href="notes-level-pipeline.html">level pipeline</a> &middot; <a href="notes-sprite-engine.html">sprite engine</a> &mdash; Lunar Magic: <a href="lm-hooks.html">hooks</a> &middot; <a href="lm-contract.html">ROM format contract</a> &middot; <a href="lm-parity.html">what LM writes</a> &middot; <a href="lm-exanimation.html">ExAnimation</a> &middot; <a href="lm-overworld.html">overworld</a> &middot; <a href="lm-file-formats.html">file formats</a> &mdash; Tools: <a href="tool-pixi.html">PIXI</a> &middot; <a href="tool-addmusick.html">AddmusicK</a> &middot; <a href="tool-gps.html">GPS</a> &mdash; <a href="#" onclick="toggleDark();return false;">Toggle dark mode</a></div>
+<div class="page notes"><h1 id="addmusick">AddmusicK</h1>
+<p>AddmusicK (AMK) replaces Super Mario World's music and sound effects. It compiles songs written in its MML dialect, bundles them with BRR samples and its own SPC700 sound engine, and inserts all of it into the ROM with Asar, together with a SNES-side patch that uploads songs to the sound CPU. This page describes the HertzDevil fork of AMK 1.0.5. Later releases (1.0.9, 1.0.10, 1.1) add hex commands and options that are not covered here.</p>
+<p>The facts come from two places, and each section says which. Some come from AMK's own documentation, restated in plain words: <code>doc/readme_files/</code> holds <code>syntax_reference.html</code>, <code>hex_command_reference.html</code>, <code>general_basic_use.html</code>, <code>general_advanced_use.html</code> and <code>sound_effects.html</code>. The rest were measured by running AMK as a black box. That means compiling songs with it, then reading the bytes, the ARAM image and the <code>.spc</code> it produces, and running its engine in an SPC700 interpreter while logging every DSP register write. None of it was read from AMK's source. AMK's repository declares no licence (GitHub reports none, and the readme credits only Asar), so no code of AMK's is reproduced here.</p>
+<p>A clean-room MIT reimplementation of AMK's compiler and engine exists in Pipe Dream.</p>
+<h2 id="files-and-folders">Files and folders</h2>
+<table><tr><th>File or folder</th><th>What it holds</th></tr><tr><td><code>music/</code></td><td>Songs, as <code>.txt</code> or <code>.mml</code> MML files</td></tr><tr><td><code>samples/</code></td><td>BRR samples, and <code>.bnk</code> sample banks</td></tr><tr><td><code>1DF9/</code>, <code>1DFC/</code></td><td>Sound-effect sources, one file per effect</td></tr><tr><td><code>Addmusic_list.txt</code></td><td>The song list: song numbers, global and local</td></tr><tr><td><code>Addmusic_sample groups.txt</code></td><td>Named sample groups (<code>#default</code>, <code>#optimized</code>, user groups)</td></tr><tr><td><code>Addmusic_sound effects.txt</code></td><td>The 1DF9 and 1DFC effect lists</td></tr><tr><td><code>Addmusic_options.txt</code></td><td>Command-line arguments read from a file instead</td></tr><tr><td><code>test/1DF9/</code>, <code>test/1DFC/</code></td><td>93 small shipped effect sources</td></tr><tr><td><code>test/music/</code></td><td>16 shipped test songs. <code>ww</code>, <code>ww2</code> and <code>ww3</code> name a sample the folder lacks, so they do not compile as shipped</td></tr></table>
+<p>AMK prefers <code>asar.dll</code> over <code>asar.exe</code>, and expects either in its own program directory. Before writing, it backs the ROM up as <code>ROMNAME~</code>.</p>
+<h2 id="the-lunar-magic-handoff-romname-msc">The Lunar Magic handoff: <code>&lt;ROMNAME&gt;.msc</code></h2>
+<p>AMK writes <code>&lt;ROMNAME&gt;.msc</code> beside the ROM. Lunar Magic reads it to list song names in its music pickers. The file has one line per song for each of its <code>0</code>/<code>1</code> variants. Any tool that manages music on an LM-edited ROM has to read or write this file.</p>
+<h2 id="what-amk-puts-in-the-rom">What AMK puts in the ROM</h2>
+<p>From the documentation:</p>
+<ul>
+<li>Song, sample and engine data go into RATS-tagged free space beyond SMW's own. On a 4 MB ROM AMK prefers banks <code>$40</code> and up. <code>-b</code> turns that preference off, and <code>-a</code> lets AMK use untagged free space too.
+</li>
+<li><code>-p</code> writes the patch and the data files without touching the ROM. <code>-norom</code> produces <code>.spc</code> files only.
+</li>
+<li>AMK assembles two programs with Asar: a SNES-side patch for the main CPU, and the SPC700 program (engine and data) that the patch uploads in place of SMW's.
+</li></ul>
+<p>Measured:</p>
+<ul>
+<li>SMW's 20 stock samples sit in the ROM inside SMW's own sound upload at <a href="0F.html#8000">$0F8000</a>. They are byte for byte AMK's <code>samples/default/*.brr</code>.
+</li>
+<li>AMK numbers songs differently from SMW. A song number SMW's own code writes to <code>$1DFB</code> names a different song under AMK, so every <code>$1DFB</code> write site and song table in the game has to carry AMK's numbers. This was found by playing SMW's songs against AMK's originals of them.
+</li></ul>
+<h2 id="the-smw-side-ports-and-ram">The SMW side: ports and RAM</h2>
+<p>SMW talks to the sound CPU through four RAM bytes, each mirrored to an APU port.</p>
+<table><tr><th>RAM</th><th>Role under AMK</th></tr><tr><td><code>$1DF9</code></td><td>Sound-effect bank 1. The effect plays on SPC channel 6</td></tr><tr><td><code>$1DFA</code></td><td>Echo control for sound effects. <code>#$06</code> turns sound-effect echo on, and <code>#$05</code> turns it off. It is off by default</td></tr><tr><td><code>$1DFB</code></td><td>Song change. A song not in ARAM is uploaded first</td></tr><tr><td><code>$1DFC</code></td><td>Sound-effect bank 2. The effect plays on SPC channel 7</td></tr></table>
+<p>According to AMK's docs, the only difference between the two effect banks is the SPC channel they use (6 or 7).</p>
+<p>Behaviour, measured against AMK and against SMW's own engine:</p>
+<ul>
+<li>Writing <code>$FF</code> to <code>$1DFB</code>, or the number of a song the ROM does not have, fades the music out over 240 ticks.
+</li>
+<li>Writing <code>$FF</code> to <code>$1DF9</code> (hurry up) adds 10 to the tempo and plays SMW's hurry-up jingle. The faster tempo lasts until a level entered from the overworld uploads its song again.
+</li>
+<li>Echo is turned off whenever a song is uploaded.
+</li></ul>
+<h2 id="songs-samples-and-sound-effects">Songs, samples and sound effects</h2>
+<p>All from the documentation.</p>
+<h3 id="global-and-local-songs">Global and local songs</h3>
+<p><code>Addmusic_list.txt</code> divides songs into global and local. Global songs never transfer: they stay in ARAM from power-on and use that space permanently. Local songs are uploaded on a song change, along with their samples, unless whoever writes <code>$1DFB</code> keeps the previous sample set.</p>
+<h3 id="samples">Samples</h3>
+<ul>
+<li>Samples are BRR files, grouped in <code>Addmusic_sample groups.txt</code>. <code>#default</code> is every stock SMW sample. <code>#optimized</code> is only the samples that global songs and sound effects need.
+</li>
+<li>A trailing <code>!</code> on a sample marks it important, which means it is always resident.
+</li>
+<li>Samples a song never uses are dropped for that song, unless <code>-u</code> is given. Duplicate samples are shared, unless <code>-d</code> is given.
+</li>
+<li>A <code>.bnk</code> bank is named in <code>#samples</code>. A bank is exactly <code>$8000</code> bytes and fills ARAM <code>$8000-$FFFF</code>. The 1.0.5 build crashes when it loads one, so nothing about banks could be measured.
+</li></ul>
+<p>Measured: a group's sample that is not marked important, and that nothing in the song names (an instrument definition or use, or <code>$F3</code>), is not uploaded with that song. Important samples stay in ARAM from power-on.</p>
+<h3 id="sound-effects">Sound effects</h3>
+<ul>
+<li>There are two folders, <code>1DF9</code> (SPC channel 6) and <code>1DFC</code> (channel 7). They are listed in <code>Addmusic_sound effects.txt</code> as <code>&lt;hex slot&gt; [flag] TAB &lt;filename&gt;</code>, and each filename is looked up in the folder of the same name.
+</li>
+<li>The <code>*</code> flag makes the slot a pointer to an effect already inserted, which saves ARAM. The <code>?</code> flag stops AMK from appending its automatic <code>$00</code> terminator.
+</li>
+<li>Effect commands are a subset of the song language: notes, <code>@x</code>, <code>@x,y</code> for noise, <code>v x,y</code>, raw <code>$xx</code> bytes, and <code>#asm</code> / <code>#jsr</code> for inline SPC700 code.
+</li></ul>
+<p>What the shipped effects show:</p>
+<ul>
+<li>All 93 shipped effects are written in pure <code>$xx</code> hex. Not one note letter appears in any of them. The grammar is a length byte, an optional volume, an optional second volume (giving separate left and right volumes, i.e. pan), and then a note byte of <code>$80</code> or above. A bare note reuses the previous header.
+</li>
+<li>A zero length byte ends an effect. <code>test/1DFC/0E L + R scroll.txt</code> and <code>1DFC/1D Time low 2.txt</code> each have a <code>$00</code> in the middle of the stream, followed by an exact copy of a 1DF9 effect. Those trailing blocks can never be reached, so they are dead data. This reading comes from the effect grammar alone and has not been checked against how AMK compiles effects.
+</li>
+<li>AMK 1.0.5 compiles the note syntax in effects differently from what its readme says [MEASURED]. To reproduce it, go by AMK's actual output, not the readme.
+</li></ul>
+<h2 id="the-mml-language">The MML language</h2>
+<p>From the documentation.</p>
+<ul>
+<li><b>Channels.</b> A song has up to 8 channels, <code>#0</code>-<code>#7</code>. Channels 6 and 7 are shared with sound effects, and they are cut while an effect plays on them.
+</li>
+<li><b>Notes.</b> <code>cdefgab</code>, <code>r</code> (rest) and <code>^</code> (tie), with <code>+</code>/<code>-</code> for sharp and flat. Lengths are note values, and <code>l</code> sets the default length. <code>o</code>, <code>&lt;</code> and <code>&gt;</code> set the octave (1-6), <code>h</code> sets tuning, and <code>{ }</code> makes triplets.
+</li>
+<li><b>Instruments.</b> <code>@</code> selects an instrument: 0-18 are SMW's, 21-29 are percussion, and 30 and up are custom.
+</li>
+<li><b>Other commands.</b> <code>v</code> and <code>w</code> are channel and global volume. <code>y</code> is pan (0-20, with optional surround flags). <code>q</code> is quantisation, <code>t</code> is tempo, <code>p</code> is vibrato, <code>n</code> is noise, and <code>&amp;</code> is a pitch slide. <code>?</code> means no loop, and <code>/</code> marks the intro. <code>(&quot;x.brr&quot;,$tt)</code> loads a sample.
+</li>
+<li><b>Loops.</b> <code>[ ]n</code> repeats. <code>(n)[ ]m</code> defines a labelled loop, <code>(n)k</code> calls it, and <code>*</code> recalls the last one. These loops cannot nest. <code>[[ ]]n</code> superloops can go around them, which is a second level, and remote-code event type 4 works as a third.
+</li>
+<li><b>Remote code.</b> <code>(!n)[...]</code> defines a run of hex commands with no notes. <code>(!n, type, arg)</code> attaches one to an event: note on, N ticks into a note, before a note ends, key off, run now, or disable.
+</li>
+<li><b>Replacements.</b> <code>=</code> replacements are greedy and recursive, and they apply only to the text after them.
+</li>
+<li><b>Preprocessing.</b> <code>#define</code>, <code>#undef</code>, <code>#ifdef</code>, <code>#ifndef</code>, <code>#if</code>, <code>#endif</code> and <code>#error</code> run before everything else.
+</li>
+<li><b>Hex commands.</b> <code>hex_command_reference.html</code> has 106 rows. Among them are <code>$DA</code> (instrument), <code>$E0</code>-<code>$E4</code> (volume, tempo, transpose), <code>$E5</code> (tremolo), <code>$E6</code> (subloops) and AMK's own <code>$FA</code> family. Hex commands are validated unless <code>-h</code> is given. Turning validation off also turns off echo bounds checking and AM4/AMM conversion.
+</li>
+<li><b>Directives.</b>
+<ul>
+<li><code>#samples { #group &quot;x.brr&quot; ... }</code>.
+</li>
+<li><code>#instruments { &quot;x.brr&quot; $aa $bb $cc $dd $ee }</code>. An ADSR1 byte of <code>$80</code> or above selects ADSR, and anything lower selects GAIN. <code>dd.ee</code> is the tuning.
+</li>
+<li><code>#path</code>, <code>#pad</code>, <code>#halvetempo</code>, and <code>#option tempoimmunity | dividetempo n | smwvtable | noloop</code>.
+</li>
+<li><code>#spc { #author ... #length }</code>, the <code>.spc</code> ID666 tags.
+</li>
+<li><code>#amk n</code>, the parser version. AMK appends it when it is missing, and <code>#am4</code> and <code>#amm</code> override it.
+</li></ul>
+</li>
+<li><b>Other channel limits.</b> Channel 0 cannot be pitch-modulated.
+</li></ul>
+<h2 id="conversion-of-older-formats">Conversion of older formats</h2>
+<ul>
+<li>AddmusicM songs need an <code>#amm</code> header, and their <code>sXX_..</code> line has to be rewritten as a <code>#samples</code> list. Addmusic 4.05 songs need <code>#am4</code>. <code>-c</code> converts them.
+</li>
+<li>Measured, for <code>#am4</code> and <code>#amm</code> songs: AMK drops the header's echo-buffer writes, <code>$ED $80</code>/<code>$81</code> (Addmusic 4's own commands), stray bytes below <code>$80</code>, and notes that come before the first channel.
+</li>
+<li>Real Addmusic 4 songs compile under 1.0.5. So do the songs among AMK 1.0.6's 39 originals that 1.0.5 can compile.
+</li></ul>
+<h2 id="how-mml-compiles">How MML compiles</h2>
+<p>Measured against AMK's output. AMK's documentation describes none of this.</p>
+<ul>
+<li><b>Layout of a compiled song.</b> First the phrase list, then the pointer tables, then the instrument table, then the channels. Every subroutine comes after every channel.
+</li>
+<li><b><code>[ ]</code> loops</b> are compiled as subroutines and called with <code>$E9</code>.
+</li>
+<li><b>Duration and quantisation bytes</b> are written only when they change, and the compiler forgets them after a loop, so the next note writes them again.
+</li>
+<li><b>Intro markers</b> (<code>/</code>) re-select the channel.
+</li>
+<li><b>Long notes</b> are split into halves for lengths up to 254 ticks, and into runs of 127 otherwise.
+</li>
+<li><b>A slide (<code>&amp;</code>)</b> splits differently from a plain long note, and it emits <code>$DD</code> before the next note.
+</li>
+<li><code>h</code> and <code>@</code> have their own rules for which wins between loop context and text order.
+</li>
+<li><b>Empty channels</b> are handled specially.
+</li>
+<li><b>The song's option bytes</b> live in channel 0.
+</li>
+<li><b><code>$EF</code>'s parameters</b> are stored rotated, so they are not in the order they are written in the MML.
+</li>
+<li><b>Tempo division</b> (<code>dividetempo</code>, <code>#halvetempo</code>) is applied to every duration field.
+</li>
+<li><b>Hex commands</b> are checked by the validations the docs describe.
+</li>
+<li><b>Remote code.</b> AMK 1.0.5 cannot compile its own documented remote-code syntax (<code>(!n)[...]</code>, <code>(!n, type, arg)</code>), so that part of the language has only the documentation behind it.
+</li>
+<li><code>-v</code> prints the size of each channel.
+</li></ul>
+<h2 id="aram-the-binding-constraint">ARAM: the binding constraint</h2>
+<p>ARAM (64 KB) limits everything in AMK. Its regions are the engine, the global songs, the sample directory (aligned to <code>$100</code>), the samples, the sound effects, the local song and the echo buffer.</p>
+<ul>
+<li>Global songs never transfer, but they hold their ARAM permanently.
+</li>
+<li>The echo buffer sits at the top of ARAM, at <code>ESA = $100 − 8 × delay</code> (see Echo below), so a longer delay takes more space. It has to be reserved up front with <code>$FA $04</code>. A song that runs into it fails to build with "Echo buffer exceeded total space in ARAM".
+</li>
+<li>ARAM cost caps echo delay at <code>$00-$0F</code>. The docs warn that a rogue echo buffer "can cause irreparable damage".
+</li></ul>
+<h2 id="the-engine-as-measured">The engine, as measured</h2>
+<p>These findings come from running AMK's own engine in an SPC700 interpreter and logging every DSP register write. The interpreter's instruction and timer timing match blargg's snes_spc (libgme) cycle for cycle.</p>
+<h3 id="where-amk-s-engine-misbehaves">Where AMK's engine misbehaves</h3>
+<ul>
+<li><b>It falls behind under load.</b> With many channels running effects, it cannot finish a song tick inside one timer tick, and it loses ticks. That is about 1% with six channels of vibrato, 5% on one eight-channel test song, and 23% on an eight-channel song at <code>t192</code>. snes_spc shows the same losses, so real hardware would too.
+</li>
+<li><b><code>$DD</code> right after a loop's end, or before any note, stops the song for good.</b>
+</li>
+<li><b><code>$E5</code> with depth <code>$FF</code> after a note hangs it.</b>
+</li></ul>
+<h3 id="timing">Timing</h3>
+<ul>
+<li>Timer 0 runs at 500 Hz (target 16). Every timer tick adds <code>tempo + 1</code> to a one-byte accumulator, and each carry out of it is one song tick. So <b>song ticks per second = 500/256 × (T+1)</b>. A quarter note is 48 ticks. With no <code>t</code> command, the tempo is <b>53</b>.
+</li>
+<li>Effects (vibrato, bends, pan fades, tremolo) update on every <i>timer</i> tick. The time into a note counts song ticks plus the accumulator's fraction. Bends, tremolo and pan fades run one timer tick (or one tick) ahead.
+</li>
+<li>The first channel to reach the end of its data ends the phrase for every channel. Notes other channels started on that tick are dropped, and the next phrase starts on the same tick. A new phrase keeps each channel's instrument, volume, pan and <code>q</code>.
+</li></ul>
+<h3 id="notes">Notes</h3>
+<ul>
+<li><b>Quantisation.</b> A note is released at tick <code>max(len × T[q] &gt;&gt; 8, 1)</code>, and released again at <code>len − 2</code>, where T = <code>33 66 80 99 B3 CC E6 FF</code>. Rests are released at their start, and they get the same two releases. The release is skipped when a tie follows. Durations, <code>q</code> bytes and other commands are stepped over when looking for that tie, but a call, a loop, an arpeggio or the end of the data counts as no tie.
+</li>
+<li><b>Pitch.</b> The top octave comes from a 12-entry table (<code>085F ... 0FCD</code>, then <code>10BE</code>). A fraction of a semitone interpolates between neighbouring entries, truncated. Each octave below is half the one above. The result is then multiplied by the instrument's tuning: <code>P × whole + (P × fraction &gt;&gt; 8)</code>.
+</li>
+<li><b>Transposition.</b> <code>$FA $02</code> (one channel) and <code>$E4</code> (all channels) add semitones. The sum wraps in <b>seven</b> bits, so <code>$85</code> is +5 and <code>$7B</code> is −5. A result past the top note plays at pitch 0. Percussion is transposed too.
+</li>
+<li><b><code>$EE f</code></b> detunes every note by f/256 of a semitone.
+</li>
+<li><b>Instruments.</b> @0-@18 are SMW's. <b>@19 and @20 leave the instrument unchanged.</b> @21-@29 are percussion. Each plays a fixed note (<code>A8 A4 A1 A4 A4 9C A6 A6 A1</code>) on its own instrument (tuning <code>3 7 7 7 8 2 8 8 3</code>), and the channel keeps that instrument for the notes after it. A channel with no <code>@</code> at all plays @0.
+</li>
+<li><b><code>$ED</code>.</b> When <code>aa &lt; $80</code>, it sets ADSR1 = <code>aa | $80</code> and sets ADSR2. With <code>$80 gg</code>, it sets ADSR1 = 0 and GAIN = gg. <b><code>$FA $01 gg</code></b> clears bit 7 of ADSR1 (ADSR1 &amp;= <code>$7F</code>) and sets GAIN = gg. <b><code>$F4 $09</code></b> or a new <code>@</code> undoes both.
+</li></ul>
+<h3 id="volume">Volume</h3>
+<ul>
+<li><code>P = ((((v × vel) &gt;&gt; 8) × w) &gt;&gt; 8)² &gt;&gt; 9</code>. <code>$FA $03 a</code> turns that into <code>P + (P × a &gt;&gt; 8)</code>.
+</li>
+<li>Then left = <code>P × pan[y] &gt;&gt; 7</code> and right = <code>P × pan[20 − y] &gt;&gt; 7</code>, with pan = <code>00 01 03 07 0D 15 1E 29 34 42 51 5E 67 6E 73 77 7A 7C 7D 7E 7F</code>. While a pan fade runs, the table is interpolated and truncated. A surround bit flips the sign of that side.
+</li>
+<li>The defaults are <code>w</code> 192, <code>v</code> 255 and <code>y</code> 10, with N-SPC's velocity table.
+</li>
+<li>A change to <code>v</code>, <code>y</code>, <code>w</code> or <code>$FA $03</code> is sent on its own tick, even in the middle of a note.
+</li></ul>
+<h3 id="effects">Effects</h3>
+<ul>
+<li><b>Vibrato <code>$DE d r a</code>.</b> After d ticks, phase = (t − d) × r. The wave is a triangle: +a/256 semitone at a quarter of the period and −a/256 at three quarters. <b><code>$EA n</code></b> fades the depth in from 0 at key-on over n ticks. <b><code>$DF</code></b> returns the note to its own pitch.
+</li>
+<li><b>Bend <code>$DD d l n</code></b> is read together with the note just before it. The pitch goes from that note to n, starting d ticks in and lasting l ticks, linear in semitones. It then holds at n.
+</li>
+<li><b><code>$EB d l s</code> / <code>$EC d l s</code>.</b> With <code>$EB</code>, every later note bends by s semitones at release. With <code>$EC</code>, every later note starts at note − s and bends back up at attack. A length of 0 turns either one off.
+</li>
+<li><b>Tremolo <code>$E5 d r a</code>.</b> Volume is multiplied by (1 − a/256 × u), where u is a triangle rising from 0 to 1 at half a period, with phase (t + 1 − d) × r. Tremolo also applies at key-on. A depth of 0 turns it off.
+</li>
+<li><b>Fades</b> (<code>$E8</code> volume, <code>$DC</code> pan, <code>$E1</code> global volume, <code>$E3</code> tempo) step by a signed 8.8 amount every tick. The first step happens on the tick the command is read, and the fade lands exactly on the target. <b>A length of 0 does nothing.</b> Volume steps once per tick, while a pan fade also glides between ticks.
+</li></ul>
+<h3 id="echo">Echo</h3>
+<ul>
+<li>At song start, and <b>every time the phrase list loops</b>, the engine writes FLG <code>$60</code>, ESA <code>$FF</code>, EDL 0, FLG <code>$40</code>, FLG <code>$00</code>. Any buffer reserved before is forgotten.
+</li>
+<li><b><code>$EF</code></b> writes its compiled bytes (channels, left, right) to EON, EVOL L and EVOL R, in the order AMK stores them.
+</li>
+<li><b><code>$F1 d f n</code>.</b> If d needs a bigger buffer than the one already made, the engine writes FLG <code>$60</code>, ESA = <code>$100 − 8d</code> (<code>$FF</code> when d is 0) and EDL = d. The whole song then stands still for 13 × d timer ticks, writes FLG <code>$40</code>, waits another 13 × d, and writes FLG <code>$00</code>. If the buffer is already big enough, it writes only EDL. Either way it then writes EFB = f, the eight FIR coefficients of filter n, and the echo volumes again. The filters are:
+<ul>
+<li>0: <code>FF 08 17 24 24 17 08 FF</code>
+</li>
+<li>1: <code>7F 00 ...</code>
+</li>
+<li>2: <code>5F 08 DE 08 65 09 F4 09</code>
+</li></ul>
+</li>
+<li><b><code>$FA $04 n</code></b> makes the buffer for delay n up front, with the same wait, so later <code>$F1</code> commands up to delay n do not pause the song.
+</li>
+<li><b><code>$F0</code></b> writes EON, EVOL 0 and FLG <code>$20</code>.
+</li>
+<li><b><code>$F2 l L R</code></b> fades the echo volume. It takes one step fewer than l, so it does not land on the target.
+</li>
+<li><b><code>$F5</code></b> writes the eight FIR coefficients.
+</li>
+<li><b><code>$F4 $03</code></b> toggles the current channel's echo bit.
+</li>
+<li>PMON, NON and EON are written on every song tick.
+</li></ul>
+<h3 id="not-yet-measured">Not yet measured</h3>
+<p>These commands have no measured behaviour here:</p>
+<ul>
+<li><code>$F4</code> subcommands <code>$01</code> (legato), <code>$02</code> (light staccato), <code>$08</code> (velocity table), <code>$00</code>/<code>$06</code> (Yoshi drums), <code>$05</code> (sync) and <code>$07</code> (tempo hike)
+</li>
+<li><code>$F6</code> (DSP write), <code>$F8</code> (noise) and <code>$FA $00</code> (pitch modulation)
+</li>
+<li><code>$FB</code> (arpeggio, trill, glissando), <code>$FC</code> (remote commands), <code>$F3</code> (sample load) and <code>$F9</code> (data send)
+</li>
+<li>the effect channels' own playback, and the port protocol in detail
+</li></ul>
+<h2 id="quirks">Quirks</h2>
+<ul>
+<li>Channels 6 and 7 are cut whenever a sound effect plays on them.
+</li>
+<li>Loops cannot nest. <code>[[ ]]</code> is the second level, and remote event type 4 is an effective third.
+</li>
+<li><code>-h</code> turns off more than hex validation: it also turns off echo bounds checking and AM4/AMM conversion.
+</li>
+<li>The 1.0.5 build cannot compile its own documented remote-code syntax, and it crashes when it loads a <code>.bnk</code> bank.
+</li>
+<li>Effect note syntax compiles differently from the readme [MEASURED].
+</li>
+<li>Two shipped 1DFC effects carry unreachable data after an early <code>$00</code>.
+</li>
+<li>A song with <code>$DD</code> straight after a loop end, or before any note, stops for good. A song with <code>$E5</code> at depth <code>$FF</code> after a note hangs.
+</li>
+<li>Under heavy effect load the engine loses song ticks, so busy songs play slower than their tempo says.
+</li></ul></div></body></html>
