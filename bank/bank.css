@@ -35,6 +35,14 @@ a:hover { text-decoration: underline; }
 .rom { color: #080; }
 .ram, a.ram { color: #088; }
 .gut { -webkit-user-select: none; user-select: none; }
+/* Column bands on instruction rows: address, opcode bytes, instruction, comment. Inline-blocks so
+   rows touch with no gap; comment-only rows stay unbanded and read as breaks between routines. */
+.l .rom, .l .hx, .l .cd, .l > .c { display: inline-block; }
+.l .rom { background: #e3f4e4; padding: 0 .4ch; }
+.l .hx { background: #efeff2; color: #667; padding: 0 .4ch; }
+.l .cd { background: #fff3df; min-width: 33ch; padding: 0 .6ch; }
+.l > .c { background: #fdeeee; padding: 0 .6ch; }
+.l:target :is(.rom, .hx, .cd, .c), .hit :is(.rom, .hx, .cd, .c) { background: none; }  /* let the row's yellow show */
 .l:target, tr:target, .hit { background: #ff0; }
 .inverted { filter: hue-rotate(180deg) invert(100%); }
 @media (prefers-color-scheme: dark) {

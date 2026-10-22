@@ -398,9 +398,12 @@ def main():
         if not code and not ln.hex:  # label-only row: the section header already shows it
             return f'<span class=c>;{linkify(comment, b)}</span>' if comment else None
         vis = len(html.unescape(re.sub(r"<[^>]+>", "", codeh)))  # visible width: links shorten labels
-        com = f'{" " * max(1, CODE_COL - vis)}<span class=c>;{linkify(comment, b)}</span>' if comment else ""
+        pad = " " * max(1, CODE_COL - vis) if comment else ""
+        com = f'<span class=c>;{linkify(comment, b)}</span>' if comment else ""
         # Address and opcode bytes sit in an unselectable gutter, so a copied block is just the code and comments.
-        return f'<span{idattr} class=l><span class=gut>{addr} {(ln.hex or ""):<12} </span>{codeh}{com}</span>'
+        # Each column is its own span so bank.css can tint it as a band.
+        return (f'<span{idattr} class=l><span class=gut>{addr} <span class=hx>{(ln.hex or ""):<12}</span> </span>'
+                f'<span class=cd>{codeh}{pad}</span>{com}</span>')
 
     named_count = 0
     for b, secs in parsed.items():
