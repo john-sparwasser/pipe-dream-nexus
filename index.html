@@ -3,123 +3,221 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pipe Dream: the all-in-one Super Mario World hacking tool</title>
+<title>Pipe Dream: the open-source level editor for Mario hacks</title>
 <meta name="description" content="Pipe Dream is a free, open-source, cross-platform Super Mario World level editor. Lunar Magic compatible, with shareable .pdp project files and a gentler learning curve.">
 <link rel="icon" href="/favicon.png">
-<meta property="og:title" content="Pipe Dream: the all-in-one Super Mario World hacking tool">
+<meta property="og:title" content="Pipe Dream: the open-source level editor for Mario hacks">
 <meta property="og:description" content="Free, open source, cross-platform. Lunar Magic compatible. Shareable project files instead of passing ROMs around.">
 <meta property="og:url" content="https://pipedream.nexus">
 <meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
 :root{
-  --bg:#12161c; --panel:#181e26; --line:#252d38;
-  --fg:#e6ecf3; --dim:#93a1b2;
-  --accent:#2E7FD4; --sel:#4FC1E9; --grab:#5FD08A; --sprite:#6FE0C0;
+  --bg:#0b0b0c; --panel:#121214; --deep:#0d0e14; --line:rgba(255,255,255,.08);
+  --fg:#fff; --text:#e3e1ea; --dim:#888890; --ok:#34d399; --del:#fb7185;
+  --sans:"Geist",ui-sans-serif,system-ui,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"Cascadia Code",Consolas,monospace;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);
-  font:16px/1.65 ui-sans-serif,system-ui,"Segoe UI",sans-serif;
-  -webkit-font-smoothing:antialiased}
-main{max-width:820px;margin:0 auto;padding:0 24px 96px}
-a{color:var(--sel)}
-h1,h2,h3{line-height:1.25;font-weight:650}
-h2{margin:60px 0 12px;font-size:1.45rem}
-h3{margin:28px 0 6px;font-size:1.05rem}
-p{color:var(--dim)}
-p strong,li strong{color:var(--fg);font-weight:600}
-code{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:.9em;
-  background:#0d1117;border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 var(--sans);
+  letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+p{color:var(--dim);margin:0}
+code{font-family:var(--mono);font-size:.88em;color:var(--fg)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+h1,h2{margin:0;color:var(--fg);font-weight:500;letter-spacing:-.04em;line-height:1.1}
+h2{font-size:clamp(1.9rem,4vw,2.5rem)}
+section{padding:96px 0;border-top:1px solid var(--line)}
+.sub{margin-top:12px;max-width:60ch}
+.mono{font-family:var(--mono);font-size:.75rem}
+.pill{display:inline-block;border:1px solid var(--line);background:rgba(255,255,255,.03);
+  border-radius:99px;padding:2px 10px;color:var(--dim);font:500 .72rem var(--mono);white-space:nowrap}
 
-header{padding:80px 0 8px;text-align:center}
-header img{width:64px;height:64px;image-rendering:pixelated}
-header h1{margin:16px 0 10px;font-size:2.6rem;letter-spacing:-.02em}
-.tag{color:var(--dim);font-size:1.14rem;margin:0 auto;max-width:54ch}
-.pills{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:24px 0 0}
-.pills span{font-size:.78rem;color:var(--dim);border:1px solid var(--line);
-  border-radius:99px;padding:4px 12px;background:var(--panel)}
-.cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:28px 0 8px}
-.cta a{display:inline-block;padding:10px 20px;border-radius:8px;text-decoration:none;
-  font-weight:600;font-size:.95rem}
-.cta .primary{background:var(--accent);color:#fff}
-.cta .ghost{border:1px solid var(--line);color:var(--fg)}
-.note{text-align:center;color:var(--dim);font-size:.85rem;margin-top:20px}
-/* width/height are on the tags too, so the page does not reflow when they load. */
-.shots{position:relative;margin-top:28px}
-.track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;
-  scrollbar-width:none;border-radius:5px;border:1px solid var(--line)}
+/* buttons */
+.btn{display:inline-block;background:#fff;color:#000;font-weight:500;font-size:.94rem;
+  border-radius:99px;padding:10px 24px;text-decoration:none;border:0;cursor:pointer;font-family:var(--sans)}
+.btn:hover{background:#e5e5e5}
+.btn.ghost{background:none;color:var(--fg);border:1px solid rgba(255,255,255,.14)}
+.btn.ghost:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.28)}
+.link{color:var(--dim);text-decoration:none;font-size:.88rem}
+.link:hover{color:var(--fg)}
+
+/* nav */
+nav{position:sticky;top:0;z-index:10;background:rgba(11,11,12,.8);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line)}
+nav .wrap{height:56px;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--fg);font-size:1.1rem}
+.brand img{width:22px;height:22px;image-rendering:pixelated}
+.brand b{font-weight:600}.brand span{color:var(--dim)}
+nav .right{display:flex;align-items:center;gap:22px}
+nav .gh{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);border-radius:99px;
+  padding:4px 14px;font:500 .75rem var(--mono);color:var(--fg);text-decoration:none}
+nav .gh:hover{border-color:rgba(255,255,255,.3)}
+
+/* hero */
+.hero{position:relative;border-top:0;padding:96px 0 0;overflow:hidden;
+  background-image:linear-gradient(to right,rgba(255,255,255,.03) 1px,transparent 1px),
+                   linear-gradient(to bottom,rgba(255,255,255,.03) 1px,transparent 1px);
+  background-size:32px 32px}
+.hero .wrap{position:relative}
+.hero h1{font-size:clamp(2.6rem,7vw,4.5rem);line-height:1.06}
+.hero .lede{font-size:1.15rem;margin:24px auto 0;max-width:56ch}
+.hero-copy{text-align:center;max-width:760px;margin:0 auto}
+.cta{margin-top:32px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.cta .mono{color:rgba(136,136,144,.75)}
+.tile{position:absolute;width:48px;height:48px;border-radius:10px;background:var(--panel);
+  border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 8px 24px rgba(0,0,0,.5);pointer-events:none}
+.tile svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:1.6}
+.t1{top:8px;left:32px;transform:rotate(-6deg)}.t2{top:170px;left:-8px;transform:rotate(4deg)}
+.t3{top:330px;left:64px;transform:rotate(-3deg)}.t4{top:24px;right:40px;transform:rotate(5deg)}
+.t5{top:190px;right:-8px;transform:rotate(-4deg)}.t6{top:330px;right:56px;transform:rotate(3deg)}
+@media(max-width:900px){.tile{display:none}}
+@media(max-width:640px){nav .right .link{display:none}.hero{padding-top:56px}section{padding:64px 0}}
+
+/* real screenshots, cropped by the fold */
+.shots{position:relative;max-width:1040px;margin:56px auto 0}
+.frame{border:1px solid var(--line);border-bottom:0;border-radius:16px 16px 0 0;overflow:hidden;
+  background:var(--panel);box-shadow:0 -1px 0 rgba(255,255,255,.05) inset,0 24px 80px rgba(0,0,0,.6)}
+.track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none}
 .track::-webkit-scrollbar{display:none}
-.track img{flex:0 0 100%;width:100%;height:auto;scroll-snap-align:start}
+.track img{flex:0 0 100%;width:100%;height:auto;scroll-snap-align:start;cursor:zoom-in;display:block}
 .shots button{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;
-  border-radius:50%;border:1px solid var(--line);background:rgba(24,30,38,.85);color:var(--fg);
+  border-radius:50%;border:1px solid var(--line);background:rgba(18,18,20,.85);color:var(--fg);
   font-size:1.5rem;line-height:1;cursor:pointer}
-.prev{left:10px}.next{right:10px}
-.track img{cursor:zoom-in}
-#zoom{max-width:96vw;max-height:96vh;padding:0;border:1px solid var(--line);border-radius:5px;
+.prev{left:12px}.next{right:12px}
+#zoom{max-width:96vw;max-height:96vh;padding:0;border:1px solid var(--line);border-radius:8px;
   background:var(--bg);cursor:zoom-out}
-#zoom::backdrop{background:rgba(0,0,0,.8)}
+#zoom::backdrop{background:rgba(0,0,0,.85)}
 #zoom img{display:block;width:auto;height:auto;max-width:96vw;max-height:96vh}
 #zoom:focus{outline:0}
-#dl-modal{padding:0;border:1px solid var(--line);border-radius:10px;background:var(--panel);
+#dl-modal{padding:0;border:1px solid var(--line);border-radius:16px;background:var(--panel);
   color:var(--fg);width:min(360px,92vw)}
 #dl-modal::backdrop{background:rgba(0,0,0,.7)}
 #dl-modal div{position:relative;padding:22px 24px 18px}
-#dl-modal h3{margin:0 0 14px}
+#dl-modal h3{margin:0 0 14px;font-weight:500}
 #dl-modal .dl-btn{display:block;text-align:center;margin:10px 0}
-#dl-modal small{display:block;font-weight:400;font-size:.8rem;opacity:.8}
+#dl-modal small{display:block;font-weight:400;font-size:.8rem;opacity:.7}
 #dl-modal .close{position:absolute;top:8px;right:10px;background:none;border:0;color:var(--dim);
   font-size:1.4rem;cursor:pointer}
 
-.lead{font-size:1.05rem}
-.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:20px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
-.card h3{margin:0 0 4px;font-size:1rem}
-.card p{margin:0;font-size:.9rem}
+/* cards */
+.grid{display:grid;gap:14px;margin-top:48px}
+.g6{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.g3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);transition:border-color .15s}
+.card:hover{border-color:rgba(255,255,255,.2)}
+.card h3{margin:0 0 6px;color:var(--fg);font-weight:500;font-size:1.05rem;letter-spacing:-.02em}
+.card p{font-size:.9rem}
+.card.glow{border-color:rgba(59,130,246,.25);box-shadow:0 0 50px -12px rgba(59,130,246,.3)}
+.tool h3{font-size:.95rem;margin:0}
+.tool .mono{color:var(--dim);display:block;margin-top:2px}
+.tool .st{margin-top:14px}
+.st.live{color:var(--ok)}
 
-.plan{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
-  border-radius:10px;padding:18px 22px;margin:14px 0}
-.plan-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
-  flex-wrap:wrap}
-.plan h3{margin:0;font-size:1.06rem}
-.plan-head span{font-size:.74rem;color:var(--dim);border:1px solid var(--line);
-  border-radius:99px;padding:3px 10px;background:var(--bg);white-space:nowrap}
-.plan p{margin:9px 0 0;font-size:.93rem}
-.plan.done h3::before{content:"\2713  ";color:var(--accent)}
-.plan.done{opacity:.85}
+/* feature split */
+.split{display:grid;grid-template-columns:7fr 5fr;gap:48px;align-items:center}
+@media(max-width:900px){.split{grid-template-columns:1fr}}
+.win{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.win .bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;
+  background:var(--deep);border-bottom:1px solid var(--line)}
+.win .bar .mono{color:var(--text)}
+.win pre{margin:0;padding:18px;background:var(--bg);font:400 .75rem/1.7 var(--mono);color:rgba(255,255,255,.7);
+  overflow-x:auto}
+.win pre i{font-style:normal;display:block;padding:0 4px;border-radius:2px}
+.win pre .ctx{color:rgba(255,255,255,.4)}
+.win pre .add{color:var(--ok);background:rgba(6,78,59,.25)}
+.win pre .del{color:var(--del);background:rgba(76,5,25,.3)}
+.win .foot{padding:12px 16px;border-top:1px solid var(--line);color:var(--ok)}
+.checks{list-style:none;padding:0;margin:28px 0 0}
+.checks li{display:flex;gap:12px;align-items:center;color:var(--fg);font-size:.92rem;margin:12px 0}
+.checks li::before{content:"\2713";flex:none;width:18px;height:18px;border-radius:50%;
+  background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:.7rem}
 
-#dl{margin:18px 0}
-.dl-btn{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;
-  font-weight:600;padding:12px 24px;border-radius:8px}
-.dl-meta,.dl-mac{color:var(--dim);font-size:.88rem;margin:10px 0 0}
-.dl-note{font-size:.88rem}
+/* roadmap */
+.road{margin-top:48px;border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px;
+  border-bottom:1px solid rgba(255,255,255,.06)}
+.row:last-child{border-bottom:0}
+.row .t{display:flex;gap:14px;align-items:flex-start}
+.row .box{flex:none;width:20px;height:20px;margin-top:2px;border-radius:50%;border:1px solid rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700}
+.row.done .box{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.35);color:var(--ok)}
+.row b{display:block;color:var(--fg);font-weight:500;font-size:.95rem}
+.row:not(.done) b{color:rgba(255,255,255,.82);font-weight:400}
+.row small{display:block;color:var(--dim);font-size:.82rem;margin-top:2px;max-width:62ch}
+@media(max-width:700px){.row{flex-direction:column;align-items:flex-start}}
 
-ul{color:var(--dim);padding-left:20px}
-li{margin:6px 0}
-footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
-  color:var(--dim);font-size:.85rem;text-align:center}
-.pill{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--grab);border:1px solid var(--grab);border-radius:99px;padding:2px 10px}
+/* open source */
+.center{text-align:center}
+.eyebrow{font:500 .7rem var(--mono);letter-spacing:.1em;color:var(--dim)}
+.two{display:grid;grid-template-columns:7fr 5fr;gap:24px;margin-top:48px;text-align:left}
+@media(max-width:900px){.two{grid-template-columns:1fr}}
+.dots{display:flex;gap:6px}.dots i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.2)}
+.term{padding:20px;font:400 .8rem/1.9 var(--mono);color:var(--dim)}
+.term b{font-weight:400;color:var(--fg)}.term u{text-decoration:none;color:rgba(255,255,255,.4)}
+.side{display:flex;flex-direction:column;justify-content:space-between;padding:24px}
+.side .checks{margin-top:0}
+.acts{display:flex;align-items:center;gap:20px;margin-top:28px}
+
+/* install + status */
+#dl{margin:24px 0 4px}
+.dl-btn{display:inline-block;background:#fff;color:#000;text-decoration:none;font-weight:500;
+  padding:10px 24px;border-radius:99px}
+.dl-meta,.dl-mac{color:var(--dim);font-size:.88rem;margin:12px 0 0}
+.dl-meta a,.dl-mac a,.prose a{color:var(--text)}
+.prose{max-width:68ch}
+.prose p{margin-top:16px}
+
+.final{text-align:center;padding:112px 0}
+.final h2{font-size:clamp(2.2rem,5vw,3rem)}
+.final .acts{justify-content:center;flex-wrap:wrap}
+footer{border-top:1px solid var(--line);background:var(--deep);padding:40px 0;font-size:.8rem;color:var(--dim)}
+footer .wrap{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:center;justify-content:space-between}
+footer nav{all:unset;display:flex;flex-wrap:wrap;gap:8px 24px;font-family:var(--mono)}
+footer a{text-decoration:none}footer a:hover{color:var(--fg)}
 </style>
 </head>
 <body>
-<main>
 
-<header>
-  <img src="/favicon.png" alt="">
-  <h1>Pipe Dream</h1>
-  <p class="tag">One tool for building Super Mario World hacks. Free, open source,
-     and on every desktop you actually use.</p>
-  <div class="pills">
-    <span>MIT licensed</span>
-    <span>Windows · macOS · Linux</span>
-    <span>Lunar Magic compatible</span>
+<nav><div class="wrap">
+  <a class="brand" href="#"><img src="/favicon.png" alt=""><b>Pipe</b><span>Dream</span></a>
+  <div class="right">
+    <a class="link" href="#roadmap">Roadmap</a>
+    <a class="link" href="#install">Install</a>
+    <a class="link" href="#resources">Resources</a>
+    <a class="gh" href="https://github.com/john-sparwasser/pipe-dream">&#9733; GitHub</a>
   </div>
-  <div class="cta">
-    <a class="primary" id="top-dl" href="https://github.com/john-sparwasser/pipe-dream/releases/latest">Download</a>
-    <a class="ghost" href="https://github.com/john-sparwasser/pipe-dream">Source on GitHub</a>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <!-- tiles are decorative: mushroom, pipe, coin, ? block, star, feather -->
+  <div class="tile t1"><svg viewBox="0 0 24 24"><path d="M4 13c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4v-1z"/><path d="M8 14v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-4"/><circle cx="9" cy="9.5" r="1.5" fill="#fff"/><circle cx="15" cy="9.5" r="1.5" fill="#fff"/></svg></div>
+  <div class="tile t2"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="4" rx="1"/><path d="M7 8v12h10V8"/></svg></div>
+  <div class="tile t3"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><rect x="10.5" y="8" width="3" height="8" rx="1.5"/></svg></div>
+  <div class="tile t4"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M10 9a2 2 0 1 1 3 1.7c-.7.5-1 1-1 1.8v.5"/><circle cx="12" cy="16.5" r=".75" fill="#fff"/></svg></div>
+  <div class="tile t5"><svg viewBox="0 0 24 24"><polygon points="12 3 14.8 8.8 21 9.7 16.5 14.1 17.6 20.3 12 17.3 6.4 20.3 7.5 14.1 3 9.7 9.2 8.8"/></svg></div>
+  <div class="tile t6"><svg viewBox="0 0 24 24"><path d="M20 4c-5 0-9 4-10 9l-1 5 5-1c5-1 9-5 9-10V4z"/><path d="M9 18l7-7"/></svg></div>
+
+  <div class="hero-copy">
+    <h1>The open-source<br>level editor<br>for Mario hacks.</h1>
+    <p class="lede">Edit levels, Map16, graphics and patches in one window. Opens ROMs you already
+       edited in Lunar Magic. Share a project, not a ROM.</p>
+    <div class="cta">
+      <a class="btn" id="top-dl" href="https://github.com/john-sparwasser/pipe-dream/releases/latest">Download for Windows</a>
+      <a class="link" href="https://github.com/john-sparwasser/pipe-dream">Read the source (MIT) &rarr;</a>
+      <span class="mono">Also available: Linux x64 &middot; In development</span>
+    </div>
   </div>
-  <p class="note"><span class="pill">In development</span></p>
+
   <div class="shots">
-    <div class="track" id="track">
+    <div class="frame"><div class="track" id="track">
       <img src="/level.png" width="1640" height="1025"
            alt="The Level editor: level $105 on Layer 1 with a sky background of clouds and
                 blue hills, and the FG tile picker down the left side.">
@@ -131,202 +229,210 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
                 and the loaded FG, BG and sprite files listed on the left.">
       <img src="/animations.png" width="1640" height="1026" loading="lazy"
            alt="The Animations editor: a global 32x8 slot with four frames and a live preview.">
-    </div>
+    </div></div>
     <button class="prev" aria-label="Previous screenshot">&#8249;</button>
     <button class="next" aria-label="Next screenshot">&#8250;</button>
   </div>
   <dialog id="zoom"><img alt=""></dialog>
   <dialog id="dl-modal"><div>
     <h3>Download Pipe Dream</h3>
-    <a class="dl-btn" id="dl-win" href="https://github.com/john-sparwasser/pipe-dream/releases/latest">Windows installer</a>
-    <a class="dl-btn" id="dl-linux" href="https://github.com/john-sparwasser/pipe-dream/releases/latest">Linux executable</a>
+    <a class="btn dl-btn" id="dl-win" href="https://github.com/john-sparwasser/pipe-dream/releases/latest">Windows installer</a>
+    <a class="btn dl-btn" id="dl-linux" href="https://github.com/john-sparwasser/pipe-dream/releases/latest">Linux executable</a>
     <p class="dl-mac">No packaged macOS build yet.</p>
     <button class="close" aria-label="Close">&times;</button>
   </div></dialog>
-</header>
+</div></header>
 
-<h2>One tool instead of six</h2>
-<p class="lead">Building a SMW hack today means stitching together a level editor, a block
-   inserter, a sprite inserter, a music patcher, an ASM runner, an assembler, and a build
-   script to keep them in the right order. Every one of them has its own folders, its own
-   config, and its own way to break your ROM at 2am.</p>
-<p>Pipe Dream's goal is to be the one program that does all of it. The level editor is here
-   today and the rest is being built into the same tool: same window, same project, same undo
-   history. See the <a href="#roadmap">roadmap</a> for where that's heading.</p>
+<section><div class="wrap">
+  <h2>One tool instead of six.</h2>
+  <p class="sub">A SMW hack today stitches together a level editor, a block inserter, a sprite
+     inserter, a music patcher, an ASM runner and an assembler, each with its own folders and its
+     own way to break your ROM at 2am. Pipe Dream is the one program that does all of it: same
+     window, same project, same undo history.</p>
+  <div class="grid g6">
+    <div class="card tool"><h3>Lunar Magic</h3><span class="mono">opens as is</span><span class="mono st live">&#9679; live</span></div>
+    <div class="card tool"><h3>Asar</h3><span class="mono">patches</span><span class="mono st live">&#9679; live</span></div>
+    <div class="card tool"><h3>PIXI</h3><span class="mono">custom sprites</span><span class="mono st live">&#9679; live</span></div>
+    <div class="card tool"><h3>GPS</h3><span class="mono">custom blocks</span><span class="mono st">&#9675; partial</span></div>
+    <div class="card tool"><h3>AddmusicK</h3><span class="mono">custom music</span><span class="mono st">&#9675; in progress</span></div>
+    <div class="card tool"><h3>UberASM</h3><span class="mono">custom code</span><span class="mono st">&#9675; planned</span></div>
+  </div>
+  <div class="prose" style="margin-top:40px">
+    <p>ROMs already edited in <strong style="color:var(--fg);font-weight:500">Lunar Magic</strong> open,
+       edit and save without conversion, and without breaking when you go back to LM afterwards. It edits
+       the ROM the way the game reads it: real pointer tables, level headers, object streams and Map16
+       pages. Not a wrapper, not a patch format.</p>
+  </div>
+</div></section>
 
-<h2>Works with the hacks you already have</h2>
-<p>ROMs already edited in <strong>Lunar Magic</strong> open, edit and save without conversion,
-   and without breaking when you go back to LM afterwards. Pipe Dream understands the
-   way LM lays out a ROM and leaves its work intact, so a hack in progress never has to pick
-   a side. Use both, in either order, on the same ROM.</p>
-<p>It edits the ROM the way the game reads it: real pointer tables, level headers, object
-   streams and Map16 pages. Not a wrapper, not a patch format.</p>
+<section><div class="wrap split">
+  <div class="win">
+    <div class="bar">
+      <span class="mono">project.pdp</span><span class="pill">no ROM data</span>
+    </div>
+<pre><i class="ctx">  "SchemaVersion": 1,</i><i class="ctx">  "BaseRom": { "Sha256": "78fa978f&hellip;", "Title": "SUPER MARIOWORLD" },</i><i class="ctx">  "Map16": {</i><i class="ctx">    "Slots": {</i><i class="del">-      "0D8A68": "0410041004100410"</i><i class="add">+      "0D8A68": "0910091009100910"</i><i class="ctx">    }</i><i class="ctx">  }</i></pre>
+    <div class="foot mono">&#9679; reviewable in a pull request</div>
+  </div>
+  <div>
+    <h2>Share the project, not the ROM.</h2>
+    <p class="sub">Your work saves to a <code>.pdp</code> project file: plain JSON describing every
+       edit relative to a pinned base ROM. No ROM data at all.</p>
+    <ul class="checks">
+      <li>Hand a collaborator the file; with the same base they see exactly what you see</li>
+      <li>It's text: commit it, branch it, diff it like any other file</li>
+      <li>The base ROM is read, never written; a bad session costs a rebuild</li>
+      <li>Builds are outputs, and ship as BPS patches</li>
+    </ul>
+  </div>
+</div></section>
 
-<h2>Share the project, not the ROM</h2>
-<p>Your work saves to a <strong><code>.pdp</code> project file</strong>: plain JSON describing
-   every edit relative to a pinned base ROM. It contains <strong>no ROM data at all</strong>.</p>
-<div class="grid">
-  <div class="card"><h3>Actually shareable</h3>
-    <p>Hand a collaborator the <code>.pdp</code>. If they have the same base, they open your
-       project and see exactly what you see. No ROM changes hands.</p></div>
-  <div class="card"><h3>Fits in git</h3>
-    <p>It's text. Commit it, branch it, diff it, review a level change in a pull request like
-       any other file.</p></div>
-  <div class="card"><h3>Your ROM stays intact</h3>
-    <p>The base ROM is read, never written. Builds are outputs, so a bad session costs you a
-       rebuild, not your hack.</p></div>
-</div>
+<section><div class="wrap">
+  <h2>Gentler on the way in.</h2>
+  <p class="sub">Most people who want to make a Mario level quit somewhere between the fifth
+     download and the first hex offset. Pipe Dream tries to move that wall.</p>
+  <div class="grid g3">
+    <div class="card"><h3>Nothing to assemble first</h3><p>One install, one window. No tool chain to wire up before you can place a block.</p></div>
+    <div class="card"><h3>Guided first run</h3><p>It walks you through pointing at your base ROM and making a project, and recovers on its own when a base goes missing.</p></div>
+    <div class="card"><h3>Plain language, not raw bytes</h3><p>Level settings, exits and tile properties are named fields. You shouldn't need a hex table to change the music.</p></div>
+    <div class="card"><h3>Undo everywhere</h3><p>Real edit history, so poking at something you don't understand yet is how you learn instead of how you lose an afternoon.</p></div>
+  </div>
+</div></section>
 
-<h2>Gentler on the way in</h2>
-<p>Most people who want to make a Mario level quit somewhere between the fifth download and
-   the first hex offset. Pipe Dream tries to move that wall:</p>
-<ul>
-  <li><strong>Nothing to assemble first.</strong> One install, one window. No tool chain to
-      wire up before you can place a block.</li>
-  <li><strong>Guided first run.</strong> It walks you through pointing at your base ROM and
-      making a project, and recovers on its own when a base goes missing.</li>
-  <li><strong>Plain language, not raw bytes.</strong> Level settings, exits and tile
-      properties are named fields. You shouldn't need a hex table to change the music.</li>
-  <li><strong>Undo everywhere.</strong> Real edit history, so poking at something you don't
-      understand yet is how you learn instead of how you lose an afternoon.</li>
-  <li><strong>Safe by construction.</strong> Because projects never write your base ROM,
-      experimenting has no downside.</li>
-</ul>
+<section><div class="wrap">
+  <h2>What works today.</h2>
+  <p class="sub">The core loop works: open a ROM, edit a level, save something the game runs.</p>
+  <div class="grid g3">
+    <div class="card"><h3>Level editing</h3><p>Objects and sprites on a live canvas: place, drag, rubber-band select, undo. Rendered through the real object engine, so what you see is what loads.</p></div>
+    <div class="card glow"><h3>Map16 &amp; graphics</h3><p>Map16 pages with tile properties (acts-like, palette, priority, flips), ExGFX import, a GFX browser, palette grids, background picker.</p></div>
+    <div class="card"><h3>Exits &amp; entrances</h3><p>Main entrance, secondary entrances, vanilla and LM secondary exits, listed and edited instead of hand-poked in hex.</p></div>
+    <div class="card"><h3>BPS patches</h3><p>Apply and write BPS, so a finished build ships as a patch the way the community expects.</p></div>
+    <div class="card"><h3>Cross-platform</h3><p>One codebase, no platform-specific editor code. Windows and Linux builds come out of CI on every commit; macOS builds from the same source.</p></div>
+    <div class="card"><h3>Scriptable</h3><p>The same executable runs headless for batch jobs and CI: render, diff, self-check, and creating or building projects.</p></div>
+  </div>
+</div></section>
 
-<h2>What works today</h2>
-<div class="grid">
-  <div class="card"><h3>Level editing</h3>
-    <p>Objects and sprites on a live canvas: place, drag, rubber-band select, undo. Rendered
-       through the real object engine, so what you see is what loads.</p></div>
-  <div class="card"><h3>Map16 &amp; graphics</h3>
-    <p>Map16 pages with tile properties (acts-like, palette, priority, flips), ExGFX import,
-       a GFX browser, palette grids, background picker.</p></div>
-  <div class="card"><h3>Exits &amp; entrances</h3>
-    <p>Main entrance, secondary entrances, vanilla and LM secondary exits, listed and edited
-       instead of hand-poked in hex.</p></div>
-  <div class="card"><h3>BPS patches</h3>
-    <p>Apply and write BPS, so a finished build ships as a patch the way the community
-       expects.</p></div>
-  <div class="card"><h3>Cross-platform</h3>
-    <p>One codebase, no platform-specific editor code. Windows and Linux builds come out of
-       CI on every commit; macOS builds from the same source.</p></div>
-  <div class="card"><h3>Scriptable</h3>
-    <p>The same executable runs headless for batch jobs and CI: render, diff, self-check,
-       and creating or building projects.</p></div>
-</div>
+<section id="roadmap"><div class="wrap">
+  <h2>Roadmap.</h2>
+  <p class="sub">Most of these replace a tool you currently download and run by hand. A &#10003; means it's live in the editor today. No timelines, and these land one at a time.</p>
+  <div class="road">
+    <div class="row done"><div class="t"><span class="box">&#10003;</span><div><b>Sprite manager</b><small>Install custom sprites and place them like vanilla ones. Their config, table entries and per-level assignment are handled for you.</small></div></div><span class="pill">instead of PIXI</span></div>
+    <div class="row done"><div class="t"><span class="box">&#10003;</span><div><b>Updates that install themselves</b><small>Pipe Dream checks for a new release, downloads it, and replaces itself. Your projects and config stay put.</small></div></div><span class="pill">instead of re-downloading</span></div>
+    <div class="row"><div class="t"><span class="box"></span><div><b>Feature parity with Lunar Magic</b><small>Everything LM edits, edited here: the overworld, title screen and credits it still owns, plus the smaller tools you switch back for.</small></div></div><span class="pill">instead of keeping LM open</span></div>
+    <div class="row"><div class="t"><span class="box"></span><div><b>Block manager</b><small>Install a custom block and get all of it: the code, its Map16 entry, its acts-like setting.</small></div></div><span class="pill">instead of GPS</span></div>
+    <div class="row"><div class="t"><span class="box"></span><div><b>UberASM manager</b><small>Attach custom ASM to a level, a gamemode, or the whole game, from the level you're looking at.</small></div></div><span class="pill">instead of UberASMTool</span></div>
+    <div class="row"><div class="t"><span class="box"></span><div><b>Music manager</b><small>Install songs and pick a level's music by name instead of by number. See sample group space before you run out of it.</small></div></div><span class="pill">instead of AddmusicK</span></div>
+    <div class="row"><div class="t"><span class="box"></span><div><b>Background manager</b><small>Install a background and get its ExGFX, palette and Map16 pages set up together.</small></div></div><span class="pill">instead of the ExGFX shuffle</span></div>
+    <div class="row"><div class="t"><span class="box"></span><div><b>Shareable custom base ROMs</b><small>Package a prepared base (patches, ASM, resources) for someone else to build against. A <code>.pdp</code> already pins its base; this shares it.</small></div></div><span class="pill">instead of passing ROMs around</span></div>
+  </div>
+  <p style="margin-top:20px;font-size:.88rem">If one of them is what you're waiting on, say so on the
+     <a href="https://github.com/john-sparwasser/pipe-dream/issues" style="color:var(--text)">issue tracker</a>.</p>
+</div></section>
 
-<h2 id="roadmap">Roadmap</h2>
-<p>Most of these replace a tool you currently download and run by hand. A &#10003; means it's live in the editor today.</p>
+<section><div class="wrap center">
+  <div class="eyebrow">OPEN SOURCE</div>
+  <h2 style="margin-top:12px">If you don't like something, fork it.</h2>
+  <div class="two">
+    <div class="win">
+      <div class="bar"><div class="dots"><i></i><i></i><i></i></div><span class="mono" style="color:var(--dim)">bash</span></div>
+      <div class="term">
+        <div><u>$</u> <b>git clone https://github.com/john-sparwasser/pipe-dream</b></div>
+        <div><u>$</u> <b>cd pipe-dream</b></div>
+        <div><u>$</u> <b>dotnet run --project src</b></div>
+      </div>
+    </div>
+    <div class="card side">
+      <ul class="checks">
+        <li>Change the UI</li><li>Add a tool</li><li>Ship your own build</li>
+      </ul>
+      <div>
+        <p class="mono" style="margin-top:24px">MIT licensed</p>
+        <div class="acts">
+          <a class="btn" href="https://github.com/john-sparwasser/pipe-dream/fork">Fork on GitHub</a>
+          <a class="link" href="https://github.com/john-sparwasser/pipe-dream">Browse source &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></section>
 
-<section class="plan">
-  <div class="plan-head"><h3>Feature parity with Lunar Magic</h3><span>instead of keeping LM open</span></div>
-  <p>Everything LM edits, edited here: the overworld, title screen and credits it still owns,
-     plus the smaller tools you switch back for. Pipe Dream already reads and writes LM's own
-     structures; parity is where you can stop switching.</p>
-</section>
+<section id="install"><div class="wrap">
+  <h2>Install.</h2>
+  <div class="prose">
+    <p>No toolchain, no compiling. Windows gets a per-user installer needing no admin rights, and CI
+       proves it works by installing it, running a self-check from the installed binary and
+       uninstalling again. Linux gets a single self-contained executable: <code>chmod +x</code> and
+       run. Either way it carries its own .NET runtime, so there's nothing to install alongside it,
+       and the editor can update itself from then on.</p>
+  </div>
+  <div id="dl">
+    <p>Take the file for your platform from
+       <a href="https://github.com/john-sparwasser/pipe-dream/releases/latest" style="color:var(--text)">the latest
+       release</a>: the <code>PipeDream-Setup</code> installer for Windows, or
+       <code>PipeDream-linux-x64</code> for Linux.</p>
+  </div>
+  <div class="prose">
+    <p style="font-size:.88rem">Every commit also gets built and tested on both platforms, so if you want
+       something newer than the last release, the
+       <a href="https://github.com/john-sparwasser/pipe-dream/actions/workflows/build.yml">build workflow</a>
+       has one, though those artifacts need a GitHub login and expire after 90 days, which is why the
+       release above is the better link.</p>
+    <p>You supply your own copy of Super Mario World. Pipe Dream ships no game data.</p>
+  </div>
+</div></section>
 
-<section class="plan">
-  <div class="plan-head"><h3>Block manager</h3><span>instead of GPS</span></div>
-  <p>Install a custom block and get all of it: the code, its Map16 entry, its acts-like
-     setting. No folders to fill, no inserter to re-run.</p>
-</section>
+<section><div class="wrap">
+  <h2>Status.</h2>
+  <div class="prose">
+    <p>Pipe Dream is in very early development. The latest release is
+       <span id="ver">v0.4.1</span>, so treat it accordingly: try it on a copy of a hack rather
+       than the hack. Expect sharp edges, keep backups of any ROM you point it at, and file what
+       breaks. Overworld, title screen and credits editing aren't built yet; they're on the
+       <a href="#roadmap">roadmap</a>.</p>
+    <p>It's MIT licensed and the whole thing is on GitHub. Bug reports from people who got stuck
+       in the first ten minutes are the most useful kind. Come say hi and ask questions on
+       <a href="https://discord.gg/VvvZpaBAg">the Discord</a>.</p>
+  </div>
+</div></section>
 
-<section class="plan done">
-  <div class="plan-head"><h3>Sprite manager</h3><span>instead of PIXI</span></div>
-  <p>Install custom sprites and place them like vanilla ones. Their config, table entries and
-     per-level assignment are handled for you.</p>
-</section>
+<section id="resources"><div class="wrap">
+  <h2>Resources.</h2>
+  <div class="prose">
+    <p><a href="/bank/">Super Mario World bank logs</a> is the game's disassembly split by ROM bank
+       and written up as browsable pages, in the style of
+       <a href="https://patrickjohnston.org/bank/index.html">Patrick Johnston's Super Metroid logs</a>.
+       Every routine has a plain-English name, a short summary, a list of what calls it, and a
+       comment on each instruction. Jumps and named tables are links, hardware registers show their
+       names on hover, and one search covers every bank. There is also a
+       <a href="/bank/ram.html">RAM map</a> and an interactive
+       <a href="/bank/graph.html">call graph</a>.</p>
+    <p>It builds on the community SMWDisC disassembly, and the names and comments were written with
+       Claude and checked against the code. Where the guess was uncertain the comment says so, so
+       treat it as a reading aid and not gospel. Corrections are welcome on
+       <a href="https://discord.gg/VvvZpaBAg">the Discord</a>.</p>
+  </div>
+</div></section>
 
-<section class="plan">
-  <div class="plan-head"><h3>UberASM manager</h3><span>instead of UberASMTool</span></div>
-  <p>Attach custom ASM to a level, a gamemode, or the whole game, from the level you're
-     looking at rather than a text file you maintain. Plus a clear view of which levels have code
-     on them.</p>
-</section>
+<section class="final"><div class="wrap">
+  <h2>Stop juggling five tools.</h2>
+  <p class="sub" style="margin-left:auto;margin-right:auto">Free, open source, and one install. Bring your own copy of Super Mario World.</p>
+  <div class="acts" style="margin-top:32px">
+    <a class="btn" href="#install">Download for Windows</a>
+    <a class="btn ghost" href="#install">Linux &middot; other</a>
+  </div>
+</div></section>
 
-<section class="plan">
-  <div class="plan-head"><h3>Music manager</h3><span>instead of AddmusicK</span></div>
-  <p>Install songs and pick a level's music by name instead of by number. See sample group
-     space before you run out of it.</p>
-</section>
+<footer><div class="wrap">
+  <span>Pipe Dream &middot; MIT licensed. Not affiliated with Nintendo. Super Mario World is a trademark of Nintendo. No game data is distributed here.</span>
+  <nav>
+    <a href="https://github.com/john-sparwasser/pipe-dream">GitHub</a>
+    <a href="https://discord.gg/VvvZpaBAg">Discord</a>
+    <a href="#resources">Resources</a>
+    <a href="/bank/ram.html">RAM map</a>
+    <a href="https://github.com/john-sparwasser/pipe-dream/blob/main/LICENSE">MIT</a>
+    <a href="https://ko-fi.com/shaoshao">Ko-fi</a>
+  </nav>
+</div></footer>
 
-<section class="plan">
-  <div class="plan-head"><h3>Background manager</h3><span>instead of the ExGFX shuffle</span></div>
-  <p>Install a background and get its ExGFX, palette and Map16 pages set up together. One
-     choice instead of a checklist.</p>
-</section>
-
-<section class="plan done">
-  <div class="plan-head"><h3>Updates that install themselves</h3><span>instead of re-downloading</span></div>
-  <p>Pipe Dream checks for a new release, downloads it, and replaces itself. Your projects and
-     config stay put.</p>
-</section>
-
-<section class="plan">
-  <div class="plan-head"><h3>Shareable custom base ROMs</h3><span>instead of passing ROMs around</span></div>
-  <p>Package a prepared base (patches, ASM, resources) for someone else to build against. A
-     <code>.pdp</code> already pins its base; this shares it.</p>
-</section>
-
-<p>No timelines, and these land one at a time. If one of them is what you're waiting on, say so
-   on the <a href="https://github.com/john-sparwasser/pipe-dream/issues">issue tracker</a>.</p>
-
-<h2 id="install">Install</h2>
-<p>No toolchain, no compiling. Windows gets a per-user installer needing no admin rights, and CI
-   proves it works by installing it, running a self-check from the installed binary and
-   uninstalling again. Linux gets a single self-contained executable: <code>chmod +x</code> and
-   run. Either way it carries its own .NET runtime, so there's nothing to install alongside it,
-   and the editor can update itself from then on.</p>
-<div id="dl">
-  <p>Take the file for your platform from
-     <a href="https://github.com/john-sparwasser/pipe-dream/releases/latest">the latest
-     release</a>: the <code>PipeDream-Setup</code> installer for Windows, or
-     <code>PipeDream-linux-x64</code> for Linux.</p>
-</div>
-<p class="dl-note">Every commit also gets built and tested on both platforms, so if you want
-   something newer than the last release, the
-   <a href="https://github.com/john-sparwasser/pipe-dream/actions/workflows/build.yml">build
-   workflow</a> has one, though those artifacts need a GitHub login and expire after 90 days,
-   which
-   is why the release above is the better link.</p>
-<p>You supply your own copy of Super Mario World. Pipe Dream ships no game data.</p>
-
-<h2>Status</h2>
-<p>Pipe Dream is in very early development. The latest release is
-   <span id="ver">v0.4.1</span>, so treat it accordingly: try it on a copy of a hack rather
-   than the hack. The core loop works:
-   open a ROM, edit a level, save something the game runs. Expect sharp edges, keep backups
-   of any ROM you point it at, and file what breaks. Overworld, title screen and credits
-   editing aren't built yet; they're on the <a href="#roadmap">roadmap</a>.</p>
-<p>It's MIT licensed and the whole thing is on GitHub. Bug reports from people who got stuck
-   in the first ten minutes are the most useful kind. Come say hi and ask questions on
-   <a href="https://discord.gg/VvvZpaBAg">the Discord</a>.</p>
-
-<h2 id="resources">Resources</h2>
-<p><a href="/bank/">Super Mario World bank logs</a> is the game's disassembly split by ROM bank
-   and written up as browsable pages, in the style of
-   <a href="https://patrickjohnston.org/bank/index.html">Patrick Johnston's Super Metroid logs</a>.
-   Every routine has a plain-English name, a short summary, a list of what calls it, and a
-   comment on each instruction. Jumps and named tables are links, hardware registers show their
-   names on hover, and one search covers every bank. There is also a
-   <a href="/bank/ram.html">RAM map</a> and an interactive
-   <a href="/bank/graph.html">call graph</a>.</p>
-<p>It builds on the community SMWDisC disassembly, and the names and comments were written with
-   Claude and checked against the code. Where the guess was uncertain the comment says so, so
-   treat it as a reading aid and not gospel. Corrections are welcome on
-   <a href="https://discord.gg/VvvZpaBAg">the Discord</a>.</p>
-
-<footer>
-  Pipe Dream · <a href="https://github.com/john-sparwasser/pipe-dream">GitHub</a> ·
-  <a href="#resources">Resources</a> ·
-  <a href="https://github.com/john-sparwasser/pipe-dream/blob/main/LICENSE">MIT licensed</a> ·
-  <a href="https://ko-fi.com/shaoshao">Support on Ko-fi</a> ·
-  <a href="https://discord.gg/VvvZpaBAg">Discord</a><br>
-  Not affiliated with Nintendo. Super Mario World is a trademark of Nintendo.
-  No game data is distributed here.
-</footer>
-
-</main>
 <script src="/downloads.js" defer></script>
 <script>
 // ponytail: scroll-snap does the carousel; the buttons just nudge it one slide.
