@@ -35,6 +35,10 @@ a:hover { text-decoration: underline; }
 .rom { color: #080; }
 .ram, a.ram { color: #088; }
 .gut { -webkit-user-select: none; user-select: none; }
+/* Section headers (title, summary, callers): their own colour, and skipped by a drag-select like the gutter. */
+.hd { -webkit-user-select: none; user-select: none; }
+.hd .c { color: #2257b5; }
+.hd .c:first-child { font-weight: 600; }
 /* Column bands on instruction rows: address, opcode bytes, instruction, comment. Inline-blocks so
    rows touch with no gap; comment-only rows stay unbanded and read as breaks between routines. */
 .l .rom, .l .hx, .l .cd, .l > .c { display: inline-block; }
