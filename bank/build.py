@@ -464,6 +464,19 @@ def main():
                 f'<code>{html.escape(u["code"])}</code>'
                 f'{f" <span class=c>; {html.escape(com[:110])}</span>" if len(com) >= 4 else ""}</div>')
 
+    # Alternate "by section" view: first topic whose pattern hits the name, else the description.
+    topics = [("Cape", r"cape"), ("Yoshi", r"yoshi"), ("Bowser", r"bowser"), ("Credits", r"credit"),
+              ("Bonus game", r"bonus"), ("Score and coins", r"score|coin|lives|1-?up"), ("Controller input", r"joypad|button|controller"),
+              ("Overworld", r"overworld|submap|translevel"), ("OAM and graphics", r"\boam\b|palette|color|tile|stripe|vram|graphics|dma|hdma|window"),
+              ("Layer scrolling", r"layer|scroll|screen|camera"), ("Extended and cluster sprites", r"extended|cluster|minor|smoke|bounce|shooter"),
+              ("Sprites", r"sprite"), ("Mario", r"mario|player|pose|powerup|\bpow"), ("Timers", r"timer|counter|delay"),
+              ("Level and blocks", r"level|block|object|platform|map16"), ("Audio", r"music|sound|spc|\bapu")]
+    def section_of(name, desc):
+        for text in (name.lower(), " ".join(desc).lower()):
+            for t, pat in topics:
+                if re.search(pat, text):
+                    return t
+        return "Other"
     ram_blocks, described, page_first = [], 0, {}
     for key in sorted(ram):
         e, a = ram[key], ram_ann.get(key, {})
@@ -484,7 +497,7 @@ def main():
         counts = ", ".join(f"{modes[m]} {w}" for m, w in (("R", "read"), ("W", "write"), ("M", "read-modify-write")) if modes[m])
         q = " ".join([ramscan.fmt(key), name, " ".join(e["syms"]), " ".join(a.get("desc", []))]).lower()
         ram_blocks.append(
-            f'<section class=rv id="{ramscan.anchor(key)}" data-q="{html.escape(q, quote=True)}">{aliases}'
+            f'<section class=rv id="{ramscan.anchor(key)}" data-s="{section_of(name, a.get("desc", []))}" data-q="{html.escape(q, quote=True)}">{aliases}'
             f'<h3><a class=addr href="#{ramscan.anchor(key)}">{ramscan.fmt(key)}</a> '
             f'{f"<b>{html.escape(name)}</b>" if name else ""} {syms}'
             f'{f" <span class=kind>{html.escape(a["kind"])}</span>" if a.get("kind") else ""}</h3>'
@@ -504,7 +517,9 @@ holds and how it is used, then lists every instruction that touches it (expand t
 Descriptions were drafted from the code with Claude. Where the code only shows <i>how</i> a byte is used and not <i>why</i>, the
 text says so.</p>
 <p><input id=rq placeholder="Filter by address, name or words (e.g. 1540, timer, yoshi)" size=48 autofocus>
-<span id=rcount></span></p>
+<span id=rcount></span>
+View: <label><input type=radio name=rview value=addr checked> by address</label>
+<label><input type=radio name=rview value=sect> by section</label></p>
 <p class=jump>{jump}</p>
 {"".join(ram_blocks)}
 </div></body></html>""", encoding="utf-8")

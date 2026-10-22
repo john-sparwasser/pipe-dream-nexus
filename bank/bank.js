@@ -71,6 +71,23 @@ document.addEventListener("DOMContentLoaded", () => {
     count.textContent = terms.length ? n + " of " + all.length + " shown" : "";
   };
   rq.addEventListener("input", run);
+  // "by section" view: regroup the same entries under data-s headings; "by address" restores the original order.
+  const host = all[0].parentNode, jump = document.querySelector(".jump");
+  document.querySelectorAll("input[name=rview]").forEach(r => r.addEventListener("change", () => {
+    host.querySelectorAll(".sect").forEach(h => h.remove());
+    const bySect = r.value === "sect";
+    if (jump) jump.hidden = bySect;
+    const other = el => el.dataset.s === "Other";
+    const order = bySect ? [...all].sort((a, b) => other(a) - other(b) || a.dataset.s.localeCompare(b.dataset.s)) : all;
+    let last = null;
+    for (const el of order) {
+      if (bySect && el.dataset.s !== last) {
+        last = el.dataset.s;
+        const h = document.createElement("h2"); h.className = "sect"; h.textContent = last; host.appendChild(h);
+      }
+      host.appendChild(el);
+    }
+  }));
   if (location.hash && !document.querySelector(location.hash)) rq.value = location.hash.slice(1);
   run();
 });

@@ -83,6 +83,8 @@ header h1{margin:16px 0 10px;font-size:2.6rem;letter-spacing:-.02em}
 .plan-head span{font-size:.74rem;color:var(--dim);border:1px solid var(--line);
   border-radius:99px;padding:3px 10px;background:var(--bg);white-space:nowrap}
 .plan p{margin:9px 0 0;font-size:.93rem}
+.plan.done h3::before{content:"\2713  ";color:var(--accent)}
+.plan.done{opacity:.85}
 
 #dl{margin:18px 0}
 .dl-btn{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;
@@ -214,7 +216,7 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
 </div>
 
 <h2 id="roadmap">Roadmap</h2>
-<p>Planned. Most of these replace a tool you currently download and run by hand.</p>
+<p>Most of these replace a tool you currently download and run by hand. A &#10003; means it's live in the editor today.</p>
 
 <section class="plan">
   <div class="plan-head"><h3>Feature parity with Lunar Magic</h3><span>instead of keeping LM open</span></div>
@@ -229,7 +231,7 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
      setting. No folders to fill, no inserter to re-run.</p>
 </section>
 
-<section class="plan">
+<section class="plan done">
   <div class="plan-head"><h3>Sprite manager</h3><span>instead of PIXI</span></div>
   <p>Install custom sprites and place them like vanilla ones. Their config, table entries and
      per-level assignment are handled for you.</p>
@@ -254,7 +256,7 @@ footer{border-top:1px solid var(--line);margin-top:76px;padding-top:24px;
      choice instead of a checklist.</p>
 </section>
 
-<section class="plan">
+<section class="plan done">
   <div class="plan-head"><h3>Updates that install themselves</h3><span>instead of re-downloading</span></div>
   <p>Pipe Dream checks for a new release, downloads it, and replaces itself. Your projects and
      config stay put.</p>
