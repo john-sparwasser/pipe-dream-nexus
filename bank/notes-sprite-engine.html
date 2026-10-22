@@ -1,9 +1,9 @@
 <!DOCTYPE html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width"><title>SMW Sprite Engine — Redundancy &amp; Inefficiency Notes</title><link rel=stylesheet href="bank.css"><script defer src="bank.js"></script></head><body>
 <div id=header><a href=".">Index</a> &mdash; <a href="ram.html">RAM map</a> &mdash; <a href="graph.html">Call graph</a> &mdash; Notes: <a href="notes-system.html">system</a> &middot; <a href="notes-snes-hardware.html">SNES hardware</a> &middot; <a href="notes-level-pipeline.html">level pipeline</a> &middot; <a href="notes-sprite-engine.html">sprite engine</a> &mdash; Lunar Magic: <a href="lm-hooks.html">hooks</a> &middot; <a href="lm-contract.html">ROM format contract</a> &middot; <a href="lm-parity.html">what LM writes</a> &middot; <a href="lm-exanimation.html">ExAnimation</a> &middot; <a href="lm-overworld.html">overworld</a> &middot; <a href="lm-file-formats.html">file formats</a> &mdash; Tools: <a href="tool-pixi.html">PIXI</a> &middot; <a href="tool-addmusick.html">AddmusicK</a> &middot; <a href="tool-gps.html">GPS</a> &mdash; <a href="#" onclick="toggleDark();return false;">Toggle dark mode</a></div>
 <div class="page notes"><h1 id="smw-sprite-engine-redundancy-inefficiency-notes">SMW Sprite Engine — Redundancy &amp; Inefficiency Notes</h1>
-<p>Analysis of sprite handling across <code>bank_00/01/02/03/05/07.asm</code> (2026-07-24). Addresses are SNES (<code>$BB:AAAA</code> collapsed to <code>$BBAAAA</code>), matching the labels in the bank files.</p>
-<h2 id="0-our-copy-of-the-disassembly-had-a-bug-fixed-2026-07-24">0. Our copy of the disassembly had a bug (fixed 2026-07-24)</h2>
-<p><b><code>bank_01.asm</code> contained the same ROM region twice</b> (the sprite init routines from <code>InitGreyLavaPlat</code>/<a href="01.html#8311">$018311</a> through the <code>SpriteMainPtr</code> table). Same code and addresses, two different comment revisions — an artifact of the original SMWDisC etherpad dump. The stale first copy (older comments, pre-rename labels like <code>DiagBoospeeds</code>/<code>DATA_0183B3</code>) was deleted and the call graph rebuilt with <code>tools/build_disasm_graph.py</code>.</p>
+<p>Analysis of sprite handling across <code>bank_00/01/02/03/05/07.asm</code> of the community disassembly. Addresses are SNES (<code>$BB:AAAA</code> collapsed to <code>$BBAAAA</code>), matching the labels in the bank files.</p>
+<h2 id="0-a-duplicated-region-in-the-community-disassembly">0. A duplicated region in the community disassembly</h2>
+<p><b>Some copies of <code>bank_01.asm</code> contain the same ROM region twice</b> (the sprite init routines from <code>InitGreyLavaPlat</code>/<a href="01.html#8311">$018311</a> through the <code>SpriteMainPtr</code> table). Same code and addresses, two different comment revisions — an artifact of the original SMWDisC etherpad dump. The first copy is the stale one (older comments, pre-rename labels like <code>DiagBoospeeds</code>/<code>DATA_0183B3</code>); the second copy is current. Labels and addresses in these notes follow the current copy.</p>
 <h2 id="1-architecture-for-orientation">1. Architecture (for orientation)</h2>
 <ul>
 <li><b>Main loop</b> <code>CODE_0180A7</code>: linear pass over all 12 sprite slots (X=$0B→0) every frame. Per slot: <code>CODE_0180D2</code> (OAM index + timers) → <code>HandleSprite</code> <a href="01.html#8127">$018127</a>.
@@ -81,7 +81,7 @@
 </li>
 <li>Vestigial: 163 bytes of <code>$FF</code> filler mid-bank-05 (<code>Empty05D665</code>); <code>ImagePointers[0]</code> $00857D marked "Not used?".
 </li></ul>
-<h2 id="8-if-we-ever-ship-optimization-patches-ranked">8. If we ever ship optimization patches (ranked)</h2>
+<h2 id="8-optimization-patch-candidates-ranked">8. Optimization patch candidates (ranked)</h2>
 <ol>
 <li><b><code>Bnk3CallSprMain</code> → <code>ExecutePtr</code> jump table</b> — removes ~30 compares/sprite/frame; mechanical.
 </li>
@@ -95,15 +95,13 @@
 </li>
 <li>Halve <code>CircleCoords</code> with a mirror lookup; dedupe the mask tables.
 </li></ol>
-<h2 id="9-what-this-means-for-pipe-dream">9. What this means for pipe-dream</h2>
+<h2 id="9-what-this-means-for-editors-and-tools">9. What this means for editors and tools</h2>
 <ul>
 <li><b>Sprite rendering is more data than code.</b> The ~35 GFX clones differ only in their 5 data tables (DispX/DispY/Tiles/Prop/TileSize) + <code>GetDrawInfo</code>'s screen-relative setup. An editor-side renderer that emulates "generic OAM writer + per-sprite tables" covers most enemies without per-sprite code.
 </li>
 <li><b>The tweaker tables (<a href="07.html#F26C">$07F26C</a>..) are the canonical per-sprite-number property source</b> (palette, interaction, process-offscreen bit <code>$167A &amp; 4</code>, etc.) — index by sprite number, 6 bytes per sprite.
 </li>
-<li><b>Treat clone families as one logical routine when navigating</b>: <code>GetDrawInfo*</code>, <code>SubOffscreen*</code>, <code>SubHorzPos*</code>, <code>IsSprOffScreen*</code> each have 3–4 addresses for the same logic. Graph queries and breakpoints should cover all copies.
+<li><b>Treat clone families as one logical routine when navigating</b>: <code>GetDrawInfo*</code>, <code>SubOffscreen*</code>, <code>SubHorzPos*</code>, <code>IsSprOffScreen*</code> each have 3–4 addresses for the same logic. Searches, hooks and breakpoints should cover all copies.
 </li>
 <li><b>Spawn semantics</b> (for accurate sprite placement/preview): sprites spawn when their screen column crosses the boundary, gated by <code>$1938</code>; slot ranges depend on the level's sprite-memory header via <code>SpriteSlotMax/Start[$1692]</code> — the same setting that fixes each slot's OAM budget, which is why sprite-memory settings cause visible tile-limit differences per level.
-</li>
-<li><b>Repo hygiene</b>: done — bank_01.asm de-duplicated and the disasm graph rebuilt (§0). The graph is now regenerable via <code>tools/build_disasm_graph.py</code> instead of a lost one-off.
 </li></ul></div></body></html>

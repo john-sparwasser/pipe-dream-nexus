@@ -254,30 +254,19 @@ def load_annotations():
 NOTES = {"SYSTEM_NOTES": "system", "SNES_HARDWARE_NOTES": "SNES hardware",
          "LEVEL_PIPELINE_NOTES": "level pipeline", "SPRITE_ENGINE_NOTES": "sprite engine"}
 notes_page = lambda stem: "notes-" + stem[:-len("_NOTES")].lower().replace("_", "-") + ".html"
-# Lunar Magic write-ups: the hooks catalog lives here (bank/docs); the rest are pipe-dream's reference/ docs.
+# Lunar Magic write-ups. Like the notes and tool pages, their markdown lives in bank/docs.
 LM_DOCS = {"LM_HOOKS": "hooks", "CONTRACT": "ROM format contract", "LM_PARITY": "what LM writes",
            "EXANIMATION": "ExAnimation", "OVERWORLD": "overworld", "LM_FILE_FORMATS": "file formats"}
 lm_page = lambda stem: "lm-" + stem.lower().replace("lm_", "").replace("_", "-") + ".html"
-# Tool pages: each is that tool's section of ROM_TOOLING.md followed by its own write-ups, one page per tool.
-TOOLS = {"pixi": ("PIXI", "PIXI", ["PIXI_PORT", "PIXI_ROUTINES"]),
-         "addmusick": ("AddmusicK", "AddmusicK", ["AMK_PORT", "AMK_ENGINE"]),
-         "gps": ("GPS", "GPS", ["GPS_PORT"])}
-tool_of = {stem: key for key, (_, _, stems) in TOOLS.items() for stem in stems}
+# Tool pages: bank/docs/TOOL_<KEY>.md each.
+TOOLS = {"PIXI": "PIXI", "ADDMUSICK": "AddmusicK", "GPS": "GPS"}
+tool_of = {"TOOL_" + k: k.lower() for k in TOOLS}
 
 
 def doc_page(stem):
     if stem in tool_of:
         return f"tool-{tool_of[stem]}.html"
     return notes_page(stem) if stem in NOTES else lm_page(stem)
-
-
-def md_demote(text):
-    """One heading level down (outside code fences), so a doc can sit under a page's own title."""
-    out, fence = [], False
-    for l in text.splitlines():
-        fence ^= l.startswith("```")
-        out.append("#" + l if not fence and re.match(r"^#{1,5} ", l) else l)
-    return "\n".join(out)
 
 
 def md_inline(t, post):
@@ -689,7 +678,7 @@ registers show their name on hover. {nsec} sections across {len(parsed)} banks, 
 <li><a href="graph.html">Call graph</a> &ndash; interactive graph of the named routines (735 nodes, 53 communities)</li>
 <li>Notes: {", ".join(f'<a href="{notes_page(k)}">{v}</a>' for k, v in NOTES.items())} &ndash; how the game runs, traced from the code</li>
 <li>Lunar Magic: {", ".join(f'<a href="{lm_page(k)}">{v}</a>' for k, v in LM_DOCS.items())} &ndash; every place LM hooks into SMW, and the formats it writes</li>
-<li>Tools: {", ".join(f'<a href="tool-{k}.html">{name}</a>' for k, (name, _, _) in TOOLS.items())} &ndash; what each tool puts in the ROM, and how Pipe Dream does the same job</li>
+<li>Tools: {", ".join(f'<a href="tool-{k.lower()}.html">{name}</a>' for k, name in TOOLS.items())} &ndash; what each tool puts in the ROM, and how Pipe Dream does the same job</li>
 </ul>
 <h2>Credits</h2>
 <p>SMWDisC was written on etherpad by Smallhacker, 1024, lolcats439, Roy, YoshiCookieZeus, Imamelia, Nicol Bolas, Buster Beetle,
@@ -706,24 +695,14 @@ Gekko, Kernigh, Maxx, Edit1754, Alcaro and others; all.log by MikeyK250. Super M
     notes_nav = ('<div id=header><a href=".">Index</a> &mdash; <a href="ram.html">RAM map</a> &mdash; <a href="graph.html">Call graph</a>'
                  ' &mdash; Notes: ' + " &middot; ".join(f'<a href="{notes_page(k)}">{v}</a>' for k, v in NOTES.items())
                  + ' &mdash; Lunar Magic: ' + " &middot; ".join(f'<a href="{lm_page(k)}">{v}</a>' for k, v in LM_DOCS.items())
-                 + ' &mdash; Tools: ' + " &middot; ".join(f'<a href="tool-{k}.html">{name}</a>' for k, (name, _, _) in TOOLS.items())
+                 + ' &mdash; Tools: ' + " &middot; ".join(f'<a href="tool-{k.lower()}.html">{name}</a>' for k, name in TOOLS.items())
                  + ' &mdash; <a href="#" onclick="toggleDark();return false;">Toggle dark mode</a></div>')
-    sources = {**{k: SRC / f"{k}.md" for k in NOTES},
-               **{k: HERE / "docs" / f"{k}.md" if k == "LM_HOOKS" else SRC.parent / f"{k}.md" for k in LM_DOCS}}
-    for stem, path in sources.items():
-        md_src = path.read_text(encoding="utf-8")
+    for stem in [*NOTES, *LM_DOCS, *tool_of]:
+        md_src = (HERE / "docs" / f"{stem}.md").read_text(encoding="utf-8")
         title = next((l[2:].strip() for l in md_src.splitlines() if l.startswith("# ")), stem)
         (HERE / doc_page(stem)).write_text(f"""{head(html.escape(title))}
 {notes_nav}
 <div class="page notes">{md_to_html(md_src, note_links)}</div></body></html>""", encoding="utf-8")
-    tooling = (SRC.parent / "ROM_TOOLING.md").read_text(encoding="utf-8")
-    for key, (name, section, stems) in TOOLS.items():
-        m = re.search(rf"^## {re.escape(section)} — what to look at\n(.*?)(?=^## |\Z)", tooling, re.M | re.S)
-        parts = [f"# {name}", f"## What {name} puts in the ROM", m.group(1).strip()]
-        parts += [md_demote((SRC.parent / f"{st}.md").read_text(encoding="utf-8")) for st in stems]
-        (HERE / f"tool-{key}.html").write_text(f"""{head(html.escape(name))}
-{notes_nav}
-<div class="page notes">{md_to_html(chr(10).join(p + chr(10) for p in parts), note_links)}</div></body></html>""", encoding="utf-8")
 
     g = SRC / "graph" / "graph.html"
     if g.exists():
