@@ -1,0 +1,2231 @@
+<!DOCTYPE html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width"><title>PIXI</title><link rel=stylesheet href="bank.css"><script defer src="bank.js"></script></head><body>
+<div id=header><a href=".">Index</a> &mdash; <a href="ram.html">RAM map</a> &mdash; <a href="graph.html">Call graph</a> &mdash; Notes: <a href="notes-system.html">system</a> &middot; <a href="notes-snes-hardware.html">SNES hardware</a> &middot; <a href="notes-level-pipeline.html">level pipeline</a> &middot; <a href="notes-sprite-engine.html">sprite engine</a> &mdash; Lunar Magic: <a href="lm-hooks.html">hooks</a> &middot; <a href="lm-contract.html">ROM format contract</a> &middot; <a href="lm-parity.html">what LM writes</a> &middot; <a href="lm-exanimation.html">ExAnimation</a> &middot; <a href="lm-overworld.html">overworld</a> &middot; <a href="lm-file-formats.html">file formats</a> &mdash; Tools: <a href="tool-pixi.html">PIXI</a> &middot; <a href="tool-addmusick.html">AddmusicK</a> &middot; <a href="tool-gps.html">GPS</a> &mdash; <a href="#" onclick="toggleDark();return false;">Toggle dark mode</a></div>
+<div class="page notes"><h1 id="pixi">PIXI</h1>
+<h2 id="what-pixi-puts-in-the-rom">What PIXI puts in the ROM</h2>
+<table><tr><th>you want</th><th>look at</th></tr><tr><td>the whole tool, in prose</td><td><code>README.md</code> (the single best doc; long and dense)</td></tr><tr><td>sprite config formats</td><td>the <code>.cfg</code> and <code>.json</code> sections of <code>README.md</code>, <code>src/cfg.cpp</code>, <code>src/json.cpp</code></td></tr><tr><td>the LM aux files it writes</td><td><code>src/lmdata.cpp</code>, <code>src/iohandler.h</code></td></tr><tr><td>sprite data remapping</td><td><code>src/MeiMei/</code></td></tr><tr><td>the insertion pipeline</td><td><code>src/sprite.cpp</code> — <code>patch_sprites_all_in_one()</code>, <code>patch_sprite()</code></td></tr><tr><td>a C# GUI that edits sprite configs</td><td><code>src/CFG Editor/</code></td></tr></table>
+<ul>
+<li>Sprite slots are <b>fixed ranges</b>: normal <code>00-BF</code>, per-level <code>B0-BF</code>, shooters <code>C0-CF</code>, generators <code>D0-DF</code>, plus cluster, extended and misc types. <code>list.txt</code> groups them with type headlines (<code>SPRITE:</code>, <code>CLUSTER:</code>, <code>EXTENDED:</code> …).
+</li>
+<li>Four different "extra data" concepts, easy to confuse: <b>tweak bytes</b>, <b>extra property bytes</b>, <b>extra bytes</b>, <b>shooter extra bytes</b>, and the <b>indirect data pointer</b>. The indirect pointer exists because Lunar Magic caps per-sprite data at 12 bytes — that cap is a constraint on us too.
+</li>
+<li>Ships <b><code>.cfg</code> and <code>.json</code></b> config formats; the CFG Editor converts between them. If pipe-dream ever reads sprite configs, JSON is the modern one.
+</li>
+<li>Bundles <b>Asar v1.91</b> via CMake <code>FetchContent</code> and links it — the concrete example of embedding Asar in another tool.
+</li>
+<li>Also exposes a <b>library API with C/C++/C#/Python bindings</b> plus a C-ABI <b>plugin system</b>.
+</li></ul>
+<h2 id="custom-sprites-bringing-pixi-into-pipe-dream">Custom sprites: bringing PIXI into Pipe Dream</h2>
+<p>Plan for doing PIXI's job (custom sprite insertion, JackTheSpades/SpriteToolSuperDelux 1.43) inside Pipe Dream, with a library window like Custom blocks and Patches and a sprite editor for each sprite's JSON. Started 2026-10-19. Modelled on custom blocks (<code><a href="tool-gps.html">GPS_PORT.md</a></code>) and patches (<code>PATCHES.md</code>). Background on PIXI's files is in <code>ROM_TOOLING.md</code> § "PIXI — what to look at"; this file is the plan and its decision log.</p>
+<h3 id="decisions-2026-10-19">Decisions (2026-10-19)</h3>
+<table><tr><th>question</th><th>answer</th><th>consequence</th></tr><tr><td>Whose driver?</td><td><b>Our own</b>, written from PIXI's documented on-ROM format, as the block driver was</td><td>PIXI is <b>GPL-3.0</b> (root <code>LICENSE</code>, covering <code>asm/</code> and <code>routines/</code>); Pipe Dream is MIT, so none of PIXI's ASM ships or is copied. The driver is written from the format and behaviour described below, not from <code>main.asm</code>'s text. Works with no PIXI folder. It keeps PIXI's on-ROM layout (the <code>STSD</code> header, the 0x10-byte table), so PIXI sprites run unchanged and anything that reads a PIXI ROM finds ours.</td></tr><tr><td>Where do sprites live?</td><td><b>In project.pdp</b>: a sprite library (name → config JSON, ASM, included files) and, separately, which slot runs which (global <code>00-DF</code>, per-level <code>B0-BF</code>)</td><td>Sharing the .pdp shares everything, as with blocks and patches. A sprite can sit in the library in no slot and is then not inserted. Asar reads it all as in-memory files.</td></tr><tr><td>Which kinds first?</td><td><b>The SPRITE: section</b>: normal <code>00-BF</code>, per-level <code>B0-BF</code>, shooters <code>C0-CF</code>, generators <code>D0-DF</code></td><td>These are what a level places and what the config describes. Cluster, extended and the misc kinds are ASM-only with MAIN-only pointer tables, and come in a later phase.</td></tr><tr><td>CFG or JSON?</td><td><b>JSON only.</b> A <code>.cfg</code> converts at import into the JSON PIXI's CFG Editor would write</td><td>One format, one editor. The CFG's six lines map onto JSON fields one to one (below); CFG export can come later if anyone needs it.</td></tr><tr><td>How is a sprite's look edited?</td><td><b>As Map16 tiles, natively</b>: 16×16 tiles at pixel offsets, as PIXI's JSON and Lunar Magic hold it, with a quadrant editor for the sprite's own Map16 tiles</td><td>The JSON round-trips exactly. The window shares its preview, sheet and tile list with Debug ▸ Sprite tiles by extracting them into one control both windows use.</td></tr><tr><td>Routines?</td><td><b>PIXI's are not shipped</b> (they are GPL). <b>Ours are (2026-10-20):</b> MIT versions of all 27 of PIXI 1.2.x's, clean room, used for any routine the project has not imported; one imported from a PIXI folder (the user's own copy, stored in the project) still wins</td><td>Until then this was the position GPS blocks are in. How ours were written and checked against PIXI's is under phase 5 and in <code><a href="tool-pixi.html">PIXI_ROUTINES.md</a></code>.</td></tr></table>
+<h3 id="what-pixi-does-which-is-what-we-have-to-do">What PIXI does, which is what we have to do</h3>
+<p>Facts from the research of 2026-10-19 against PIXI master <code>734b8ed</code> (paths relative to that repo). Format facts only; promote to <code><a href="lm-contract.html">CONTRACT.md</a></code> as <b>[CONFIRMED]</b> once measured in Mesen.</p>
+<ol>
+<li><b>Read the list</b> (<code>list.txt</code>): <code>NN file</code>, per-level <code>LLL:NN file</code> (B0-BF), section headers. In <code>SPRITE:</code>, slots below C0 read from <code>sprites/</code>, C0-CF from <code>shooters/</code>, D0+ from <code>generators/</code>; only C0-DF run as custom shooters/generators.
+</li>
+<li><b>Read each config.</b> CFG lines: type (0 tweak, 1 custom, 2 shooter/generator), acts-like, the six tweaker bytes <code>$1656 $1662 $166E $167A $1686 $190F</code>, extra property bytes 1-2, ASM file, <code>a:b</code> extra-byte counts (extra bit clear:set, hex, ≤ 0C). JSON: the same, with each tweaker byte an object of named fields (<code>src/json_const.h</code> has the exact names, typos included: "Don't disable cliping when starkilled"), byte counts in <b>decimal</b>, plus <code>Map16</code> (base64, 8 bytes per 16×16 tile: TL, BL, TR, BR tile words), <code>DisplayType</code> (<code>XY</code>/<code>ExByte</code>), <code>Displays</code> (description, extra bit, position nibble X/Y 0-F or extension byte Index/Value, then text or <code>Tiles</code>: signed pixel offsets + Map16 tile number), and <code>Collection</code> (name, extra bit, up to 12 extra-byte values: Lunar Magic's sprite list).
+</li>
+<li><b>Assemble each sprite</b> with Asar: a wrapper giving it SA-1/base defines, the shared routines as <code>%Name()</code> macros, its folder's <code>_header.asm</code>, then <code>freecode</code> and the sprite. INIT and MAIN come back as Asar prints (<code>print &quot;INIT &quot;,pc</code>); status entry points (<code>CARRIABLE</code>, <code>KICKED</code>, <code>CARRIED</code>, <code>MOUTH</code>, <code>GOAL</code>) likewise.
+</li>
+<li><b>Insert routines once</b>: each routine used is put in freespace once and its address kept in a table, so every sprite's macro <code>JSL</code>s the same copy.
+</li>
+<li><b>Write the tables</b>: the header at <code><a href="02.html#FFE2">$02FFE2</a></code> (<code>&quot;STSD&quot;</code>, version, flags, <code>dl</code> table, per-level pointers, status pointers); the global table, 0x100 × 0x10 bytes (type, acts-like, six tweakers, INIT 24-bit, MAIN 24-bit, two extra property bytes; empty = <code><a href="01.html#8021">$018021</a></code>, an RTL); per-level tables keyed by <code>$010B</code>; Lunar Magic's sprite size table (<code>$0EF30C: dl Size : db $42</code>, 0x400 bytes, <code>3 + count</code> per (extra bit, number)).
+</li>
+<li><b>Hook the game</b>: init <code><a href="01.html#8172">$018172</a></code>, main <code><a href="01.html#85C3">$0185C3</a></code>, the extra-bits keepers (<code><a href="02.html#A963">$02A963</a></code>, <code><a href="02.html#A94B">$02A94B</a></code>, <code><a href="02.html#A9C9">$02A9C9</a></code>), the table setter <code><a href="01.html#87A7">$0187A7</a></code>, shooter/generator load and run, the status handler <code><a href="01.html#8127">$018127</a></code>, and the sprite-data offset <code><a href="02.html#A846">$02A846</a></code> that reads the size table. A sprite is custom when its level-data extra bit <code>$08</code> is set.
+</li>
+<li><b>Fix the levels</b> whose sprite records changed length (PIXI's MeiMei), since a level's sprite list is walked with the size table.
+</li>
+<li><b>Write Lunar Magic's aux files</b> (<code>.ssc</code>, <code>.mwt</code>, <code>.mw2</code>, <code>.s16</code>) so LM shows the sprites.
+</li></ol>
+<h3 id="what-pipe-dream-already-has">What Pipe Dream already has</h3>
+<ul>
+<li><b>Asar as a library</b>, in-memory files, <code>Result.Blocks</code> for overlap warnings; the build's order (blocks, then patches, then the editor's own data) and its overlap bookkeeping (<code>RomBuilder.PrepOwned</code>, <code>PatchInsert.Overlaps</code>).
+</li>
+<li><b>Extra bytes and LM's size table</b>: <code>SpriteData</code> parses per-(extra bits, number) record lengths; <code>RomBuilder</code> writes the size table from placed sprites; Sprite data edits a placement's bytes (<code>SpriteDataWindow</code>).
+</li>
+<li><b>Detection</b>: <code>LunarMagic.HasPixiSpriteHook</code> (<code><a href="01.html#85C3">$0185C3</a></code> is a JSL) and <code>PixiCustomTable</code>.
+</li>
+<li><b>Drawing</b>: <code>SpriteRender</code>/<code>SpriteOverlay</code> draw vanilla sprites from <code>SpriteDisplay.json</code>; custom ones are a red-X box today (<code>SpriteData.cs</code> "PIXI custom sprite marker").
+</li>
+<li><b>The library pattern</b>: <code>EditorSession.Gps.cs</code>/<code>.Patches.cs</code>, <code>BlocksWindow</code>/<code>PatchesWindow</code>, <code>BlockEditWindow</code> (ASM editor with Asar colouring and lint), the external-editor round trip.
+</li>
+<li><b><code>SpriteTilesWindow</code></b> (Debug ▸ Sprite tiles): preview with drag/lasso, tile list, SP sheet with slot pins — the parts the sprite editor reuses.
+</li></ul>
+<h3 id="phases">Phases</h3>
+<p>Each phase ends shippable.</p>
+<h4 id="1-model-import-session-api-no-insertion">1. Model, import, session API — no insertion</h4>
+<ul>
+<li><code>ProjectFile.Sprites</code> (library: name → <code>{ Config, Source, Files }</code>, <code>Config</code> the JSON) and <code>ProjectFile.SpriteSlots</code> (global <code>NN</code> and per-level <code>LLL:NN</code> → library name).
+</li>
+<li><code>data/PixiConfig.cs</code>: parse and write the JSON (every field, named tweaker bits), CFG → JSON.
+</li>
+<li>Import a PIXI folder: <code>list.txt</code> → slots, configs → JSON, each sprite's ASM and the files it includes, <code>routines/</code> and <code>ExtraDefines/</code> into the project as user data.
+</li>
+<li><code>services/EditorSession.Sprites…</code> (name chosen to sit beside the existing sprite partials): list, new, import, set config, set source, delete, assign slot — each returning a status.
+</li>
+<li>Tests: CFG → JSON for every field; JSON round trip byte-identical on PIXI's own examples; folder import (list.txt with per-level lines, shooters, generators, includes).
+</li>
+<li><b>Status (2026-10-19): done.</b> <code>data/PixiConfig.cs</code> (parse, write, <code>FromCfg</code>; the tweaker fields are a table of PIXI's names and bits), <code>data/PixiImport.cs</code> (slots, one sprite, a folder), <code>ProjectFile.Sprites</code>/<code>SpriteSlots</code>/<code>PixiFiles</code>, <code>services/EditorSession.CustomSprites.cs</code>, <code>tests/PixiTests.cs</code>. The round trip is ours, not PIXI's: written JSON reads back and writes again byte for byte, laid out as PIXI's example (two-space indent, every key); a file from elsewhere is normalised to that layout on import, keys we do not model dropped. A sprite keeps its file's name ("sub/thing" from a subfolder); a shooter sharing a sprite's name becomes "name (shooter)". A .cfg gets the two "(extra bit clear/set)" list entries PIXI shows it under. Cluster, extended and the misc sections of list.txt are skipped with a count.
+</li></ul>
+<h4 id="2-our-driver-and-the-build-step">2. Our driver and the build step</h4>
+<ul>
+<li><code>data/spritedriver/</code>: hooks, tables and the <code>STSD</code> header for normal sprites, per-level B0-BF, shooters and generators; size table from the configs' counts; routines inserted once.
+</li>
+<li><code>RomBuilder</code>: insert after custom blocks, before patches (a patch may hook a sprite). Errors fail the build naming the sprite; overlaps with prep's hooks are checked like patches'. <b>Prep's hooks near PIXI's must be checked first</b>: prep owns <code><a href="05.html#D8F5">$05D8F5</a></code> (sprite bank) and LM's level-word mirror at <code><a href="05.html#D8E2">$05D8E2</a></code>; PIXI writes <code>$010B</code> from <code><a href="05.html#D8B9">$05D8B9</a></code>.
+</li>
+<li>Levels: every level whose sprites use a number whose record length changed is re-encoded (MeiMei's job), not only the levels the project edits.
+</li>
+<li>Tests (Asar): a sprite's INIT/MAIN land in the table; tweakers land; a disabled/unslotted sprite does not; per-level overrides global; size table matches counts. <b>Mesen</b>: a custom sprite placed in level 105 runs (its MAIN writes a marker byte), 3/3.
+</li>
+<li><b>Status (2026-10-19): done</b> — global sprites, per-level B0-BF, shooters and generators. Per-level sprites use a layout of our own, not PIXI's (the header says none): the table is the 0x100 global entries then 16 per level that has its own, and <code>LevelBlocks</code> (a word per level, keyed by <code>$010B</code>) gives a level's block less B0's offset, so every lookup is base + number × 16 (<code>EntryOf</code>). With any per-level sprite, B0-BF records are 4 extra bytes in every level, as PIXI has them: the size table is per number, not per level. Custom shooters and generators branch off at <code><a href="02.html#A866">$02A866</a></code>, SMW's first test of the number, before it would read D0-D9 as its own generators or DA-DF as shells: a shooter keeps its number (C0-CF) in <code>$1783</code> where SMW's are 1-2, and runs from <code><a href="02.html#B395">$02B395</a></code> with its timer counted down as SMW's are (PIXI's shooters test and set it, never count it); a generator keeps D0-DF in <code>$18B9</code> where SMW's are 1-F, and runs from <code><a href="02.html#AFFE">$02AFFE</a></code> unless sprites are frozen. <code><a href="02.html#B3AB">$02B3AB</a></code> could not be the shooter hook: the <code>JSL <a href="00.html#86DF">$0086DF</a></code> after it reads its own return address as the table. Measured in Mesen, 3/3 each, on level 105: level 105's own B0 ran where a global B0 also exists; a custom shooter C0 and a generator D0 each ran MAIN 60 times in 60 frames.
+</li>
+<li>Global sprites, first pass: <code>data/spritedriver/</code> (<code>main.asm</code>, <code>defines.asm</code>), <code>data/SpriteInsert.cs</code>, <code>RomBuilder.InsertSprites</code>, <code>tests/SpriteInsertTests.cs</code>. What the vanilla code at each hook turned out to be, read with <code>--disasm</code> on a v34 base:
+<ul>
+<li><code><a href="02.html#A846">$02A846</a></code> is Lunar Magic's record step on a prepped base (<code>JML $1E9185</code>: <code>INX : INY : INY</code>, then a BPL that rebases <code>$CE</code> past <code>$80</code>), fixed at 3 bytes — nothing in the game read the size table before the driver. Ours steps by the table and chains to LM's code past those three bytes (or to <code><a href="02.html#A82E">$02A82E</a></code> on SMW's own loader).
+</li>
+<li><code><a href="02.html#A94B">$02A94B</a></code>/<code><a href="02.html#A963">$02A963</a></code> store <code>byte0 AND #$0D</code> into a position-high byte (<code>$14E0</code> vertical, <code>$14D4</code> from LM's horizontal path, whose caller then ANDs A with 1): the extra bits would land in the position. Ours keeps bit 0 there and the extra bits in <code>!extra_bits</code>.
+</li>
+<li><code><a href="02.html#A9C9">$02A9C9</a></code> is the spawn's <code>JSL <a href="07.html#F7D2">$07F7D2</a></code> (clear the slot, then SMW's tweakers by <code>$9E</code>); <code><a href="07.html#F785">$07F785</a></code> is that clear's tail, where the custom state is cleared with it.
+</li>
+<li><code><a href="01.html#87A7">$0187A7</a></code> is sprite 9B's INIT stub (via <code><a href="01.html#82B3">$0182B3</a></code>); it moves to a copy at <code>$01FFF0</code>, and <code><a href="01.html#87A7">$0187A7</a></code> becomes the "give this slot its custom tables" call spawning sprites make.
+</li>
+<li>Custom INIT/MAIN are entered through <code>JML [$00]</code> from a JSL, and come back to bank 01 through the RTS at <code><a href="01.html#85C2">$0185C2</a></code>. Measured in Mesen on level 105 (walk left, enter): INIT stored <code>$11</code> and the placement's first extra byte <code>$AB</code>, MAIN counted exactly 60 in 60 frames — 3/3; the level's own sprites still load and live walking right. Testing this found an existing bug, fixed separately: the build wrote a level's sprites unsorted, and the loader never reaches a record placed left of an earlier one. Not yet: the <code>CARRIABLE</code>/<code>KICKED</code>… status entry points, <code>VERG</code> checks, the silver-POW coin path reading SMW's table by the custom number.
+</li></ul>
+</li></ul>
+<h4 id="3-sprites-window-and-the-level-editor">3. Sprites window and the level editor</h4>
+<ul>
+<li>ASM ▸ Custom sprites…: rows by slot (number, name, type, acts-like), New…, Import (file or PIXI folder), Edit config, Edit ASM, Open in editor, Remove, assign slot.
+</li>
+<li>The Sprites catalog lists the project's custom sprites by their <code>Collection</code> names; placing one sets the extra bit and the collection's extra bytes; the overlay draws its <code>Displays</code> instead of the red X.
+</li>
+<li><b>Status (2026-10-19): done.</b> <code>ui/CustomSpritesWindow</code> (ASM ▸ Custom sprites…): New (sprite, shooter or generator), Import of .json/.cfg or a PIXI folder, Slots… as a list ("1A, 105:B0"), Edit ASM, Edit config (the JSON, in the block editor, until phase 4 below), Open in the text editor, Remove. The Sprites catalog adds one item per Collection entry of each sprite in a global slot or the level's own B0-BF, labelled "· custom", carrying extra bits 2 (3 with the extra bit) and the entry's bytes; placing it keeps them. A custom sprite shares its number with SMW's, so the drawer re-arms by label and the spawn overlay's thumbnails keep to SMW's. The level overlay draws a custom placement as the custom-sprite box whenever the project has custom sprites (the base never has our driver, so <code>HasPixiSpriteHook</code> alone said "vanilla sprite" and emulated the wrong one).
+</li>
+<li><b>Drawing (2026-10-19): done.</b> <code>rom/SpriteMap16</code>: a placement shows its config's display for its extra bit and position nibbles (or, with <code>ExByte</code>, the display whose <code>Index</code> extra byte holds <code>Value</code>), else the first for its extra bit, else the first; a text display, or a sprite with no config (a base's own PIXI sprites), keeps the box. Each Map16 tile is four 8x8 tiles drawn by <code>SpriteRender.Draw</code> from <code>LoadMap16Tiles</code> (SP1-SP4, then GFX33). The catalog's custom entries get the same as thumbnails, and an edit to a config or slot redraws the level's sprites. Not yet: <code>GFXInfo</code> (a display's own GFX files; the level's are used) and translucency.
+</li></ul>
+<h4 id="4-the-sprite-editor">4. The sprite editor</h4>
+<ul>
+<li>Extract <code>SpriteTilesWindow</code>'s preview, tile list and sheet into a shared control.
+</li>
+<li>The sprite window: type, acts-like, the six tweaker bytes as named checkboxes and fields, extra property bytes, extra-byte counts; Displays (per extra bit and position, or per extension byte) edited as Map16 tiles at pixel offsets; the sprite's own Map16 tiles with a four-quadrant editor (tile, palette, flips); the Collection list.
+</li>
+<li>Tests: editing each field writes the JSON PIXI's parser reads back the same.
+</li>
+<li><b>Status (2026-10-19): done.</b> <code>ui/SpriteConfigWindow</code> (Custom sprites ▸ Edit config) edits a working copy of the config; Save writes it as JSON, JSON… shows that text with the edits in it and takes back a hand edit PIXI can read, and a config PIXI cannot read still opens as text. Tabs: Sprite (type, acts-like, property bytes, extra-byte counts, the six tweaker bytes as <code>TweakFields</code>' check boxes and numbers), Look (the displays and how one is picked; each display's tiles arranged on <code>TileArrangeView</code>, the preview <code>SpriteTilesWindow</code> now shares, and picked off the whole sprite Map16 on a <code>TileSheetView</code>), Own tiles (from 0x300: each quarter's 8x8 tile, palette and flips, picked off SP1-SP4 and GFX33; four clicks build a tile), List (the <code>Collection</code> entries). Save is on while the config's JSON differs from the saved one. Not yet: <code>GFXInfo</code>.
+</li></ul>
+<h4 id="5-parity-and-the-rest">5. Parity and the rest</h4>
+<ul>
+<li>Status entry points, the 255-sprites-per-level remap, Lunar Magic's aux files on build (all done; see below).
+</li>
+<li>Cluster, extended, minor extended, bounce, smoke, spinning coin, score.
+</li>
+<li>MIT versions of the routines (done; see below).
+</li>
+<li><b>Status entry points (2026-10-19): done.</b> A sprite may print <code>CARRIABLE</code> (status 09), <code>KICKED</code> (0A), <code>CARRIED</code> (0B), <code>MOUTH</code> (07) and <code>GOAL</code> (0C), as PIXI's README has them; the printed code then runs in that status in place of SMW's, entered with the data bank set to its own, and a status it does not print runs SMW's code as before. The second extra property byte still overrides: bit 7 runs MAIN instead, bit 6 runs MAIN first (then the sprite's entry or SMW's). The pointers are a <code>StatusTable</code> of our own, laid out as the sprite table (five longs and a pad byte per entry, per-level blocks included) so <code>EntryOf</code> finds both; the <code>STSD</code> header's status pointer stays <code>$FFFFFF</code>, since a tool reading it would expect PIXI's layout. Measured in Mesen on level 105, 3/3: a sprite whose INIT sets status 09 ran <code>CARRIABLE</code> 120 times in 120 frames with the data bank at its code's ($90), and not MAIN.
+</li>
+<li><b>Lunar Magic's aux files (2026-10-19): done.</b> <code>data/SpriteAuxFiles</code>: every build writes <code>&lt;name&gt;.ssc</code>, <code>.mwt</code>, <code>.mw2</code> and <code>.s16</code> beside <code>build/&lt;name&gt;.smc</code> from the global slots' configs (a build without any removes the last build's). Formats from Lunar Magic 3.40's help (<code>Lunar Magic.chm</code>: "Custom Tooltips for Sprites", "Custom Collections of Sprites", "Custom Map16 for Sprites"), then compared with PIXI 1.43's own output for two real sets on this machine: Tempest's two JSON sprites came out <b>byte-identical</b> in all four files; QLDC2023's 31 JSON sprites identical in <code>.mwt</code>, <code>.s16</code> and every tile line, with two differences that are PIXI bugs we do not copy: PIXI writes a description's line break raw into the <code>.ssc</code> (ending the line mid-text), where we write LM's <code>\n</code> escape, and it fills extra bytes past a Collection entry's four from stale memory (<code>.mw2</code> held the bytes of "tra", "By", "Ext"), where we write the entry's. Facts the help leaves out, as PIXI writes them:
+<ul>
+<li><code>.ssc</code> fields are <b>space</b>-separated (the help says tab; LM reads both), lines end CRLF; <code>.mwt</code> is tab-separated, CRLF, the number only on a sprite's first entry.
+</li>
+<li>TYPE is Y nibble, X nibble, then <code>20</code>/<code>30</code> (extra bit clear/set) + 0 description, 2 tiles, 8 GFX files; by extension byte, the byte's number counting the three record bytes (<code>Index</code> + 3), two hex digits of value, then the same. Tile numbers and GFX files in hex.
+</li>
+<li><code>.mw2</code> records are <code>70|extra&lt;&lt;2|1, 70, number, bytes…</code> — every one flags "next group", so each Collection entry is its own list item — after a <code>00</code> header, ending <code>FF</code>.
+</li>
+<li><code>.s16</code> starts at sprite tile 0x400 and is 0x10 pages (PIXI's size; LM saves 0x38). Each sprite's own tiles go in slot order and its display tiles from 0x300 are renumbered there.
+</li>
+<li>PIXI writes nothing for a <code>.cfg</code> sprite; ours are JSON by then, so a converted one is listed under its two "(extra bit clear/set)" entries. Not done: appending a base's own aux files (a project copies only the ROM), the overworld's <code>.sscov</code>/<code>.s16ov</code>, extmod. Opened in Lunar Magic 3.40 (2026-10-21): Secret's four PIXI 1.40 sprites built on our routines, 150 sprites in level 105 - display tiles, tooltips and the Add Sprites list all show, the level saves with no 128 warning and plays. Against pixi.exe 1.40 on the same list the <code>.ssc</code> is identical, the <code>.mwt</code>/<code>.mw2</code> differ only by the converted <code>.cfg</code> entries, and its <code>.s16</code> is ours padded with zeros to 0x1C000. Found on the way: a config whose <code>Map16</code> is not base64 (QLDC2023's CapeShell says "Cape Shell") was refused at import; it now reads as no tiles, as PIXI does.
+</li></ul>
+</li>
+<li><b>Cluster and extended sprites (2026-10-19): done.</b> ASM alone (no config), slotted in lists of their own, <code>cluster NN</code> / <code>extended NN</code> (00-7F); a PIXI folder's <code>CLUSTER:</code> and <code>EXTENDED:</code> sections import into them, with <code>cluster/</code> and <code>extended/</code> <code>_header.asm</code>. Each must print MAIN; an extended one may print <code>CAPE</code>. The interface, from PIXI's README and real sprites (Ladida's cluster package, UberASM's defines): a custom number is the list number plus <code>!ClusterOffset</code> = <code>$09</code> / <code>!ExtendedOffset</code> = <code>$13</code>, the sprite or its spawner storing it in <code>$1892</code> / <code>$170B</code> itself (bit 7 of a cluster number is its extra bit). Those offsets are SMW's table sizes, read off its dispatchers: the cluster jump table at <code><a href="02.html#F825">$02F825</a></code> has entries 00-08, the extended one at <code><a href="02.html#9B2B">$029B2B</a></code> 00-12. Hooks: <code><a href="02.html#F815">$02F815</a></code> (the cluster loop's <code>LDA $1892,X : BEQ</code>) and <code><a href="02.html#9B16">$029B16</a></code> (the extended loop's <code>LDA $170B,X : BEQ</code>) send a custom number to its MAIN from <code>ClusterTable</code> / <code>ExtendedTable</code> (0x80 longs each); an extended one's timer <code>$176F</code> counts down first, as SMW's do. Entered with X = Y = the slot and the data bank set to the code's: a real cluster sprite (<code>lava.asm</code>) indexes with Y and reads its tables without setting the bank. SMW reads the number as an index in one other place, found by scanning for every <code>$170B</code>/<code>$1892</code> read: the cape's check of extended sprites at <code><a href="02.html#9636">$029636</a></code>, whose clipping (<code><a href="02.html#A519">$02A519</a></code>) is a table by number. That is hooked too: a custom one runs its <code>CAPE</code>, or nothing (PIXI's README: without one "cape interaction ... do nothing"). The rest compare against fixed numbers or look for a free slot. Measured in Mesen on level 105, 3/3: a sprite's INIT put cluster 02 in cluster slot 3 and extended 00 in extended slot 5; the cluster MAIN ran 121 times and the extended 119 in 120 frames (the extended loop runs before the spawn that frame), with the data bank <code>$90</code> and the slot in Y (cluster) and X (extended). The cape path is in the table test only. (The minor kinds came next; see below.) Defines checked against PIXI's own defines file (<code>asm/sa1def.asm</code>, read for names and values only): <code>!ExtendedSize</code> is <code>$08</code> (<code>!ExSprSize</code>+1 — spawning keeps off slots 8-9, Mario's fireballs), cluster speed tables are <code>!cluster_misc_1e52</code>… by address, <code>!Bank8</code> is <code>$80</code>. The same file gives the minor kinds' offsets for later: minor extended <code>$0C</code>, bounce <code>$08</code>, smoke <code>$06</code>, spinning coin <code>$02</code>, score <code>$16</code>; its spawn routines (<code>routines/Spawn/*Generic</code>) store A as the number, so the caller adds the offset. Since PIXI 1.41 its <code>!1938</code> is the remapped <code>$7FAF00</code> and disabling the remap is an error; ours is too (the remap, below).
+</li>
+<li><b>Minor extended, bounce, smoke, spinning coin and score sprites (2026-10-19): done.</b> As cluster and extended: ASM alone, MAIN only, slotted as <code>minorextended NN</code>, <code>bounce NN</code>, <code>smoke NN</code>, <code>spinningcoin NN</code>, <code>score NN</code> (the kind is its list.txt section's name, lower case), imported from those sections out of <code>misc_sprites/&lt;kind&gt;/</code> with its <code>_header.asm</code>. PIXI's README names the sections and folders and nothing more: not the entry points, the registers or how the number is stored, so the interface is the cluster one, and the offsets are SMW's counts (above). Every place SMW reads the five number tables (<code>$17F0</code>, <code>$1699</code>, <code>$17C0</code>, <code>$17D0</code>, <code>$16E1</code>) was listed by scanning for each read; all but one per kind look for a free slot or compare with a fixed number, and the one is each kind's dispatch, hooked at its <code>LDA number,X : BEQ</code>:
+<ul>
+<li>minor extended <code><a href="02.html#8B69">$028B69</a></code> (12 entries in SMW's jump table, matching <code>$0C</code>);
+</li>
+<li>bounce <code><a href="02.html#904D">$02904D</a></code>, the top of the dispatch the bounce/smoke loop JSRs; a custom one's timer <code>$16C5</code> counts down first, as the dispatch does for SMW's;
+</li>
+<li>smoke <code><a href="02.html#96C0">$0296C0</a></code>, whose next instruction drops bit 7 (a flag), so a custom smoke number is masked the same way and its list stops at <code>7F - $06</code> (cluster's, for its extra bit, at <code>7F - $09</code>; the rest have 0x80);
+</li>
+<li>spinning coin <code><a href="02.html#99D7">$0299D7</a></code> and score <code><a href="02.html#ADBD">$02ADBD</a></code>, loops that JSR to SMW's one routine each (score's reads its tables by number). Each runs MAIN through <code>CallLong</code>, every frame, frozen or not (SMW's check <code>$9D</code> themselves), with X = Y = the slot and the data bank its code's; minor extended also sets <code>$1698</code> to the slot as SMW's loop does. The table loads are a <code>%call_listed()</code> macro now, cluster and extended included (same bytes). Measured in Mesen, 3/3 each, in the level the probe's walk left reaches: a number written into a slot of each kind ran its MAIN 60 times in 60 frames with X the slot and the data bank <code>$90</code>; SMW's own smoke 01, score 01 and spinning coin 01 written the same way ran their own code and emptied their slots. The probe must wait for the level's message box (<code>$1426</code>) to close: while it is open no sprite runs.
+</li></ul>
+</li>
+<li><b>255 sprites a level (2026-10-20): done.</b> SMW's load table <code>$1938</code> (a byte per level sprite list record, by its index <code>$161A,x</code>: spawned, so not again) is 128 bytes, so a 129th record wrote into the screen exits at <code>$19B8</code>. As PIXI has it since 1.2.15 (its changelog and <code>asm/sa1def.asm</code>, names only): the table is <code>$7FAF00</code>, 256 bytes, <code>!1938</code> means it, and index FF stays "not from the level". Every instruction addressing <code>$1938</code> was found by scanning a built ROM for each absolute opcode with that operand (no long ones exist; the three hits in bank 0D are tile data; Lunar Magic's bank-1E loader never touches it and jumps back only to <code><a href="02.html#A846">$02A846</a></code>/<code><a href="02.html#A84B">$02A84B</a></code>/<code><a href="02.html#A856">$02A856</a></code>). Nine sites, each now calling the driver ("The load table" in <code>main.asm</code>): the loader's test-and-mark <code><a href="02.html#A856">$02A856</a></code>; the level-load clear <code><a href="02.html#ABF2">$02ABF2</a></code> (64 bytes in SMW, 128 after Lunar Magic's <code>$02ABF3 = $7F</code>, 256 now); a generator's record left unmarked <code><a href="02.html#A8BB">$02A8BB</a></code> (and the driver's custom-generator branch); no free slot <code><a href="02.html#A936">$02A936</a></code>; <code><a href="02.html#FAE6">$02FAE6</a></code> by <code>$0FBC,y</code>; and the six <code>LDA #$00 : STA $1938,y</code> that free a record (<code><a href="01.html#AC9C">$01AC9C</a></code> the off-screen erase, <code><a href="02.html#AB99">$02AB99</a></code> a shooter's, <code><a href="02.html#D088">$02D088</a></code>, <code><a href="02.html#FF15">$02FF15</a></code>, <code><a href="03.html#8712">$038712</a></code>, <code><a href="03.html#B8BA">$03B8BA</a></code>). The editor never capped a level at 128. Lunar Magic is told the limit is 255 by clearing bit 0 of <code><a href="0F.html#FFE0">$0FFFE0</a></code>: its help ("Custom Sprite List Sizes") says "0x801E0 PC", and Lunar Magic's PC offsets count the copier header (its <code>0x7750C</code> is the <code>$0EF30C</code> size-table pointer); every PIXI ROM on this machine has <code>$FE</code> there, an LM-saved hack without PIXI <code>$FF</code>. Measured in Mesen, 3/3 each, on level 105: the probe sprite spawned with its entry marked, both as record 00 and as record 8C (140, after 140 generator records); nothing wrote <code>$7E1938-$7E19B7</code> after boot; and a level sprite pushed two screens off was erased by its own off-screen check and its entry went from 1 to 0, so it can come back. Asar here assembles <code>BNE <a href="02.html#A846">$02A846</a></code> (an absolute operand) as an offset of <code>$46</code>; branch to a label, or JML.
+</li>
+<li><b>Shared routines of our own (2026-10-20): done.</b> All 27 of PIXI 1.2.x's routines, MIT, in <code>data/spritedriver/routines/</code>, and its <code>sa1def.asm</code> macros (<code>BES</code>, <code>BEC</code>, <code>Between</code>, <code>debugmsg</code>, the two <code>define_*</code>) in <code>defines.asm</code>; not <code>invoke_snes</code>/<code>invoke_sa1</code>, which are SA-1 only. Clean room, as the driver: a separate pass read PIXI's routines and wrote their observable behaviour into <code><a href="tool-pixi.html">reference/PIXI_ROUTINES.md</a></code> (no code); ours were written from that and SMW's own code, tables from SMW's ROM at assembly time (<code>read1()</code>) or from a formula (<code>Aiming</code>'s 1/√k). A build uses ours for any routine the project has not imported; an imported one still wins. <code>PixiRoutineTests</code> runs each of ours against PIXI's (read from a project of the user's at test time, never shipped) from 2000 random states, on the same vanilla ROM in <code>Cpu65816</code>, and compares every register, flag, the stack and all of RAM; it was run over 12 seeds. Where it disagreed with the contracts, PIXI was measured black-box and ours matched to it, except one PIXI bug kept out on purpose (<code>ExtendedHurt</code> leaves DB 0 for SMW's <code><a href="02.html#A469">$02A469</a></code>): the list is at the end of <code><a href="tool-pixi.html">PIXI_ROUTINES.md</a></code>. In Mesen, 3/3 each, a real sprite (TestRom's FlyingQuestionBlock: GetDrawInfo, SubOffScreen, SubHorzPos, SpawnSprite, <code>%BEC</code>) built once with ours and once with PIXI's routines: alive, at the same position after 120 frames, the same 4 tiles in OAM. Found on the way: PIXI's routines use macro labels (<code>?+</code>), which Asar takes only inside a macro, so an imported PIXI 1.2.x routine set had never assembled; each routine is now included inside a macro of its own. <code>Cpu65816</code> gained the CPU's multiplier/divider, the PPU's signed multiply and the stack-relative ALU forms, all of which the routines use. Not done: SA-1.
+</li>
+<li><b>PIXI 1.40's routines (2026-10-20): done.</b> The 23 that 1.40 adds (the <code>Bounce</code>, <code>Score</code>, <code>Smoke</code>, <code>SpinningCoin</code>, <code>MinorExtended</code> and cluster routines and the <code>*Generic</code> spawns, kept in folders there but the same macro names as ours, flat), plus <code>SpawnMinorExtendedGeneric</code>, the name 1.40's own headers call and its routines lack. Same clean room (contracts in <code><a href="tool-pixi.html">PIXI_ROUTINES.md</a></code>) and the same test, now against every PIXI version on the machine: 1.2.x (BigEye) and 1.40 (Secret, the newest here; its ROM's <code>STSD</code> says 140). Of the 27, only ExtendedGetDrawInfo changed in 1.40, and ours is 1.40's. Three of 1.40's are kept out on purpose, each tested against what ours does instead: MinorExtendedGetDrawInfo takes SMW's OAM index (PIXI's reads a byte early), SpinningCoinGetDrawInfo decides as SMW's coins do (PIXI's compares the wrong camera bytes; checked against SMW's own coin code), and ExtendedHurt (above). An imported routine now replaces ours by macro name, wherever its file sits (1.40 has <code>Spawn/Sprite.asm</code> for SpawnSprite). The build now also inserts the routines a <code>_header.asm</code> calls, and <code>defines.asm</code> no longer defines <code>%LDE()</code>, which 1.40's headers do: a sprite using 1.40's <code>sprites/_header.asm</code> spawn macros builds. Not done: a real minor, cluster or bounce sprite run in Mesen; there is none on this machine.
+</li></ul>
+<h3 id="open-questions">Open questions</h3>
+<ol>
+<li><b>Lunar Magic's own sprite Map16 — settled (2026-10-19).</b> Display tiles are numbered in LM's sprite Map16, <code>0x000-0x3FF</code>, which the sprite's own <code>Map16</code> replaces from <code>0x300</code>. Real configs mostly use LM's (<code>0x030</code> green shell, <code>0x006</code>/<code>0x007</code>, ...). The table sits uncompressed in <code>Lunar Magic.exe</code>, 0x400 tiles × 8 bytes, found by its first tiles; <code>--lmspritemap16 &lt;Lunar Magic.exe&gt; &lt;out&gt;</code> wrote <code>src/data/SpriteMap16.bin</code> from LM 3.40. (LM 3.21's, as PIXI's CFG Editor++ embeds it in an <code>LM16</code> export, differs in two tiles, 16F and 21B, and stops at 0x2FF.) Tile words are FG Map16's layout, YXPCCCTT TTTTTTTT; 8x8 tiles <code>0x000-0x1FF</code> are SP1-SP4 and <code>0x200-0x2FF</code> GFX33 (Yoshi is <code>0x080-0x0A3</code>). <code>--spritemap16png &lt;rom&gt; &lt;level&gt; &lt;out&gt;</code> draws the whole table.
+</li>
+<li><b>Clean-room boundary.</b> The driver is written from this file's format facts. Anyone writing it should not have PIXI's <code>main.asm</code> open; the facts above are what to work from, and gaps go to Mesen or the SMW disassembly, not to PIXI's source.
+</li>
+<li><b>Prep compatibility.</b> PIXI's own pre-checks want LM's VRAM patch (<code><a href="00.html#F6E4">$00F6E4</a> = $5C</code>) and a level saved in LM (<code>$06F624</code>). Ours does not need them, but does a prepped base satisfy what PIXI-built sprites assume at runtime (e.g. <code>$010B</code> holding the full level number)?
+</li>
+<li><b>Version byte.</b> What should our <code>STSD</code> version byte say — PIXI's 143, so sprites with <code>VERG</code> requirements accept it, or our own? PIXI refuses a ROM patched by a newer version.
+</li></ol>
+<h2 id="pixi-shared-routines-interface-contracts">PIXI shared routines: interface contracts</h2>
+<p>These are clean-room interface contracts for the 27 shared sprite routines that ship with PIXI 1.2.x (<code>routines/*.asm</code>, each one inserted once and called with <code>JSL</code> through <code>%Name()</code>). I wrote them from the routines' observable behaviour. Each contract says what a caller can see: inputs, outputs, RAM written, flags, stack effects and edge cases. The file holds <b>no PIXI code</b>: no instruction sequences, no paraphrase of PIXI's code instruction by instruction, no PIXI comments, and no PIXI data tables. A table is described only when it is SMW's own (its address is cited) or when it can be defined by a formula.</p>
+<ul>
+<li>Date: 2026-10-20
+</li>
+<li>Source read: <code>D:\SMW\Projects\BigEye\Sprites\routines\*.asm</code> (the same files are in every project's <code>routines</code> folder)
+</li>
+<li>SMW addresses were checked against <code>D:\SMW\Projects\.resources\SMW.smc</code> with the PipeDream disassembler.
+</li></ul>
+<h3 id="conventions-that-apply-to-every-routine">Conventions that apply to every routine</h3>
+<ul>
+<li><b>Build.</b> The contracts describe the LoROM, non-SA-1 build. RAM is named by its SMW address: sprite tables are <code>$E4,x</code>, <code>$14E0,x</code>, etc.; "slot" means a normal-sprite slot <code>0..$0B</code>. The SA-1 build moves the sprite tables (<code>!addr</code> = <code>$6000</code> and so on), uses the SA-1 arithmetic unit instead of <code>$4202</code>/<code>$211B</code>, and uses <code>$40/$41</code> instead of <code>$7E/$7F</code> for Map16. These differences are noted briefly where they apply.
+</li>
+<li><b>Returning.</b> Every routine is entered with <code>JSL</code> and returns with <code>RTL</code>, unless "Stack" says otherwise.
+</li>
+<li><b>Direct page.</b> D = <code>$0000</code> is assumed: <code>$00-$FF</code> is RAM <code>$7E:0000-00FF</code>.
+</li>
+<li><b>Data bank.</b> "DB must map WRAM" means DB must be a bank where <code>$0000-$1FFF</code> mirrors low WRAM (<code>$00-$3F</code> or <code>$80-$BF</code>). Every routine that reads a sprite table with absolute addressing needs this.
+</li>
+<li><b>Widths.</b> "8/8" means the routine expects M=1 (8-bit A) and X=1 (8-bit X/Y) on entry. Most of them do. When a routine runs with the wrong widths, its immediate operands shift and the result is garbage, so treat 8/8 as a hard precondition unless the contract says otherwise.
+</li>
+<li><b>B.</b> The high byte of the accumulator, which <code>XBA</code> exposes. It is listed only where it is deterministic and might be relied on. Otherwise it is a by-product.
+</li>
+<li><b>Flags.</b> Any flag not listed under <b>Returns</b> is a by-product. V is a by-product everywhere. A differential test should mask by-product flags. Flags that are listed are exact.
+</li>
+<li><b>EXLEVEL.</b> PIXI decides at assembly time whether Lunar Magic's tall-level support is present (<code>!EXLEVEL</code>). It reads the Lunar Magic version string at ROM <code>$0FF0B4</code>; versions above 2.53 set it. Every ROM saved by Lunar Magic 3.x takes the EXLEVEL branch, so that branch is the one that matters for current ROMs. <code>SubOffScreen</code>, <code>GetMap16</code> and <code>ChangeMap16</code> behave differently depending on this flag.
+</li>
+<li><b>SMW routines called.</b> These belong to the ROM, not to PIXI. A reimplementation may call the same addresses:
+<ul>
+<li><code><a href="01.html#ACF9">$01ACF9</a></code>: random number generator.
+</li>
+<li><code><a href="02.html#A9DE">$02A9DE</a></code>: find a free slot, keeping 2 slots in reserve.
+</li>
+<li><code><a href="03.html#B664">$03B664</a></code>: player clipping, box B.
+</li>
+<li><code><a href="03.html#B69F">$03B69F</a></code>: sprite clipping, box A.
+</li>
+<li><code><a href="03.html#B72B">$03B72B</a></code>: box-vs-box contact test; returns C.
+</li>
+<li><code><a href="07.html#F7D2">$07F7D2</a></code>: initialise a slot's tables.
+</li>
+<li><code><a href="01.html#87A7">$0187A7</a></code>: give a slot its custom tables. This address is PIXI's driver hook, not vanilla SMW code.
+</li>
+<li><code><a href="02.html#ACE5">$02ACE5</a></code>: give points.
+</li>
+<li><code><a href="01.html#AB6F">$01AB6F</a></code>: contact sound and contact graphic.
+</li>
+<li><code><a href="02.html#A469">$02A469</a></code>: extended sprite hurts the player.
+</li>
+<li><code><a href="02.html#B554">$02B554</a></code>/<code><a href="02.html#B560">$02B560</a></code>: extended sprite X/Y speed. These end in <code>RTS</code>.
+</li>
+<li><code><a href="00.html#C0FB">$00C0FB</a></code>: queue a Map16 tile to VRAM. Ends in <code>RTS</code>.
+</li></ul>
+</li></ul>
+<p>PIXI reaches the <code>RTS</code>-ending routines (<code><a href="02.html#B554">$02B554</a></code>/<code><a href="02.html#B560">$02B560</a></code>, <code><a href="00.html#C0FB">$00C0FB</a></code>) from another bank with the usual "push a long return address, then push the address of an <code>RTL</code> in the target bank minus 1" trick. The <code>RTL</code> bytes it uses are at <code>$00804D</code> and <code><a href="02.html#B889">$02B889</a></code>. Any equivalent call mechanism is acceptable.</p>
+<ul>
+<li><b>Box layout used by SMW's contact test <code><a href="03.html#B72B">$03B72B</a></code>.</b> Box A is <code>$04</code> x-low, <code>$0A</code> x-high, <code>$05</code> y-low, <code>$0B</code> y-high, <code>$06</code> width, <code>$07</code> height. Box B is <code>$00</code>, <code>$08</code>, <code>$01</code>, <code>$09</code>, <code>$02</code>, <code>$03</code> in the same order. <code><a href="03.html#B72B">$03B72B</a></code> preserves X and Y, clobbers <code>$0C</code> and <code>$0F</code>, and returns C=1 on contact.
+</li></ul>
+<p>---</p>
+<h3 id="aiming">Aiming</h3>
+<p>Computes an 8-bit X speed and Y speed of magnitude about <code>speed</code>, pointing from the shooter toward the target.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>Any register widths. The routine saves P and sets 8/8 itself.
+</li>
+<li>A (low byte) = speed <code>s</code>, unsigned.
+</li>
+<li><code>$00-$01</code> = 16-bit <code>dx</code> = shooter X − target X.
+</li>
+<li><code>$02-$03</code> = 16-bit <code>dy</code> = shooter Y − target Y.
+</li>
+<li>DB is irrelevant.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li><code>$00</code> = X speed (8-bit). <code>$02</code> = Y speed (8-bit). <code>$01</code> = <code>$03</code> = 0.
+</li>
+<li>Each output is the value computed below, not negated when its input <code>d</code> had bit 15 set (target to the right / below), and two's-complement negated when bit 15 was clear. <code>d</code> = 0 gives a negated 0, which is 0.
+</li>
+<li>P is restored exactly as on entry, so widths and C/V/D/I are the entry values, except that N and Z reflect the restored X.
+</li>
+<li>X is preserved. Y is untouched.
+</li>
+<li>A low byte = the final <code>$00</code>. B = high byte of the 16-bit <code>Vx</code> below.
+</li></ul>
+</li>
+<li><b>Scratch RAM:</b> <code>$04-$05</code> = <code>S</code> (16-bit, defined below). <code>$06</code> = 1 if <code>dx</code> was negative, otherwise 0. <code>$07</code> = 0. <code>$0F</code> = <code>s</code>. The multiplier registers <code>$4202/$4203/$4216/$4217</code> are left holding the last product.
+</li>
+<li><b>Algorithm:</b>
+<ol>
+<li>Take absolute values: two's-complement negate <code>dx</code> or <code>dy</code> if bit 15 is set. <code>$8000</code> stays <code>$8000</code> and is then treated as unsigned.
+</li>
+<li>While <code>(|dx| OR |dy|) ≥ $100</code>, shift both right by 1. The shift count is the bit-length of the high byte of the OR. After this, <code>ax, ay ≤ $FF</code>.
+</li>
+<li><code>d = ax² + ay²</code>, a 17-bit unsigned value.
+</li>
+<li>Choose <code>sh</code> as the smallest value in 0..5 with <code>d &gt;&gt; (2·sh) &lt; $100</code>. The six bands are <code>d &lt; $100</code>, <code>&lt; $400</code>, <code>&lt; $1000</code>, <code>&lt; $4000</code>, <code>&lt; $10000</code>, and <code>≥ $10000</code>. Then <code>k = d &gt;&gt; (2·sh)</code> and <code>m = R[k] &gt;&gt; sh</code> (16-bit logical shift).
+</li>
+<li><code>S = floor(s · m / 256)</code>. This is exact and always fits in 16 bits.
+</li>
+<li><code>Vy = floor(ay · S / 256)</code> and <code>Vx = floor(ax · S / 256)</code>, both 16-bit. The outputs are their low bytes, sign-applied as above.
+</li></ol>
+</li>
+<li><b>Tables/data:</b> <code>R</code> is a 256-entry table of 16-bit words: <code>R[0] = $FFFF</code>, and <code>R[k] = min($FFFF, round(65536 / √k))</code> for k ≥ 1. All 256 entries were checked against this formula. SMW has no such table. <code>m</code> approximates <code>65536/√d</code>, so <code>S·a/256 ≈ s·a/√d</code>.
+</li>
+<li><b>Stack / control flow:</b> normal.
+</li>
+<li><b>Equivalent SMW code:</b> none. (SMW's aimed projectiles use other methods.)
+</li>
+<li><b>Calls:</b> none. Uses the hardware multiplier at <code>$4202/$4203</code> (SA-1: <code>$2250-$2254/$2306-$2307</code>). Allow 8 cycles before each product read.
+</li>
+<li><b>Edge cases:</b>
+<ul>
+<li><code>dx = dy = 0</code> gives 0, 0.
+</li>
+<li><code>d = 1</code> uses <code>R[1] = $FFFF</code>.
+</li>
+<li>The magnitude can slightly exceed <code>s</code> because of rounding. Only the low byte is kept, so <code>s</code> close to <code>$FF</code> can wrap.
+</li>
+<li>The SA-1 build computes <code>m·s</code> through the SA-1 multiplier with a different path for <code>m ≥ $8000</code>. Its results are the same in intent but not guaranteed to be bit-identical, and this contract does not cover them.
+</li></ul>
+</li></ul>
+<h3 id="capecontact">CapeContact</h3>
+<p>Checks whether sprite X is touching the spinning cape.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>8/8, X = sprite slot.
+</li>
+<li>DB must map WRAM.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>C=1 for contact, C=0 for none. X and Y are preserved.
+</li></ul>
+</li>
+<li><b>RAM written / scratch:</b> when the box test runs: <code>$00-$0B</code> (both boxes), plus <code>$0C</code> and <code>$0F</code> (from <code><a href="03.html#B72B">$03B72B</a></code>). The early "no" exits write nothing.
+</li>
+<li><b>Behaviour:</b> returns C=0 without touching RAM if any of these holds:
+<ul>
+<li><code>$13E8</code> (cape-spin active) = 0.
+</li>
+<li><code>$15D0,x | $154C,x | $1FE2,x</code> ≠ 0.
+</li>
+<li>Layer mismatch: let <code>L = $1632,x</code>, with bit 0 flipped when <code>$74</code> (climbing) ≠ 0. Exit if <code>L</code> ≠ <code>$13F9</code>, comparing the whole byte.
+</li></ul>
+</li></ul>
+<p>Otherwise:</p>
+<ol>
+<li>Box A comes from SMW's <code><a href="03.html#B69F">$03B69F</a></code>.
+</li>
+<li>Box B is the cape box:
+<ul>
+<li>X = 16-bit (<code>$13E9</code>/<code>$13EA</code>) − 2, giving <code>$00</code>/<code>$08</code>. Width <code>$14</code> in <code>$02</code>.
+</li>
+<li>Y = <code>$13EB</code>/<code>$13EC</code>, giving <code>$01</code>/<code>$09</code>. Height <code>$10</code> in <code>$03</code>.
+</li></ul>
+</li>
+<li>The result is <code><a href="03.html#B72B">$03B72B</a></code>'s.
+</li></ol>
+<ul>
+<li><b>Stack / control flow:</b> the final step is a tail jump into <code><a href="03.html#B72B">$03B72B</a></code>, so <code><a href="03.html#B72B">$03B72B</a></code>'s <code>RTL</code> returns to the caller.
+</li>
+<li><b>Equivalent SMW code:</b> the per-sprite body of SMW's cape-vs-sprite check, <code><a href="02.html#93CE">$0293CE</a>-<a href="02.html#93F2">$0293F2</a></code>. The cape box is SMW's <code><a href="02.html#9696">$029696</a></code> exactly. Differences:
+<ul>
+<li>PIXI does not test <code>$14C8,x ≥ 8</code> or <code>$166E,x</code> bit 5. SMW's surrounding loop does.
+</li>
+<li>PIXI has no net-punch alternative box (<code><a href="02.html#9663">$029663</a></code>, which SMW chooses when <code>$0E</code> ≠ 0).
+</li>
+<li>PIXI does not call SMW's hit handler (<code><a href="02.html#9404">$029404</a></code>).
+</li></ul>
+</li>
+<li><b>Calls:</b> <code><a href="03.html#B69F">$03B69F</a></code>, <code><a href="03.html#B72B">$03B72B</a></code>.
+</li></ul>
+<h3 id="changemap16">ChangeMap16</h3>
+<p>Writes a Map16 tile number at a level position and queues the VRAM update.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>Any X width. The accumulator holds the tile number as a full 16-bit value. Callers normally set M=0 first; with M=1, <code>B:A</code> is taken as the 16-bit value.
+</li>
+<li><code>$98-$99</code> = block Y (16-bit). <code>$9A-$9B</code> = block X (16-bit).
+</li>
+<li><code>$1933</code> = layer: 0 = layer 1, 1 = layer 2. Other values index garbage.
+</li>
+<li>DB must map WRAM. <code><a href="00.html#C0FB">$00C0FB</a></code> reads <code>$0FBE,y</code> and <code>$1933</code> absolute.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>C=0 when the tile was written. C=1 when the position was out of range and nothing was written.
+</li>
+<li>P is otherwise restored to its entry value, except that N and Z reflect X.
+</li>
+<li>X and Y are preserved (restored at their entry widths). DB is preserved.
+</li></ul>
+</li>
+<li><b>Address computation:</b> steps 1–3 below are identical to GetMap16's, including every scratch write and the swap of <code>$99</code>/<code>$9B</code> on vertical layers.
+</li>
+<li><b>Range check:</b> the same as GetMap16's.
+</li>
+<li><b>Write:</b>
+<ul>
+<li><code>$7E:addr</code> = tile low byte.
+</li>
+<li><code>$7F:addr</code> = <code>(tile &gt;&gt; 8) &amp; $7F</code>. Bit 15 of the tile is dropped.
+</li></ul>
+</li>
+<li><b>VRAM queue:</b> after the write, the routine calls SMW's <code><a href="00.html#C0FB">$00C0FB</a></code> with:
+<ul>
+<li>M=0, X=0.
+</li>
+<li>Y = <code>(tile × 2) &amp; $FFFF</code>, its index into the tile-pointer table at <code>$0FBE</code>.
+</li>
+<li>X = the Map16 address.
+</li>
+<li><code>$06/$07</code> = the VRAM tilemap address (step 3 of GetMap16).
+</li>
+<li><code>$0C-$0F</code> = the original block X/Y.
+</li>
+<li><code>$08/$0A</code> = camera values chosen by layer and orientation:
+</li></ul>
+</li></ul>
+<p>| layer orientation | <code>$08</code> | <code>$0A</code> | |---|---|---| | horizontal L1 | <code>$1A</code> − <code>$80</code> | <code>$1C</code> | | horizontal L2 | <code>$1E</code> | <code>$20</code> − <code>$80</code> | | vertical L1 | <code>$1A</code> | <code>$1C</code> − <code>$80</code> | | vertical L2 | <code>$1E</code> − <code>$80</code> | <code>$20</code> |</p>
+<p>The orientation is bit 0 of the value saved in <code>$0A</code>, which is consumed by shifting <code>$0A</code> right once, so <code>$0A</code> holds half its GetMap16 value before being overwritten. All of these are 16-bit.</p>
+<p><code><a href="00.html#C0FB">$00C0FB</a></code> decides whether the block is close enough to the camera to upload. If it is, it appends a stripe entry at <code>$7F837D + [$7F837B]</code> and adds <code>$10</code> to <code>$7F837B</code>. It clobbers <code>$00</code> and <code>$04-$06</code>.</p>
+<ul>
+<li><b>Stack / control flow:</b> <code><a href="00.html#C0FB">$00C0FB</a></code> ends in <code>RTS</code> and is reached through the bank-0 <code>RTL</code> at <code>$00804D</code>.
+</li>
+<li><b>Equivalent SMW code:</b> none as a unit. SMW's own tile changer, <code><a href="00.html#BEB0">$00BEB0</a></code>, takes a block <i>type</i> in <code>$9C</code>, not a raw tile number. The VRAM half is SMW's <code><a href="00.html#C0FB">$00C0FB</a></code> unchanged.
+</li>
+<li><b>Calls:</b> <code><a href="00.html#C0FB">$00C0FB</a></code>.
+</li>
+<li><b>Edge cases:</b>
+<ul>
+<li>Vertical layers leave <code>$99</code> and <code>$9B</code> swapped (see GetMap16).
+</li>
+<li>Tile ≥ <code>$8000</code> is stored with bit 15 cleared, but <code><a href="00.html#C0FB">$00C0FB</a></code> receives <code>Y = tile×2</code>, also truncated to 16 bits.
+</li></ul>
+</li></ul>
+<h3 id="checkforcontactalternate">CheckForContactAlternate</h3>
+<p>Tests two boxes for overlap with 16-bit coordinates.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>Any A width; the routine sets M=0.
+</li>
+<li>Box 1: <code>$00</code> x, <code>$02</code> y, <code>$04</code> w, <code>$06</code> h.
+</li>
+<li>Box 2: <code>$08</code> x, <code>$0A</code> y, <code>$0C</code> w, <code>$0E</code> h. All values are 16-bit.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>M=1 on exit in every case.
+</li>
+<li>C=1 for overlap, C=0 for none.
+</li>
+<li>X and Y untouched. No RAM written.
+</li>
+<li>N and Z come from the last 16-bit compare (by-product).
+</li>
+<li>A holds the last 16-bit difference computed (by-product).
+</li></ul>
+</li>
+<li><b>Rule:</b> both axes must pass, X first:
+<ul>
+<li>If <code>x1 ≥ x2</code>, X passes when <code>(x1 − x2) &lt; w2</code>. Otherwise it passes when <code>(x2 − x1) &lt; w1</code>.
+</li>
+<li>Y works the same way with y and h.
+</li></ul>
+</li></ul>
+<p>All comparisons are unsigned 16-bit, and the X axis is evaluated first.</p>
+<ul>
+<li><b>Equivalent SMW code:</b> none. SMW's <code><a href="03.html#B72B">$03B72B</a></code> uses 8-bit boxes with a different rule.
+</li>
+<li><b>Calls:</b> none.
+</li>
+<li><b>Edge cases:</b>
+<ul>
+<li>Equal coordinates use the first branch, so a zero-width box 2 never overlaps a box with the same x.
+</li>
+<li>There is no wrap handling: a box near <code>$FFFF</code> does not overlap one near <code>$0000</code>.
+</li></ul>
+</li></ul>
+<h3 id="circlex">CircleX</h3>
+<p>Computes <code>radius · cos(angle)</code>.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>8/8.
+</li>
+<li><code>$04-$05</code> = angle. Only 9 bits count: <code>$05</code> bit 0 and <code>$04</code>, with <code>$000-$1FF</code> = 0–360°.
+</li>
+<li><code>$06</code> = radius.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li><code>$07-$08</code> = 16-bit signed X displacement.
+</li>
+<li>M=1.
+</li>
+<li>X preserved (N and Z reflect X).
+</li>
+<li>C = the half-circle sign bit used (see below).
+</li>
+<li>A low = <code>$07</code>, B = <code>$08</code>.
+</li>
+<li><code>$04-$06</code> unchanged.
+</li></ul>
+</li>
+<li><b>Computation:</b>
+<ol>
+<li><code>a&#x27; = (angle + $80)</code> mod <code>$200</code>. Index <code>i = a&#x27; &amp; $FF</code>, sign <code>h</code> = bit 8 of <code>a&#x27;</code>. Bits 1-7 of <code>$05</code> are ignored. The +<code>$80</code> is a quarter turn, which turns sine into cosine.
+</li>
+<li><code>T = H[i]</code> (0..<code>$FF</code>).
+</li>
+<li>The PPU signed multiply computes <code>P = T × r</code> with <code>r = $06</code> taken as a <b>signed</b> 8-bit value. Result = bits 8..23 of <code>P</code> as a 16-bit value, i.e. <code>floor(T·r / 256)</code> mod <code>$10000</code>.
+</li>
+<li>If <code>h = 1</code>, two's-complement negate.
+</li></ol>
+</li>
+<li><b>Tables/data:</b> <code>H</code> is a 256-entry half-period sine, <code>H[i] = sin(π·i/256)·256</code>, clamped to <code>$FF</code>. It equals SMW's 16-bit sine table at <code><a href="07.html#F7DB">$07F7DB</a></code> (256 words), with the single <code>$0100</code> entry (i = <code>$80</code>) clamped to <code>$FF</code>. All 256 entries were verified.
+</li>
+<li><b>Side effects:</b> writes <code>$211B</code> twice (<code>T</code>, then 0) and <code>$211C</code> (<code>r</code>). These are the Mode 7 matrix A/B registers and the Mode 7 write latch. This is observable if Mode 7 is in use. SA-1 uses its multiplier with <code>r</code> taken as <b>unsigned</b>, so the results differ for <code>r ≥ $80</code>.
+</li>
+<li><b>Equivalent SMW code:</b> none as a routine. The table data is SMW's, as above.
+</li>
+<li><b>Calls:</b> none.
+</li>
+<li><b>Edge cases:</b> radius <code>$80-$FF</code> produces a negative/garbled magnitude on non-SA-1 (signed multiplier).
+</li></ul>
+<h3 id="circley">CircleY</h3>
+<p>Computes <code>radius · sin(angle)</code>. The contract is the same as CircleX, with these differences:</p>
+<ul>
+<li>No quarter-turn offset: <code>i = $04</code>, <code>h</code> = <code>$05</code> bit 0.
+</li>
+<li>Output goes to <code>$09-$0A</code>. A low = <code>$09</code>, B = <code>$0A</code>, C = <code>h</code>.
+</li>
+<li><code>$07-$08</code> are untouched.
+</li>
+<li>Same table, same multiply, same side effects.
+</li></ul>
+<h3 id="extendedcapeclipping">ExtendedCapeClipping</h3>
+<p>Checks whether extended sprite X is touching the cape, using a box the caller supplies.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>8/8, X = extended-sprite slot (0..9).
+</li>
+<li><code>$00</code> = X offset, <code>$01</code> = width, <code>$02</code> = Y offset, <code>$03</code> = height.
+</li>
+<li>DB must map WRAM.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>C = <code><a href="03.html#B72B">$03B72B</a></code>'s contact result. X and Y preserved.
+</li>
+<li><code>$00-$03</code> are overwritten by the cape box. <code>$04-$0B</code>, <code>$0C</code> and <code>$0F</code> are clobbered.
+</li></ul>
+</li>
+<li><b>Behaviour:</b>
+<ul>
+<li>Box A:
+<ul>
+<li>X = <code>$171F,x</code>/<code>$1733,x</code> + <code>$00</code>, unsigned. Only the carry reaches the high byte; the offset is <b>not</b> sign-extended.
+</li>
+<li>Width = <code>$01</code>.
+</li>
+<li>Y = <code>$1715,x</code>/<code>$1729,x</code> + <code>$02</code>, unsigned.
+</li>
+<li>Height = <code>$03</code>.
+</li></ul>
+</li>
+<li>Box B is the cape box, exactly SMW's <code><a href="02.html#9696">$029696</a></code> (see CapeContact).
+</li>
+<li>No layer, spin or timer checks are made. The caller must check <code>$13E8</code> itself.
+</li></ul>
+</li>
+<li><b>Equivalent SMW code:</b>
+<ul>
+<li>Box A is SMW's <code><a href="02.html#A51C">$02A51C</a></code> with the caller's <code>$00-$03</code> in place of SMW's per-type tables at <code>$02A4E7</code>/<code><a href="02.html#A4F3">$02A4F3</a></code>/<code><a href="02.html#A4FF">$02A4FF</a></code>/<code><a href="02.html#A50B">$02A50B</a></code>.
+</li>
+<li>Box B is <code><a href="02.html#9696">$029696</a></code> verbatim.
+</li></ul>
+</li>
+<li><b>Calls:</b> <code><a href="03.html#B72B">$03B72B</a></code>.
+</li></ul>
+<h3 id="extendedgetdrawinfo">ExtendedGetDrawInfo</h3>
+<p>Finds the OAM slot for extended sprite X and the sprite's screen position. Erases or hides the sprite when it is off screen.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>8/8, X = extended slot. <b>0..7 only.</b>
+</li>
+<li>DB must map WRAM.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>Y = OAM index for slot X, into the <code>$0200</code> page, not <code>$0300</code>.
+</li>
+<li><code>$00</code> = <code>$40</code> if <code>$1747,x</code> (X speed) bit 7 is clear, else <code>$00</code>. This is the OAM X-flip bit.
+</li>
+<li><code>$01</code> = low byte of <code>(X − $1A)</code>.
+</li>
+<li><code>$02</code> = low byte of <code>(Y − $1C)</code>, or <code>$F0</code> when the sprite is hidden or erased.
+</li>
+<li>X preserved. No stack tricks: the caller must test the outcome itself (<code>$170B,x = 0</code> or <code>$02 = $F0</code>).
+</li></ul>
+</li>
+<li><b>Rules:</b>
+<ul>
+<li>X axis: if the high byte of the 16-bit <code>X − camX</code> ≠ 0, then erase: <code>$170B,x</code> = 0 and <code>$02</code> = <code>$F0</code>.
+</li>
+<li>Y axis: let <code>d</code> = <code>(Ylo − camYlo)</code> mod 256 and <code>c</code> = 1 if <code>Ylo ≥ camYlo</code>. Let <code>t = (Yhi + camYhi + c)</code> mod 256. Note the <b>addition</b>: this is not SMW's test.
+<ul>
+<li><code>t ≠ 0</code>: erase if <code>d ≥ $F0</code>, otherwise visible.
+</li>
+<li><code>t = 0</code>: erase if <code>d &lt; $C0</code>; else hide (<code>$02 = $F0</code>, not erased) if <code>d &lt; $E0</code>; else visible.
+</li></ul>
+</li></ul>
+</li>
+<li><b>Registers on return:</b>
+<ul>
+<li>Visible with <code>t ≠ 0</code>: A = <code>d</code>, C = 0.
+</li>
+<li>Visible with <code>t = 0</code>: A = <code>d</code>, C = 1.
+</li>
+<li>Hidden or erased: A = <code>$F0</code>, N = 1, Z = 0.
+</li></ul>
+</li>
+<li><b>Tables/data:</b> the OAM index per slot is SMW's 8-byte table at <code><a href="02.html#A153">$02A153</a></code> (<code>$90,$94,…,$AC</code>).
+</li>
+<li><b>Equivalent SMW code:</b> SMW's extended-sprite draw prologue at <code><a href="02.html#A1A4">$02A1A4</a>-<a href="02.html#A1D3">$02A1D3</a></code> (same table, same <code>$00</code>/<code>$01</code> values, same <code>$170B</code> erase). Differences:
+<ul>
+<li>SMW erases when the high byte of <code>Y − camY</code> ≠ 0 or <code>relY ≥ $F0</code>. PIXI uses the <code>t</code> rule above and has a "hide without erase" band.
+</li>
+<li>PIXI writes no OAM.
+</li></ul>
+</li>
+<li><b>Calls:</b> none.
+</li>
+<li><b>Edge cases:</b> X = 8 or 9 (fireball slots) reads past the 8-entry table, so Y is whatever follows it in ROM. Callers must not use those slots.
+</li></ul>
+<h3 id="extendedhurt">ExtendedHurt</h3>
+<p>Hurts the player if extended sprite X touches them. Uses a fixed 10×10 box.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>8/8, X = extended slot.
+</li>
+<li>DB must map WRAM.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>No contact: C=0.
+</li>
+<li>Contact: SMW's <code><a href="02.html#A469">$02A469</a></code> has run (see Behaviour). C, A, Y and N/Z are its by-products.
+</li>
+<li>X is preserved: <code><a href="02.html#A469">$02A469</a></code> preserves it on every path that matters.
+</li>
+<li>DB is restored. Scratch <code>$00-$0F</code> per the box routines.
+</li></ul>
+</li>
+<li><b>Behaviour:</b>
+<ol>
+<li>Box A:
+<ul>
+<li>X = <code>$171F,x</code>/<code>$1733,x</code> + 3.
+</li>
+<li>Y = <code>$1715,x</code>/<code>$1729,x</code> + 3.
+</li>
+<li>Width and height = <code>$0A</code>.
+</li></ul>
+</li>
+<li>Box B = SMW's player box <code><a href="03.html#B664">$03B664</a></code>.
+</li>
+<li>If <code><a href="03.html#B72B">$03B72B</a></code> reports contact, call <code><a href="02.html#A469">$02A469</a></code> with DB = <code>$02</code>. That routine:
+<ul>
+<li>With a star (<code>$1490</code> ≠ 0): turns the extended sprite into a smoke puff. Unless <code>$170B,x</code> = 4, it first moves the sprite 4 px up-left. Then <code>$170B,x</code> = 1 and <code>$176F,x</code> = 7.
+</li>
+<li>Else, riding Yoshi: loses Yoshi (see LoseYoshi, but via <code>$18DF</code>).
+</li>
+<li>Else: hurts the player via <code><a href="00.html#F5B7">$00F5B7</a></code>.
+</li></ul>
+</li></ol>
+</li>
+<li><b>Stack / control flow:</b> the <code>RTS</code>-ending <code><a href="02.html#A469">$02A469</a></code> is reached through the <code>RTL</code> at <code><a href="02.html#B889">$02B889</a></code>.
+</li>
+<li><b>Equivalent SMW code:</b> the tail of SMW's extended-vs-player check at <code><a href="02.html#A3F6">$02A3F6</a>-<a href="02.html#A410">$02A410</a></code> (then <code><a href="02.html#A469">$02A469</a></code>). Differences:
+<ul>
+<li>PIXI skips the layer test (<code>$13F9</code> vs <code>$1779,x</code>).
+</li>
+<li>PIXI uses a fixed box instead of SMW's per-type box (<code><a href="02.html#A519">$02A519</a></code>).
+</li>
+<li>PIXI has no special case for type <code>$0A</code>.
+</li></ul>
+</li>
+<li><b>Calls:</b> <code><a href="03.html#B664">$03B664</a></code>, <code><a href="03.html#B72B">$03B72B</a></code>, <code><a href="02.html#A469">$02A469</a></code>.
+</li></ul>
+<h3 id="extendedspeed">ExtendedSpeed</h3>
+<p>Applies an extended sprite's speed to its position, optionally with gravity.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>8/8, X = extended slot.
+</li>
+<li>A = mode: 0 = gravity then Y then X; 1 = Y then X; 2 = X only; 3 = Y only.
+</li>
+<li>DB must map WRAM.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>Modes 0, 1, 2: <b>X = <code>$15E9</code></b> on return, because SMW's X updater reloads it. In extended-sprite code <code>$15E9</code> holds the current extended index, so in practice X is unchanged.
+</li>
+<li>Mode 3: X unchanged.
+</li>
+<li>Y = <code>$00</code> or <code>$FF</code>: the sign of the last speed applied. In modes 0, 1 and 2 that is the X speed; in mode 3 it is the Y speed. SMW's X updater runs the Y updater on the X fields.
+</li>
+<li>A ≥ 4: returns immediately with A = A − 3 (8-bit) and changes nothing.
+</li></ul>
+</li>
+<li><b>Dispatch quirk:</b> mode 0 is selected by the <b>Z flag at entry</b>, not by testing A. The modes after it are selected by decrementing A. A caller that loads A = 0 but arrives with Z=0 gets "A ≥ 4" behaviour (A = <code>$FD</code>, nothing done). A caller arriving with Z=1 and A ≠ 0 gets mode 0. Callers normally load A immediately before the call, so this does not arise.
+</li>
+<li><b>Behaviour:</b>
+<ul>
+<li>Gravity (mode 0): when <code>$173D,x</code> − <code>$40</code> has bit 7 set (the <code>CMP</code>/<code>BPL</code> test, not a true signed compare), add 3 to <code>$173D,x</code>. So gravity applies when the Y speed is in <code>$C0-$FF</code> or <code>$00-$3F</code>, and <b>not</b> when it is in <code>$80-$BF</code> (fast upward). There is no cap at exactly <code>$40</code>: <code>$3F</code> becomes <code>$42</code>.
+</li>
+<li>Y update: SMW <code><a href="02.html#B560">$02B560</a></code>. 4.4 fixed-point: fraction <code>$1751,x</code> += speed·16; position <code>$1715/$1729,x</code> += sign-extended speed&gt;&gt;4 + carry.
+</li>
+<li>X update: SMW <code><a href="02.html#B554">$02B554</a></code>. The same on <code>$1747</code>/<code>$175B</code>/<code>$171F</code>/<code>$1733</code> (via X + <code>$0A</code>), then X = <code>$15E9</code>.
+</li></ul>
+</li>
+<li><b>Stack / control flow:</b> both SMW routines end in <code>RTS</code> and are reached through the <code>RTL</code> at <code><a href="02.html#B889">$02B889</a></code>.
+</li>
+<li><b>Equivalent SMW code:</b> <code><a href="02.html#B554">$02B554</a></code> and <code><a href="02.html#B560">$02B560</a></code> themselves. The gravity rule matches SMW's inline extended-sprite gravity idiom.
+</li>
+<li><b>Calls:</b> <code><a href="02.html#B554">$02B554</a></code>, <code><a href="02.html#B560">$02B560</a></code>.
+</li></ul>
+<h3 id="finishoamwrite">FinishOAMWrite</h3>
+<p>Finalises a sprite's OAM tiles: sets each tile's size bit and hides tiles that are off screen.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>8/8, X = sprite slot.
+</li>
+<li>A = number of tiles − 1.
+</li>
+<li>Y = size: <code>$00</code> = 8×8, <code>$02</code> = 16×16, any value with bit 7 set = keep each tile's existing size bit.
+</li>
+<li>The tiles are already written at <code>$0300 + $15EA,x</code> onward, with screen-relative coordinates.
+</li>
+<li>DB must map WRAM: <code>$0300</code>/<code>$0460</code> are accessed absolute with the caller's DB.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>X = <code>$15E9</code>. N and Z reflect X. C = 1.
+</li>
+<li>Y = <code>$15EA,x + 4·(A+1)</code> mod 256, i.e. one past the last tile.
+</li>
+<li>A low = <code>$F0</code> if the last tile was hidden, else the low byte of that tile's Y check value. B = 0.
+</li></ul>
+</li>
+<li><b>Scratch:</b>
+<ul>
+<li><code>$00-$01</code> = 16-bit <code>spriteY − camY</code>.
+</li>
+<li><code>$02-$03</code> = 16-bit <code>spriteX − camX</code>.
+</li>
+<li><code>$08</code> = <code>$FF</code> (the loop count runs out).
+</li>
+<li><code>$0B</code> = the size argument.
+</li>
+<li><code>$04-$07</code>, <code>$09</code> and <code>$0A</code> are untouched.
+</li></ul>
+</li>
+<li><b>Per tile</b> (OAM index <code>o</code>, size index <code>j = o/4</code>):
+<ul>
+<li><code>X16 = relX16 + sext8($0300,o − relX_lo)</code>.
+</li>
+<li><code>$0460,j = base + (X16 ≥ $100 ? 1 : 0)</code>, an 8-bit <b>add</b>. <code>base</code> is <code>$0B</code> if <code>$0B</code> bit 7 is clear, else <code>$0460,j &amp; $02</code>.
+</li>
+<li><code>Y16 = relY16 + sext8($0301,o − relY_lo) + $10</code>. If <code>Y16 ≥ $100</code> (unsigned), set <code>$0301,o</code> = <code>$F0</code>.
+</li>
+<li>Repeat for <code>A+1</code> tiles. A = <code>$80..$FF</code> gives <code>A+1</code> tiles via the decrement-and-test-sign loop, the same as SMW.
+</li></ul>
+</li>
+<li><b>Equivalent SMW code:</b> <code><a href="01.html#B7B3">$01B7B3</a></code> (its body is at <code><a href="01.html#B7BB">$01B7BB</a></code>). It is identical in effect, except:
+<ul>
+<li>SMW stores <code>base</code> and then ORs bit 0; PIXI adds. They differ only when <code>$0B</code> is non-negative and odd.
+</li>
+<li>SMW sets DB to <code>$01</code> internally and uses a different scratch layout (<code>$00-$0A</code>).
+</li>
+<li>The carry on return differs (SMW: from the last Y test).
+</li></ul>
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h3 id="fireballcontact">FireballContact</h3>
+<p>Checks whether sprite X is touching either player fireball.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>8/8, X = sprite slot.
+</li>
+<li>DB must map WRAM.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>Contact: C=1, Y = 0 or 1, meaning extended slot 8 or 9.
+</li>
+<li>None: C=0, Y = <code>$FF</code>.
+</li>
+<li>X is preserved: it is restored last, so N and Z reflect X.
+</li>
+<li>Scratch <code>$00-$0B</code>, <code>$0C</code> and <code>$0F</code> are clobbered.
+</li></ul>
+</li>
+<li><b>Behaviour:</b> check slot 8, then slot 9. Skip a slot whose <code>$170B</code> is 0. For an occupied slot:
+<ul>
+<li>Box B = the fireball box:
+<ul>
+<li>X = 16-bit <code>$171F/$1733</code> − 2, width <code>$0C</code>.
+</li>
+<li>Y = 16-bit <code>$1715/$1729</code> − 4, height <code>$13</code>.
+</li></ul>
+</li>
+<li>Box A = <code><a href="03.html#B69F">$03B69F</a></code> for sprite X.
+</li>
+<li>Test with <code><a href="03.html#B72B">$03B72B</a></code>. Stop at the first contact.
+</li></ul>
+</li>
+<li><b>Equivalent SMW code:</b> the fireball box is exactly SMW's <code><a href="02.html#A547">$02A547</a></code> (indexed by the full extended slot there). SMW runs the check from the fireball's side. Differences:
+<ul>
+<li>PIXI accepts <b>any</b> non-zero extended type in slots 8 and 9, not only fireballs (type <code>$05</code>).
+</li>
+<li>PIXI tests neither layers nor sprite status.
+</li></ul>
+</li>
+<li><b>Calls:</b> <code><a href="03.html#B69F">$03B69F</a></code>, <code><a href="03.html#B72B">$03B72B</a></code>.
+</li></ul>
+<h3 id="getdrawinfo">GetDrawInfo</h3>
+<p>Sets sprite X's off-screen flags and returns its OAM index and screen position. When the sprite is too far off screen, it abandons the routine that called it.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>8/8, X = sprite slot.
+</li>
+<li>DB must map WRAM <b>and</b> must equal the program bank of the code that called the graphics routine (see Stack).
+</li></ul>
+</li>
+<li><b>Writes, always:</b>
+<ul>
+<li><code>$186C,x</code> = 0 first.
+</li>
+<li><code>$00-$01</code> = 16-bit <code>relX = (X16 − $1A16)</code>.
+</li>
+<li><code>$15A0,x</code> = 1 if the high byte of <code>relX</code> ≠ 0, else 0.
+</li>
+<li><code>$15C4,x</code> = 1 if <code>relX + $40 ≥ $180</code> (unsigned 16-bit), i.e. <code>relX</code> is not in <code>[−$40, $140)</code>. Else 0.
+</li></ul>
+</li>
+<li><b>Normal return</b> (<code>$15C4,x</code> = 0):
+<ul>
+<li><code>$186C,x</code> = bit 1 | bit 0:
+<ul>
+<li>Bit 1 is set only if <code>$190F,x</code> bit 5 is set and the high byte of <code>(Y16 + $20 − $1C16)</code> ≠ 0.
+</li>
+<li>Bit 0 is set if the high byte of <code>(Y16 + $10 − $1C16)</code> ≠ 0.
+</li></ul>
+</li>
+<li><code>$01</code> = low byte of <code>(Y − $1C)</code>.
+</li>
+<li>Y = <code>$15EA,x</code>. N and Z reflect Y.
+</li>
+<li>A = high byte of <code>(Y16 + $10 − $1C16)</code>. B = <code>$01</code>.
+</li>
+<li>C = 1 if the low byte of <code>(Y16 + $10 − $1C16)</code> ≥ <code>$10</code>.
+</li>
+<li>M=1. X preserved.
+</li></ul>
+</li>
+<li><b>Off-screen return</b> (<code>$15C4,x</code> = 1):
+<ul>
+<li>The stack is rewritten and the routine returns to the <b>caller's caller</b> (see Stack).
+</li>
+<li><code>$186C,x</code> = 0. <code>$01</code> keeps the high byte of <code>relX</code> (not a Y value).
+</li>
+<li>A = low byte, and Y = high byte, of the caller's 2-byte return address.
+</li>
+<li>C = 0. N and Z reflect Y. M=1.
+</li></ul>
+</li>
+<li><b>Stack / control flow:</b> off screen, the routine:
+<ol>
+<li>Discards its own 3-byte <code>JSL</code> return.
+</li>
+<li>Pops the 2-byte <code>JSR</code> return of the routine that called it (the sprite's graphics routine).
+</li>
+<li>Pushes that as a 3-byte return with <b>the current DB</b> as the bank.
+</li>
+<li>Executes <code>RTL</code>.
+</li></ol>
+</li></ul>
+<p>The net effect is to pop 5 bytes and resume just after the <code>JSR</code> that called the graphics routine, in bank DB. This requires that the graphics routine was entered with <code>JSR</code>, that nothing else was pushed in between, and that DB equals that code's bank. PIXI sprites set DB = their own bank at their entry.</p>
+<ul>
+<li><b>Equivalent SMW code:</b> <code><a href="01.html#A365">$01A365</a></code> (bank 1). The vertical offsets <code>$10</code>/<code>$20</code> and the bits <code>$01</code>/<code>$02</code> match SMW's table at <code><a href="01.html#A361">$01A361</a></code>. Bank 3's <code><a href="03.html#B760">$03B760</a></code> uses <code>$0C</code>/<code>$1C</code> and tests <code>$1662</code> instead. Differences from <code><a href="01.html#A365">$01A365</a></code>:
+<ul>
+<li>PIXI does not exclude carried sprites (<code>$14C8,x = 9</code>) from the tall check.
+</li>
+<li>Off screen, SMW drops only its own 2-byte return and still sets Y/<code>$00</code>/<code>$01</code> before <code>RTS</code>ing to the graphics routine's caller. PIXI sets neither Y nor <code>$01</code>.
+</li>
+<li>Return A and C differ (SMW: A = <code>$01</code>).
+</li></ul>
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h3 id="getmap16">GetMap16</h3>
+<p>Reads the Map16 tile number at a level position.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>Any widths; the routine saves P.
+</li>
+<li><code>$98-$99</code> = block Y (16-bit). <code>$9A-$9B</code> = block X (16-bit).
+</li>
+<li><code>$1933</code> = layer (0 or 1).
+</li>
+<li>DB must map WRAM: it reads <code>$1933</code>, <code>$1925</code> and <code>$13D7</code> absolute. DB is pushed and pulled but never changed.
+</li></ul>
+</li>
+<li><b>Returns, valid position:</b>
+<ul>
+<li>A = tile number: 16-bit if entry M=0; otherwise A = low byte and B = high byte.
+</li>
+<li>Y = tile high byte. With 16-bit index on entry, Y = <code>$00hh</code>.
+</li>
+<li>P = entry P except that N and Z reflect the restored X. X preserved.
+</li></ul>
+</li>
+<li><b>Returns, invalid position:</b>
+<ul>
+<li>A = <code>$FFFF</code> (8-bit entry: A = <code>$FF</code>, B = <code>$FF</code>).
+</li>
+<li>Y = <code>$FF</code>/<code>$FFFF</code> matching the entry index width.
+</li>
+<li>N=1, Z=0 (from Y). Other flags = entry values. X preserved.
+</li></ul>
+</li>
+<li><b>Steps:</b>
+<ol>
+<li>Save the original coordinates: <code>$0E-$0F</code> = <code>$98-$99</code>, <code>$0C-$0D</code> = <code>$9A-$9B</code>.
+</li>
+<li>Orientation and range check:
+<ul>
+<li><code>$0A</code> = <code>$5B</code>, or <code>$5B &gt;&gt; 1</code> when <code>$1933</code> ≠ 0. Bit 0 of <code>$0A</code> = "this layer is vertical".
+</li>
+<li>If vertical: <b>swap the bytes <code>$99</code> and <code>$9B</code> in RAM.</b> They are not swapped back.
+</li>
+<li>Range check, EXLEVEL, horizontal layer: invalid if the 16-bit <code>$98-$99 ≥ $13D7</code> (unsigned).
+</li>
+<li>Range check, EXLEVEL, vertical layer, and every non-EXLEVEL case: invalid if <code>$99 ≥ 2</code>, using the post-swap <code>$99</code>.
+</li>
+<li>There is no check on the screen number (<code>$9B</code> after the swap).
+</li></ul>
+</li>
+<li>Scratch values. All positions here are post-swap except <code>$0D</code>/<code>$0F</code>:
+<ul>
+<li><code>$0B</code> = screen number = <code>$9B</code>.
+</li>
+<li><code>$08-$09</code> = <code>($98-$99 &amp; $FFF0) | ($9A &gt;&gt; 4)</code>.
+</li>
+<li><code>$06</code> = <code>$20 | ($1933 ? $10 : 0) | (($0F &amp; 1) &lt;&lt; 3) | (($0D &amp; 1) &lt;&lt; 2) | (($98 &gt;&gt; 6) &amp; 3)</code>.
+</li>
+<li><code>$07</code> = <code>((($98 &gt;&gt; 4) &amp; 3) &lt;&lt; 6) | (($9A &gt;&gt; 3) &amp; $1E)</code>.
+</li>
+<li><code>$06/$07</code> together form the BG tilemap VRAM word address that ChangeMap16 uses.
+</li></ul>
+</li>
+<li>Map16 address, a chain of three 16-bit adds. Each add carries in the previous one's carry; the first starts with C=0. In practice every carry is 0.
+<ol>
+<li><code>p1 = word[<a href="00.html#BEA8">$00BEA8</a> + 2·$1933] + 2·$1925</code>
+</li>
+<li><code>p2 = word[$00:p1] + 3·$0B</code>
+</li>
+<li><code>addr = word[$00:p2] + $08-$09</code>
+</li></ol>
+</li></ol>
+</li></ul>
+<p>This is SMW's own pointer chain: <code><a href="00.html#BEA8">$00BEA8</a></code> = {<code>$BDA8</code>, <code>$BDE8</code>, …} → per-level-mode tables → 3-byte per-screen pointers. Only their low 16 bits are used.</p>
+<ol start=5>
+<li>Tile = <code>$7F:addr</code> &lt;&lt; 8 | <code>$7E:addr</code>.
+</li></ol>
+<ul>
+<li><b>Equivalent SMW code:</b> none as a routine. SMW computes Map16 addresses inline (for example <code><a href="00.html#C1AC">$00C1AC</a></code>); the pointer tables are SMW's.
+</li>
+<li><b>Calls:</b> none.
+</li>
+<li><b>Edge cases:</b>
+<ul>
+<li>Callers that reuse <code>$98-$9B</code> after a call on a vertical layer see <code>$99</code>/<code>$9B</code> swapped. A second call without restoring them reads the wrong block.
+</li>
+<li><code>$1933</code> values other than 0/1 index past the <code><a href="00.html#BEA8">$00BEA8</a></code> table.
+</li>
+<li>With SA-1, the <code>$40/$41</code> banks are read instead of <code>$7E/$7F</code>.
+</li></ul>
+</li></ul>
+<h3 id="loseyoshi">LoseYoshi</h3>
+<p>If the player is riding Yoshi, Yoshi runs away as if the player had been hit.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>8/8, no inputs.
+</li>
+<li>DB must map WRAM.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>A, X and Y preserved. N and Z reflect A. C and V are unchanged.
+</li></ul>
+</li>
+<li><b>Behaviour:</b> if <code>$187A</code> = 0, nothing happens. Otherwise, with <code>s = $18E2 − 1</code> as Yoshi's slot:
+<ul>
+<li><code>$163E,s</code> = <code>$10</code>.
+</li>
+<li>Sound effects: <code>$1DFA</code> = <code>$03</code>, <code>$1DFC</code> = <code>$13</code>.
+</li>
+<li><code>$C2,s</code> = 2 (running).
+</li>
+<li><code>$187A</code> = 0, <code>$0DC1</code> = 0.
+</li>
+<li>Player speed: <code>$7D</code> = <code>$C0</code>, <code>$7B</code> = 0.
+</li>
+<li><code>$B6,s</code> = SMW <code><a href="02.html#A4B3">$02A4B3</a>[$157C,s]</code>, i.e. <code>$10</code> when facing right (0), <code>$F0</code> when facing left (1).
+</li>
+<li><code>$1594,s</code> = 0, <code>$151C,s</code> = 0, <code>$18AE</code> = 0.
+</li>
+<li><code>$1497</code> = <code>$30</code>.
+</li></ul>
+</li>
+<li><b>Equivalent SMW code:</b> <code><a href="02.html#A473">$02A473</a>-<a href="02.html#A4AD">$02A4AD</a></code> (the Yoshi branch of <code><a href="02.html#A469">$02A469</a></code>), with the same writes in the same order. Differences:
+<ul>
+<li>SMW takes Yoshi's slot from <b><code>$18DF</code></b>; PIXI uses <b><code>$18E2</code></b>.
+</li>
+<li>PIXI also preserves A and Y and tests <code>$187A</code> itself.
+</li></ul>
+</li>
+<li><b>Tables/data:</b> SMW's <code><a href="02.html#A4B3">$02A4B3</a></code> (2 bytes).
+</li>
+<li><b>Calls:</b> none.
+</li>
+<li><b>Edge cases:</b> if <code>$18E2</code> = 0 while <code>$187A</code> ≠ 0, then <code>s</code> = <code>$FF</code> and the writes land at <code>table−1</code>. SMW's version has the same hazard with <code>$18DF</code>.
+</li></ul>
+<h3 id="random">Random</h3>
+<p>Returns a random number from 0 to <code>max</code> inclusive.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>Any widths.
+</li>
+<li>A (low byte) = <code>max</code>.
+</li>
+<li>DB must map WRAM: <code>$148D</code> is read absolute.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>A low byte = the result. B = entry B.
+</li>
+<li>P = entry P except that N and Z reflect the restored X.
+</li>
+<li>X preserved. Y preserved (by SMW's routine).
+</li></ul>
+</li>
+<li><b>Behaviour:</b>
+<ol>
+<li>Call SMW's <code><a href="01.html#ACF9">$01ACF9</a></code>. It advances the generator twice and updates <code>$148B-$148E</code>.
+</li>
+<li>Let <code>r</code> = <code>$148D</code>.
+</li>
+<li>If <code>max</code> = <code>$FF</code>, the result is <code>r</code>. Otherwise the result is <code>floor(r·(max+1) / 256)</code>, the high byte of the hardware product.
+</li></ol>
+</li>
+<li><b>Side effects:</b> <code>$4202/$4203</code> (SA-1: <code>$2250-$2254</code>).
+</li>
+<li><b>Equivalent SMW code:</b> none (it wraps <code><a href="01.html#ACF9">$01ACF9</a></code>).
+</li>
+<li><b>Calls:</b> <code><a href="01.html#ACF9">$01ACF9</a></code>.
+</li></ul>
+<h3 id="setplayerclippingalternate">SetPlayerClippingAlternate</h3>
+<p>Writes the player's interaction box as clipping 1, with 16-bit values.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>X must be 8-bit. Any A width; the routine leaves M=1.
+</li>
+<li>DB must map WRAM: <code>$187A</code> is read absolute.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li><code>$00-$01</code> = <code>$94</code> + 2.
+</li>
+<li><code>$02-$03</code> = <code>$96</code> + <code>yoff[i]</code>.
+</li>
+<li><code>$04-$05</code> = <code>$000C</code>.
+</li>
+<li><code>$06</code> = <code>height[i]</code>, <code>$07</code> = 0.
+</li>
+<li>Here <code>i</code> = (<code>$73</code> ≠ 0 or <code>$19</code> = 0 ? 1 : 0) + (<code>$187A</code> ≠ 0 ? 2 : 0).
+</li>
+<li>M=1. X preserved (N and Z reflect X).
+</li>
+<li>C = carry out of the 16-bit <code>$96</code> add.
+</li>
+<li>A = low byte of <code>$02</code>, B = <code>$03</code>.
+</li></ul>
+</li>
+<li><b>Tables/data:</b> SMW's <code><a href="03.html#B65C">$03B65C</a></code> (Y offsets <code>$06,$14,$10,$18</code>) and <code><a href="03.html#B660">$03B660</a></code> (heights <code>$1A,$0C,$20,$18</code>).
+</li>
+<li><b>Equivalent SMW code:</b> <code><a href="03.html#B664">$03B664</a></code> computes the same box as 8-bit box B (<code>$00/$08/$02/$01/$09/$03</code>). This is the 16-bit rewrite in clipping-1 layout.
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h3 id="setspriteclippingalternate">SetSpriteClippingAlternate</h3>
+<p>Turns a caller-supplied box into clipping 2 for sprite X by adding the sprite's position.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>8/8, X = sprite slot.
+</li>
+<li><code>$08-$09</code> = X offset, <code>$0A-$0B</code> = Y offset, <code>$0C-$0D</code> = width, <code>$0E-$0F</code> = height (all 16-bit).
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li><code>$08-$09</code> += sprite X (<code>$14E0:$E4</code>). <code>$0A-$0B</code> += sprite Y (<code>$14D4:$D8</code>). <code>$0C-$0F</code> unchanged.
+</li>
+<li>M=1. C = carry of the Y add. A = low byte of the new <code>$0A</code>, B = new <code>$0B</code>. X and Y untouched.
+</li></ul>
+</li>
+<li><b>Equivalent SMW code:</b> none.
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h3 id="shootermain">ShooterMain</h3>
+<p>Decides whether shooter X fires this frame and finds a free sprite slot for the shot.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>8/8, X = shooter slot (0..7).
+</li>
+<li>A = timer reload value.
+</li>
+<li>C=1 to apply the "player is next to the shooter" veto, C=0 to skip it.
+</li>
+<li>DB must map WRAM.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>C=0 means fire: Y = free slot from <code><a href="02.html#A9DE">$02A9DE</a></code>, A = Y, N=0, Z = (Y = 0).
+</li>
+<li>C=1 means don't fire.
+</li>
+<li>On every C=1 path except "no free slot", Y is <b>unchanged</b>. On "no free slot", Y = <code>$FF</code>.
+</li>
+<li>B is clobbered. X preserved.
+</li></ul>
+</li>
+<li><b>Behaviour, in order</b> (each "stop" returns C=1):
+<ol>
+<li>If <code>$17AB,x</code> ≠ 0: stop. The timer is not changed.
+</li>
+<li><code>$17AB,x</code> = A, whether or not the shooter fires afterwards.
+</li>
+<li>If the veto is requested: stop if <code>($94 − $179B,x + $11) mod 256 &lt; $22</code>. This uses low bytes only, so it means "within about 16 px horizontally".
+</li>
+<li>Stop if the high byte of the 16-bit <code>($1793,x:$178B,x) − ($1D:$1C)</code> ≠ 0.
+</li>
+<li>Stop if the high byte of <code>(shooterX − camX)</code> ≠ 0.
+</li>
+<li>Stop if <code>(($179B,x − $1A) + $10) mod 256 &lt; $10</code>, i.e. the shooter is in the rightmost 16 px of the screen.
+</li>
+<li>Call <code><a href="02.html#A9DE">$02A9DE</a></code>. Stop if it returns <code>$FF</code>.
+</li></ol>
+</li>
+<li><b>Equivalent SMW code:</b> the Bullet Bill shooter, <code><a href="02.html#B466">$02B466</a>-<a href="02.html#B4A5">$02B4A5</a></code> (timer <code>$60</code>). Differences:
+<ul>
+<li>PIXI makes the player veto optional and tests it first. SMW tests it last. There are no side effects between the steps, so the outcome is the same.
+</li></ul>
+</li>
+<li><b>Calls:</b> <code><a href="02.html#A9DE">$02A9DE</a></code>. It uses <code>$0E/$0F</code> and searches from the top of the <code>$1692</code>-dependent slot range down, keeping 2 slots in reserve.
+</li></ul>
+<h3 id="spawnextended">SpawnExtended</h3>
+<p>Spawns an extended sprite at sprite X's position plus an offset, with initial speeds.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>8/8, X = parent sprite slot.
+</li>
+<li>A = extended sprite number.
+</li>
+<li><code>$00</code> = X offset (signed), <code>$01</code> = Y offset (signed), <code>$02</code> = X speed, <code>$03</code> = Y speed.
+</li>
+<li>DB must map WRAM.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>Success: C=0, Y = the new extended slot (0..7).
+</li>
+<li>Failure: C=1. Two cases:
+<ul>
+<li>(a) The parent is off screen or being eaten (<code>$15A0,x | $186C,x | $15D0,x</code> ≠ 0). Y is <b>unchanged</b>.
+</li>
+<li>(b) No free slot. Y = <code>$FF</code>.
+</li></ul>
+</li>
+<li>X preserved. <code>$00-$03</code> unchanged.
+</li></ul>
+</li>
+<li><b>Search:</b> slots 7 down to 0, taking the first with <code>$170B,y</code> = 0. Slots 8 and 9 (fireballs) are never used.
+</li>
+<li><b>Writes:</b>
+<ul>
+<li><code>$170B,y</code> = number.
+</li>
+<li><code>$171F,y</code>/<code>$1733,y</code> = parent X16 + sext(<code>$00</code>).
+</li>
+<li><code>$1715,y</code>/<code>$1729,y</code> = parent Y16 + sext(<code>$01</code>).
+</li>
+<li><code>$1747,y</code> = <code>$02</code>, <code>$173D,y</code> = <code>$03</code>.
+</li>
+<li>Nothing else: fractions, <code>$1765</code>, <code>$176F</code>, <code>$1779</code> (layer) are not touched.
+</li></ul>
+</li>
+<li><b>Equivalent SMW code:</b> none as a routine. SMW spawns inline.
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h3 id="spawnsmoke">SpawnSmoke</h3>
+<p>Spawns a smoke sprite at sprite X's position plus an offset.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>8/8, X = parent slot.
+</li>
+<li>A = smoke type.
+</li>
+<li><code>$00</code> = X offset, <code>$01</code> = Y offset, <code>$02</code> = timer.
+</li>
+<li>DB must map WRAM.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>Success: C=0, Y = slot (0..3).
+</li>
+<li>Failure: C=1, Y = <code>$FF</code>.
+</li>
+<li>X preserved.
+</li></ul>
+</li>
+<li><b>Search:</b> slots 3 down to 0, taking the first with <code>$17C0,y</code> = 0.
+</li>
+<li><b>Writes:</b>
+<ul>
+<li><code>$17C0,y</code> = type.
+</li>
+<li><code>$17CC,y</code> = <code>$02</code>.
+</li>
+<li><code>$17C4,y</code> = (<code>$D8,x</code> + <code>$01</code>) mod 256.
+</li>
+<li><code>$17C8,y</code> = (<code>$E4,x</code> + <code>$00</code>) mod 256.
+</li>
+<li>Smoke positions are 8-bit only, so offsets are not sign-extended.
+</li></ul>
+</li>
+<li><b>Equivalent SMW code:</b> SMW's inline smoke spawns, for example inside <code><a href="01.html#AB6F">$01AB6F</a></code>. Difference: when no slot is free, SMW <b>reuses slot 0</b>; PIXI fails.
+</li>
+<li><b>Calls:</b> none. No on-screen test is made.
+</li></ul>
+<h3 id="spawnsprite">SpawnSprite</h3>
+<p>Spawns a normal or custom sprite at sprite X's position plus an offset, with initial speeds.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>8/8, X = parent slot.
+</li>
+<li>A = sprite number.
+</li>
+<li>C=1 for a custom sprite, C=0 for a vanilla one.
+</li>
+<li><code>$00</code> = X offset (signed), <code>$01</code> = Y offset (signed), <code>$02</code> = X speed, <code>$03</code> = Y speed.
+</li>
+<li>DB must map WRAM.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>Success: C=0, Y = new slot, X = parent. N and Z come from loading <code>$03</code>.
+</li>
+<li>Failure: C=1, Y = <code>$FF</code>, X = parent (N and Z reflect X).
+</li>
+<li><code>$00-$03</code> are preserved, even across <code><a href="01.html#87A7">$0187A7</a></code>.
+</li></ul>
+</li>
+<li><b>Search:</b> slots <code>$0B</code> down to 0 (SA-1: <code>$15</code> down to 0), taking the first with <code>$14C8</code> = 0. All slots are searched: the <code>$1692</code> sprite-memory limits are ignored.
+</li>
+<li><b>Writes, in order, for slot n:</b>
+<ol>
+<li><code>$9E,n</code> = number.
+</li>
+<li>Call <code><a href="07.html#F7D2">$07F7D2</a></code>, which clears the slot and loads vanilla tweakers for <code>$9E,n</code>. The carry flag must survive this call; it does in vanilla and in a PIXI-patched ROM.
+</li>
+<li>Custom only:
+<ol>
+<li><code>$7FAB9E,n</code> = number.
+</li>
+<li>Call <code><a href="01.html#87A7">$0187A7</a></code> (the driver's "load custom tables" hook). It clobbers <code>$00-$02</code>; PIXI saves and restores <code>$00-$03</code> around it.
+</li>
+<li><code>$7FAB10,n</code> = <code>$08</code> (custom flag set, extra bits clear).
+</li></ol>
+</li>
+<li><code>$14C8,n</code> = 1 (init).
+</li>
+<li><code>$E4,n</code>/<code>$14E0,n</code> = parent X16 + sext(<code>$00</code>).
+</li>
+<li><code>$D8,n</code>/<code>$14D4,n</code> = parent Y16 + sext(<code>$01</code>).
+</li>
+<li><code>$B6,n</code> = <code>$02</code>, <code>$AA,n</code> = <code>$03</code>.
+</li>
+<li>Nothing else is set: no direction, no layer (<code>$1632</code>), no off-screen flags.
+</li></ol>
+</li>
+<li><b>Equivalent SMW code:</b> none as a routine. Compare SMW's inline spawns that use <code><a href="02.html#A9DE">$02A9DE</a></code>/<code><a href="07.html#F7D2">$07F7D2</a></code>.
+</li>
+<li><b>Calls:</b> <code><a href="07.html#F7D2">$07F7D2</a></code>, <code><a href="01.html#87A7">$0187A7</a></code> (custom only).
+</li>
+<li><b>Edge cases:</b> for a vanilla spawn, the custom-state cleanup relies on the driver's hook inside <code><a href="07.html#F7D2">$07F7D2</a></code> (at <code><a href="07.html#F785">$07F785</a></code>).
+</li></ul>
+<h3 id="spawnspritesafe">SpawnSpriteSafe</h3>
+<p>The same as SpawnSprite, except that the search starts at slot <b><code>$04</code></b> (caller-supplied) and goes down to 0.</p>
+<ul>
+<li><b>Edge cases:</b>
+<ul>
+<li><code>$04</code> must be &lt; the slot count. With <code>$04</code> ≥ <code>$80</code>, the first probe is the out-of-range slot <code>$04</code>, then the search runs from <code>$7F</code> down.
+</li>
+<li><code>$04</code> is not preserved across <code><a href="01.html#87A7">$0187A7</a></code>.
+</li></ul>
+</li></ul>
+<h3 id="star">Star</h3>
+<p>Star-kills sprite X and gives the player points, as a star hit does.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>8/8, X = sprite slot.
+</li>
+<li>The routine does not check that the player has a star.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>X preserved.
+</li>
+<li>Y = the sound index used (<code>$18D2</code> capped to 8).
+</li>
+<li><code>$0E-$0F</code> = 16-bit (<code>$94</code> − sprite X).
+</li>
+<li>DB is preserved: it is set to the routine's own bank internally, so that bank must map WRAM.
+</li>
+<li>N and Z come from restoring DB.
+</li></ul>
+</li>
+<li><b>Behaviour, in order:</b>
+<ol>
+<li><code><a href="01.html#AB6F">$01AB6F</a></code>: <code>$1DF9</code> = <code>$03</code>, plus a contact-graphic smoke when the sprite is on screen.
+</li>
+<li><code>$14C8,x</code> = 2 and <code>$AA,x</code> = <code>$D0</code>.
+</li>
+<li><code>$B6,x</code> = <code>$F0</code> if the player is to the right (<code>$94/$95 ≥</code> sprite X), else <code>$10</code>. This is SMW's table at <code><a href="01.html#A839">$01A839</a></code>, indexed by the SubHorzPos result.
+</li>
+<li><code>$18D2</code> += 1, then capped at 8.
+</li>
+<li><code><a href="02.html#ACE5">$02ACE5</a></code> with A = <code>$18D2</code>: gives points, or a 1-up at 8.
+</li>
+<li><code>$1DF9</code> = the sound for <code>$18D2</code>: index 1-7 gives <code>$13-$19</code>, index ≥ 8 gives <code>$03</code>, index 0 gives <code>$00</code>.
+</li></ol>
+</li>
+<li><b>Equivalent SMW code:</b> the star branch of SMW's sprite-player contact, <code><a href="01.html#A847">$01A847</a>-<a href="01.html#A87D">$01A87D</a></code>. Differences:
+<ul>
+<li>Order: SMW gives points and sound first and sets the status and speeds afterwards.
+</li>
+<li>Direction: SMW uses <code>$D1/$D2</code> (<code><a href="01.html#AD30">$01AD30</a></code>, the player's X at the start of the frame) and writes only <code>$0F</code>. PIXI uses <code>$94/$95</code> and writes <code>$0E-$0F</code>.
+</li>
+<li>Count ≥ 8: SMW leaves <code>$1DF9</code> as <code><a href="01.html#AB6F">$01AB6F</a></code> set it (<code>$03</code>). PIXI writes <code>$03</code> itself, so the result is the same.
+</li>
+<li>Count wrapped to 0 (<code>$18D2</code> was <code>$FF</code>): SMW reads <code><a href="01.html#A61D">$01A61D</a></code> (<code>$60</code>); PIXI uses <code>$00</code>.
+</li>
+<li>PIXI does not check the <code>$167A</code> bit 1 "immune to star" flag. The caller's code does that.
+</li></ul>
+</li>
+<li><b>Tables/data:</b> X speeds = SMW <code><a href="01.html#A839">$01A839</a></code> (<code>$F0,$10</code>). Sounds = SMW <code><a href="01.html#A61E">$01A61E</a>-$01A624</code> (<code>$13-$19</code>), plus <code>$00</code> and <code>$03</code> as above.
+</li>
+<li><b>Calls:</b> <code><a href="01.html#AB6F">$01AB6F</a></code>, <code><a href="02.html#ACE5">$02ACE5</a></code>.
+</li></ul>
+<h3 id="subhorzpos">SubHorzPos</h3>
+<p>Reports which side of sprite X the player is on.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>8/8, X = sprite slot.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li><code>$0E-$0F</code> = 16-bit <code>$94/$95</code> − <code>$E4/$14E0,x</code>: <b>low byte in <code>$0E</code>, high byte in <code>$0F</code></b>.
+</li>
+<li>Y = 1 if that difference is negative (player to the left), else 0.
+</li>
+<li>A = high byte of the difference.
+</li>
+<li>Y = 0: N=0, Z = (high byte = 0), C = no-borrow of the high-byte subtraction.
+</li>
+<li>Y = 1: N=0, Z=0.
+</li></ul>
+</li>
+<li><b>Equivalent SMW code:</b> <code><a href="03.html#B817">$03B817</a></code> / <code><a href="02.html#D4FA">$02D4FA</a></code>. Difference: SMW stores the <b>low</b> byte in <code>$0F</code> and does not write <code>$0E</code>. Sprites written against SMW's convention that read <code>$0F</code> as the low byte get the high byte here. <code><a href="01.html#AD30">$01AD30</a></code> is the variant that uses <code>$D1/$D2</code>.
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h3 id="suboffscreen">SubOffScreen</h3>
+<p>Erases sprite X when it has moved too far off screen. A selects the size of the off-screen margin.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>M=1, X 8-bit, X = sprite slot.
+</li>
+<li>A = margin set. Only bits 0-2 are used:
+<ul>
+<li>0-3 select SMW bank 1's X0-X3 margins.
+</li>
+<li>4-7 select bank 3's X0-X3 margins.
+</li></ul>
+</li>
+<li>The routine sets DB to its own bank after the first test, so that bank must map WRAM.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>Always: <code>$03</code> = <code>(A &amp; 7) · 2</code>.
+</li>
+<li>If <code>$15A0,x | $186C,x</code> = 0: returns at once with A = 0, Z=1, N=0, C=0. Nothing else is changed.
+</li>
+<li>Otherwise DB is restored on every exit, so N and Z reflect the caller's DB byte.
+</li>
+<li>X preserved, except under EXLEVEL (see "X under EXLEVEL" below).
+</li>
+<li>Y = unchanged, or the margin index, or <code>$161A,x</code> (see "Y on return" below).
+</li>
+<li>C: on the erase paths, C = 1 exactly when <code>$14C8,x</code> ≥ 8 and <code>$161A,x</code> = <code>$FF</code>, else 0. On the horizontal-level keep path after the margin test, C = <code>$13</code> bit 0. On every other path C is a by-product.
+</li>
+<li><code>$00</code> and <code>$01</code> are clobbered. On paths that test margins, <code>$01</code> ends as <code>A &amp; 7</code> (horizontal) or the parity index (vertical).
+</li></ul>
+</li>
+<li><b>Horizontal level</b> (<code>$5B</code> bit 0 = 0):
+<ol>
+<li>Bottom-of-level test.
+<ul>
+<li>EXLEVEL: erase when <b>any</b> of these hold, where bit 15 means bit 15 of the 16-bit result:
+<ul>
+<li>bit 15 of (<code>Y16 − $13D7</code>) is clear;
+</li>
+<li>bit 15 of (<code>(Y16 − $1C) − $0BF2</code>) is clear;
+</li>
+<li>bit 15 of (<code>(Y16 − $1C) − $0BF0</code>) is set.
+</li></ul>
+</li></ul>
+</li></ol>
+</li></ul>
+<p><code>$13D7</code> = level height. <code>$0BF2</code> and <code>$0BF0</code> are the Y range limits kept in RAM.</p>
+<ul>
+<li>Non-EXLEVEL: erase when <code>(Yhi + carry(Ylo + $50) − 2)</code> has bit 7 clear.
+</li></ul>
+<ol start=2>
+<li>If <code>$167A,x</code> bit 2 is set (process while off screen): return.
+</li>
+<li>Margin test:
+<ul>
+<li><code>i = (A&amp;7)·2 + ($13 &amp; 1)</code>.
+</li>
+<li><code>D = high byte of ($1A16 + sext16(off[i]) − X16)</code>, where <code>off</code> = <code>t15[i]:t14[i]</code>.
+</li>
+<li>If <code>$13</code> bit 0 is set, <code>D ^= $80</code>.
+</li>
+<li>Erase if <code>D</code> bit 7 is set, otherwise return.
+</li></ul>
+</li></ol>
+<p>The effect: on even frames, test the right margin (erase if the sprite is beyond it); on odd frames, test the left margin.</p>
+<ul>
+<li><b>Vertical level:</b>
+<ol>
+<li>If <code>$167A,x</code> bit 2 is set, or <code>$13</code> is odd: return.
+</li>
+<li>If <code>$14E0,x ≥ 2</code>: erase.
+</li>
+<li><code>j = ($13 &gt;&gt; 1) &amp; 1</code>. <code>D = high byte of ($1C16 + (t13[j]:t12[j]) − Y16)</code>. If <code>j = 1</code>, <code>D ^= $80</code>. Erase if <code>D</code> bit 7 is set.
+</li></ol>
+</li>
+<li><b>Erase:</b>
+<ol>
+<li>If <code>$14C8,x ≥ 8</code> and <code>$161A,x</code> ≠ <code>$FF</code>: sprite load table<code>[$161A,x]</code> = 0. The table is at <b><code>$7FAF00</code></b> (or <code>$1938</code> when PIXI is built with <code>!Disable255SpritesPerLevel</code>; SA-1: <code>$418A00</code>). This lets the sprite reload.
+</li>
+<li><code>$14C8,x</code> = 0.
+</li></ol>
+</li>
+<li><b>Y on return:</b> unchanged, the margin index <code>i</code>/<code>j</code>, or <code>$161A,x</code> on the reload-clearing erase.
+</li>
+<li><b>X under EXLEVEL:</b> in the bottom-of-level test, X is temporarily used and then reloaded from <code>$15E9</code>, so X = <code>$15E9</code> afterwards. B is restored.
+</li>
+<li><b>Tables/data:</b> all SMW's own.
+<ul>
+<li>Vertical: <code>t12</code> = <code>$40,$B0</code> and <code>t13</code> = <code>$01,$FF</code> (SMW <code><a href="01.html#AC0D">$01AC0D</a></code>/<code><a href="01.html#AC0F">$01AC0F</a></code>, the same at <code><a href="03.html#B83B">$03B83B</a></code>).
+</li>
+<li>Horizontal, 16 entries: entries 0-7 = SMW <code><a href="01.html#AC11">$01AC11</a></code> (t14) / <code><a href="01.html#AC19">$01AC19</a></code> (t15); entries 8-15 = SMW <code><a href="03.html#B83F">$03B83F</a></code> / <code><a href="03.html#B847">$03B847</a></code>.
+</li></ul>
+</li>
+<li><b>Equivalent SMW code:</b>
+<ul>
+<li>A=0..3 ≈ <code><a href="01.html#AC31">$01AC31</a></code> / <code><a href="01.html#AC2B">$01AC2B</a></code> / <code><a href="01.html#AC27">$01AC27</a></code> / <code><a href="01.html#AC21">$01AC21</a></code>.
+</li>
+<li>A=4..7 ≈ <code><a href="03.html#B85D">$03B85D</a></code> / <code><a href="03.html#B857">$03B857</a></code> / <code><a href="03.html#B853">$03B853</a></code> / <code><a href="03.html#B84F">$03B84F</a></code>.
+</li></ul>
+</li></ul>
+<p>Differences from bank 1:</p>
+<ul>
+<li>There is no Magikoopa (<code>$9E</code> = <code>$1F</code>) <code>$18C0</code>/<code>$18C1</code> handling.
+</li>
+<li>Sprites <code>$22</code>/<code>$24</code> are not exempt on vertical odd-half frames.
+</li>
+<li>The load table is <code>$7FAF00</code>, not <code>$1938</code>.
+</li>
+<li>The EXLEVEL bottom test.
+</li>
+<li>The routine is long-called and switches DB itself.
+</li></ul>
+<ul>
+<li><b>Calls:</b> none.
+</li></ul>
+<h3 id="subvertpos">SubVertPos</h3>
+<p>Reports whether the player is above or below sprite X.</p>
+<ul>
+<li><b>Called with:</b>
+<ul>
+<li>8/8, X = sprite slot.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li><code>$0F</code> = low byte of (<code>$96/$97</code> − <code>$D8/$14D4,x</code>).
+</li>
+<li>Y = 1 if the 16-bit difference is negative (player above), else 0.
+</li>
+<li>A = high byte of the difference.
+</li>
+<li>Flags: as for SubHorzPos.
+</li>
+<li><code>$0E</code> untouched.
+</li></ul>
+</li>
+<li><b>Equivalent SMW code:</b> <code><a href="03.html#B829">$03B829</a></code> exactly (<code>RTL</code> instead of <code>RTS</code>). The <code><a href="02.html#D50C">$02D50C</a></code> variant writes <code>$0E</code> instead, and <code><a href="01.html#AD42">$01AD42</a></code> uses <code>$D3/$D4</code> and <code>$0E</code>.
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<p>---</p>
+<h3 id="summary">Summary</h3>
+<p>Counts are files under <code>D:\SMW\Projects\*\Sprites\**\*.asm</code>, excluding <code>routines</code> folders (82 files), that contain <code>%Name(</code>. The count of distinct files by content is in brackets.</p>
+<table><tr><th>routine</th><th>used by</th><th>SMW equivalent</th><th>difficulty notes</th></tr><tr><td>Aiming</td><td>0</td><td>none</td><td>Hardest to get bit-exact: band selection, <code>R[k]</code> formula, three floor-multiplies, sign rules. Fully specified for non-SA-1.</td></tr><tr><td>CapeContact</td><td>0</td><td><code><a href="02.html#93CE">$0293CE</a>-<a href="02.html#93F2">$0293F2</a></code> body + <code><a href="02.html#9696">$029696</a></code></td><td>Easy; layer/climb rule is the only subtlety.</td></tr><tr><td>ChangeMap16</td><td>1 [1]</td><td>none (<code><a href="00.html#C0FB">$00C0FB</a></code> reused)</td><td>Address math shared with GetMap16; bit 15 dropped on store; leaves <code>$99</code>/<code>$9B</code> swapped.</td></tr><tr><td>CheckForContactAlternate</td><td>0</td><td>none</td><td>Easy; returns M=1 always.</td></tr><tr><td>CircleX</td><td>0</td><td>table = <code><a href="07.html#F7DB">$07F7DB</a></code> clamped</td><td>Signed PPU multiply (radius ≥ <code>$80</code> is negative); writes Mode 7 registers.</td></tr><tr><td>CircleY</td><td>0</td><td>table = <code><a href="07.html#F7DB">$07F7DB</a></code> clamped</td><td>As CircleX.</td></tr><tr><td>ExtendedCapeClipping</td><td>0</td><td><code><a href="02.html#A51C">$02A51C</a></code> + <code><a href="02.html#9696">$029696</a></code></td><td>Easy; offsets unsigned.</td></tr><tr><td>ExtendedGetDrawInfo</td><td>0</td><td><code><a href="02.html#A1A4">$02A1A4</a>-<a href="02.html#A1D3">$02A1D3</a></code> (≈)</td><td>Odd vertical rule (<code>t</code> uses addition); slots 8-9 read past the table.</td></tr><tr><td>ExtendedHurt</td><td>0</td><td><code><a href="02.html#A3F6">$02A3F6</a></code>-tail + <code><a href="02.html#A469">$02A469</a></code></td><td>Easy; call <code><a href="02.html#A469">$02A469</a></code> with DB = <code>$02</code>.</td></tr><tr><td>ExtendedSpeed</td><td>7 [1]</td><td><code><a href="02.html#B554">$02B554</a></code>/<code><a href="02.html#B560">$02B560</a></code></td><td>X = <code>$15E9</code> after X update; gravity sign quirk.</td></tr><tr><td>FinishOAMWrite</td><td>0</td><td><code><a href="01.html#B7B3">$01B7B3</a></code></td><td>Size bit added, not ORed; scratch layout differs from SMW.</td></tr><tr><td>FireballContact</td><td>0</td><td>box = <code><a href="02.html#A547">$02A547</a></code></td><td>Any type in slots 8/9 counts.</td></tr><tr><td>GetDrawInfo</td><td>15 [5]</td><td><code><a href="01.html#A365">$01A365</a></code></td><td>Stack rewrite on off-screen (5 bytes out, needs DB = caller's bank); no status-9 exclusion.</td></tr><tr><td>GetMap16</td><td>0</td><td>none</td><td>Pointer chain via <code><a href="00.html#BEA8">$00BEA8</a></code>; EXLEVEL range check; RAM swap side effect.</td></tr><tr><td>LoseYoshi</td><td>1 [1]</td><td><code><a href="02.html#A473">$02A473</a>-<a href="02.html#A4AD">$02A4AD</a></code></td><td>Uses <code>$18E2</code> where SMW uses <code>$18DF</code>.</td></tr><tr><td>Random</td><td>0</td><td>wraps <code><a href="01.html#ACF9">$01ACF9</a></code></td><td>Easy.</td></tr><tr><td>SetPlayerClippingAlternate</td><td>0</td><td><code><a href="03.html#B664">$03B664</a></code> (16-bit form)</td><td>Easy.</td></tr><tr><td>SetSpriteClippingAlternate</td><td>0</td><td>none</td><td>Trivial.</td></tr><tr><td>ShooterMain</td><td>0</td><td><code><a href="02.html#B466">$02B466</a>-<a href="02.html#B4A5">$02B4A5</a></code></td><td>Y unchanged on most "don't fire" paths.</td></tr><tr><td>SpawnExtended</td><td>0</td><td>none (inline idiom)</td><td>Y unchanged on off-screen refusal.</td></tr><tr><td>SpawnSmoke</td><td>0</td><td>inline idiom (<code><a href="01.html#AB6F">$01AB6F</a></code>)</td><td>Fails instead of reusing slot 0.</td></tr><tr><td>SpawnSprite</td><td>10 [2]</td><td>none</td><td>Carry through <code><a href="07.html#F7D2">$07F7D2</a></code>; <code><a href="01.html#87A7">$0187A7</a></code> with <code>$00-$03</code> saved; write order.</td></tr><tr><td>SpawnSpriteSafe</td><td>1 [1]</td><td>none</td><td>As SpawnSprite, start at <code>$04</code>.</td></tr><tr><td>Star</td><td>8 [1]</td><td><code><a href="01.html#A847">$01A847</a>-<a href="01.html#A87D">$01A87D</a></code></td><td>Order and <code>$94</code> vs <code>$D1</code>; <code>$0E-$0F</code> written.</td></tr><tr><td>SubHorzPos</td><td>13 [3]</td><td><code><a href="03.html#B817">$03B817</a></code>/<code><a href="02.html#D4FA">$02D4FA</a></code></td><td>Writes <code>$0E</code>=low and <code>$0F</code>=high, unlike SMW.</td></tr><tr><td>SubOffScreen</td><td>13 [3]</td><td><code><a href="01.html#AC31">$01AC31</a></code>… / <code><a href="03.html#B85D">$03B85D</a></code>…</td><td>EXLEVEL branch, <code>$7FAF00</code> load table, X ← <code>$15E9</code>, DB switch.</td></tr><tr><td>SubVertPos</td><td>0</td><td><code><a href="03.html#B829">$03B829</a></code></td><td>Exact.</td></tr></table>
+<h3 id="sa1def-asm-macros">sa1def.asm macros</h3>
+<p>Clean-room interface contracts for the assembler macros PIXI defines in <code>asm/sa1def.asm</code>, the file every PIXI sprite is assembled with. Same rules as the rest of this file: behaviour only, no PIXI code, no paraphrase of its instructions, no PIXI comments.</p>
+<ul>
+<li>Date: 2026-10-20
+</li>
+<li>Source read: <code>D:\SMW\Projects\.resources\PIXI\asm\sa1def.asm</code> (7 macros) and, for comparison, <code>D:\SMW\Projects\Secret\tools\pixi\asm\sa1def.asm</code> (a newer copy: the same 7 plus <code>invoke_sa1</code>, and it does not first include an optional <code>config.asm</code>).
+</li>
+<li>Usage scanned: every <code>.asm</code> under <code>D:\SMW\Projects\*\Sprites\**</code> and <code>D:\SMW\Projects\Secret\tools\pixi\**</code>, <code>routines</code> folders excluded (107 files), for <code>%Name(</code> calls that are not a shared routine (<code>BigEye\Sprites\routines</code>) and not a macro defined in the calling file or its folder's <code>_header.asm</code>.
+</li></ul>
+<h4 id="defines-the-macros-depend-on">Defines the macros depend on</h4>
+<ul>
+<li><code>!SA1</code> — 1 when the ROM header byte <code><a href="00.html#FFD5">$00FFD5</a></code> is <code>$23</code> (SA-1 map mode), else 0. Set by <code>sa1def.asm</code>.
+</li>
+<li><code>!Base2</code> — <code>$6000</code> on SA-1, <code>$0000</code> on LoROM. Set by <code>sa1def.asm</code>.
+</li>
+<li><code>!extra_bits</code> — the extra-bits sprite table, indexed by slot: <code>$7FAB10</code> (LoROM) / <code>$6040</code> (SA-1). Set by <code>sa1def.asm</code> through <code>define_sprite_table</code>.
+</li>
+<li><code>!__debug</code> — optional, from the user or the command line; treated as 0 when undefined.
+</li></ul>
+<h4 id="debugmsg-msg">debugmsg(msg)</h4>
+<ul>
+<li><b>Purpose.</b> Assembly-time trace: tells the user where a piece of code landed.
+</li>
+<li><b>Effect.</b> Emits no bytes. If <code>!__debug</code> is undefined it becomes defined as 0. When <code>!__debug</code> equals 1, the assembler prints a line made of <code>$</code>, the current PC in hex, a space and the text <code>msg</code>. Otherwise nothing is printed.
+</li>
+<li><b>Registers/RAM.</b> None (no code generated).
+</li>
+<li><b>SA-1.</b> Identical.
+</li></ul>
+<h4 id="bes-label-branch-if-extra-bit-set">BES(label) — branch if extra bit set</h4>
+<ul>
+<li><b>Precondition.</b> M=1 (8-bit A); X = the sprite's slot. On SA-1 the table operand is the absolute <code>$6040,x</code>, so DB must reach I-RAM/BW-RAM there (<code>$00-$3F</code>/<code>$80-$BF</code>); on LoROM it is the long <code>$7FAB10,x</code> and DB does not matter.
+</li>
+<li><b>Effect.</b> Tests bit 2 (value <code>$04</code>) of the sprite's extra-bits byte <code>!extra_bits,x</code> — the "extra bit" Lunar Magic stores per placed sprite. Branches to <code>label</code> when the bit is <b>set</b>, falls through when clear.
+</li>
+<li><b>Leaves.</b> A = <code>$04</code> when the branch is taken, <code>$00</code> when it falls through; B, X, Y unchanged. Z clear when taken, set when not; N clear; C and V unchanged. No RAM written.
+</li>
+<li><b>Limits.</b> Short relative branch (±128 bytes): <code>label</code> must be near.
+</li>
+<li><b>SA-1.</b> Same, with the table at <code>$6040,x</code>.
+</li></ul>
+<h4 id="bec-label-branch-if-extra-bit-clear">BEC(label) — branch if extra bit clear</h4>
+<ul>
+<li>Exactly as <code>BES</code> with the sense inverted: branches to <code>label</code> when bit 2 of <code>!extra_bits,x</code> is <b>clear</b> (A = <code>$00</code>, Z set), falls through when it is set (A = <code>$04</code>, Z clear).
+</li></ul>
+<h4 id="between-x-label">Between(x, label)</h4>
+<ul>
+<li><b>Parameters.</b> <code>x</code> is an operand written as it would follow an instruction, normally an immediate such as <code>#$10</code>. The macro also needs "two times x", which the assembler forms by appending <code>*2</code> to that text (so <code>#$10</code> gives the immediate <code>$20</code>). <code>label</code> is a near (short-branch) label.
+</li>
+<li><b>Effect.</b> Signed range check on A: falls through when <code>-x &lt;= A &lt; x</code>, branches to <code>label</code> otherwise. In effect: A + x (carry cleared first) is compared, unsigned, with <code>2*x</code>; the branch is taken when the sum is greater than or equal.
+</li>
+<li><b>Leaves.</b> A = original A + x, wrapped to the register width — A is <b>modified</b>. C set when the branch is taken, clear when it falls through; N and Z from the comparison; V from the addition. X, Y and RAM untouched.
+</li>
+<li><b>Width.</b> Works in whichever width M selects. With an 8-bit A, <code>2*x</code> must fit in a byte (x ≤ <code>$7F</code>).
+</li>
+<li><b>SA-1.</b> Identical.
+</li></ul>
+<h4 id="invoke-snes-addr">invoke_snes(addr)</h4>
+<ul>
+<li><b>Purpose.</b> Run from <b>SA-1 code</b> to make the SNES CPU execute a routine (work the SA-1 cannot do, such as touching PPU or DMA registers). Relies on the SA-1 Pack (1.10+) SNES-side IRQ handler.
+</li>
+<li><b>Parameters.</b> <code>addr</code> — 24-bit address of a routine for the SNES CPU, ending in <code>RTL</code>.
+</li>
+<li><b>Effect.</b> Stores <code>addr</code> little-endian at <code>$0183</code> (low), <code>$0184</code> (high), <code>$0185</code> (bank); writes <code>$D0</code> to SA-1 register <code>$2209</code> (raises the SA-1-to-SNES IRQ with the custom IRQ vector selected); waits until <code>$018A</code> reads non-zero (the SA-1 Pack's handler sets it once the SNES routine has returned); then stores 0 to <code>$018A</code>.
+</li>
+<li><b>Leaves.</b> Assumes M=1. A clobbered; X, Y unchanged; Z set, N clear at exit. RAM <code>$0183-$0185</code> = <code>addr</code>, <code>$018A</code> = 0.
+</li>
+<li><b>LoROM.</b> Meaningless: on a non-SA-1 ROM it hangs, since nothing sets <code>$018A</code>. Only assemble it inside <code>if !SA1</code> blocks.
+</li></ul>
+<h4 id="invoke-sa1-label-newer-sa1def-only">invoke_sa1(label) — newer sa1def only</h4>
+<ul>
+<li>Present only in the <code>Secret\tools\pixi</code> copy. The SNES-side counterpart: makes the SA-1 CPU run <code>label</code> (ending in <code>RTL</code>; DB is not set for it, so it must set its own). Stores the 24-bit <code>label</code> at <code>$3180</code> (low), <code>$3181</code> (high), <code>$3182</code> (bank), then calls, with a near <code>JSR</code>, the SA-1 Pack's call-SA-1 helper at <code>$1E80</code>, which returns once the SA-1 routine has finished. The calling code must run in a bank where <code>$1E80</code> is that helper (<code>$00-$3F</code>/<code>$80-$BF</code>). Assumes M=1; A clobbered. SA-1 only.
+</li></ul>
+<h4 id="define-sprite-table-name-addr-addr-sa1">define_sprite_table(name, addr, addr_sa1)</h4>
+<ul>
+<li><b>Effect.</b> Assembly time only, no bytes: defines <code>!name</code> as <code>addr</code> when <code>!SA1</code> is 0 and as <code>addr_sa1</code> when <code>!SA1</code> is 1. <code>name</code> is used as text: it may be passed quoted and may start with a digit (<code>sa1def.asm</code> itself defines both <code>!7FAB10</code> and <code>!extra_bits</code> this way, each resolving to <code>$7FAB10</code> / <code>$6040</code>).
+</li>
+<li><b>Note.</b> <code>!SA1</code> must be set before it is called. Calling it again for an existing name overwrites it.
+</li></ul>
+<h4 id="define-base2-address-name-addr">define_base2_address(name, addr)</h4>
+<ul>
+<li><b>Effect.</b> Assembly time only: defines <code>!name</code> as <code>addr</code> when <code>!SA1</code> is 0, and as <code>addr</code> OR <code>!Base2</code> (<code>addr | $6000</code>) when <code>!SA1</code> is 1. Meant for <code>$0100-$1FFF</code> WRAM addresses that the SA-1 build relocates to <code>$6100-$7FFF</code>.
+</li></ul>
+<h4 id="who-calls-them">Who calls them</h4>
+<table><tr><th>Macro</th><th>Files</th><th>Sprites</th><th>Where</th></tr><tr><td>BEC</td><td>11</td><td>3</td><td>KoopaShell: BigEye, CastleOfLoneliness, DogsOfWar, ShaoBase, TestRom, Secret <code>pixi\sprites\koopa_shell.asm</code>; UpsideDownKoopaShell: BigEye, CastleOfLoneliness, ShaoBase; FlyingQuestionBlock: DogsOfWar, TestRom</td></tr><tr><td>debugmsg</td><td>1</td><td>0</td><td><code>Secret\tools\pixi\asm\main.asm</code> — PIXI's own driver, not a sprite</td></tr><tr><td>BES, Between, invoke_snes, invoke_sa1, define_sprite_table, define_base2_address</td><td>0</td><td>0</td><td>—</td></tr></table>
+<p>The scan's other non-routine <code>%Name(</code> calls are <b>not</b> from <code>sa1def.asm</code>:</p>
+<ul>
+<li><code>SpawnClusterGeneric</code>, <code>SpawnExtendedGeneric</code>, <code>SpawnMinorExtendedGeneric</code>, <code>SpawnScoreGeneric</code>, <code>SpawnSmokeGeneric</code>, <code>SpawnSpinningCoinGeneric</code>, <code>BounceSetMarioSpeed</code>, <code>BounceSetSpeed</code>, <code>BounceSetupMap16</code>, <code>BounceUpdatePos</code>, <code>MinorExtendedSpeed</code>, <code>ScoreUpdateYPos</code>, <code>SpinningCoinUpdateYPos</code> — called from the <code>_header.asm</code> files of Secret's PIXI (<code>cluster</code>, <code>extended</code>, <code>misc_sprites\*</code>). They are shared routines of the newer PIXI, in subfolders of <code>Secret\tools\pixi\routines\</code> (<code>Spawn</code>, <code>Bounce</code>, <code>MinorExtended</code>, <code>Score</code>, <code>SpinningCoin</code>, ...), which the BigEye routine set documented above does not have.
+</li>
+<li><code>CallSprite</code>, <code>CallStatusPtr</code>, <code>CallPerLevelStatusPtr</code>, <code>CallExtCape</code> — PIXI driver internals (<code>Secret\tools\pixi\asm\pointer_caller.asm</code>), used only by the driver's own <code>asm\*.asm</code>.
+</li>
+<li><code>BeginImage</code>, <code>BeginImageData</code>, <code>EndImage</code>, <code>EndImageData</code>, <code>DefineAnimation</code>, <code>MakeAnimationOffsets</code>, <code>MakeImagesPerAnimation</code>, <code>MakeTile</code>, <code>jslrts</code>, <code>SpriteJumpTable</code> — DogsOfWar's CustomLemmyWendy, defined in its own included <code>CustomLemmyWendyDefines.asm</code>.
+</li></ul>
+<h3 id="measured-against-pixi-s-2026-10-20">Measured against PIXI's (2026-10-20)</h3>
+<p>Pipe Dream's routines (<code>src/data/spritedriver/routines</code>, MIT) and its versions of the macros above (in <code>src/data/spritedriver/defines.asm</code>, all but the SA-1 <code>invoke_*</code> ones) were written from this file and SMW's code. The routines were then run against PIXI's own in <code>PixiRoutineTests</code>: thousands of random states each, both on the same vanilla ROM in the CPU interpreter, every register, flag and byte of RAM compared, only what this file calls a by-product masked. Where that disagreed with the contracts above, PIXI's behaviour was measured black-box (inputs varied one at a time, outputs read) and ours made to match. The corrections:</p>
+<ul>
+<li><b>SpawnSprite / SpawnSpriteSafe, no free slot:</b> A is whatever the search last read, and Y is where the search stopped: <code>$FF</code> when it started below <code>$80</code> (always, in practice). Started at <code>$81</code> or above, the first <code>DEY</code> makes it negative and the search ends there, so Y = start − 1; from <code>$80</code> exactly it carries on down from <code>$7F</code>.
+</li>
+<li><b>GetDrawInfo, off screen:</b> B = 0.
+</li>
+<li><b>GetMap16 / ChangeMap16:</b> 2 × <code>$1933</code>, 2 × <code>$1925</code> and 3 × the screen are each taken modulo <code>$100</code>, and the tripling keeps the carry out of its doubling (3 × <code>$80</code> = <code>$81</code>). Only out-of-range inputs see this. <code>$1926</code>, <code>$1934</code> and <code>$0C</code> do not count.
+</li>
+<li><b>ChangeMap16:</b> A on return is a by-product.
+</li>
+<li><b>Star:</b> C on return is a by-product (PIXI's is mostly set; it is not in the contract).
+</li>
+<li><b>LoseYoshi:</b> confirmed: with <code>$18E2</code> = 0 the writes land one below each table.
+</li>
+<li><b>FinishOAMWrite:</b> the size index starts at <code>$15EA,x / 4</code> and counts one per tile <b>without</b> wrapping with the OAM index, so past OAM <code>$FC</code> it goes on to <code>$0460 + $40</code> and up.
+</li>
+<li><b>ExtendedHurt:</b> PIXI's runs <code><a href="02.html#A469">$02A469</a></code> with DB = <code>$00</code>, not <code>$02</code> as above. The one read there that goes by DB is Yoshi's run-off speed (<code>$A4B3,y</code>), so with PIXI's, Yoshi runs off at a speed read from bank 0. <b>Ours keeps DB = <code>$02</code>, as SMW does: the one deliberate difference.</b> The test keeps the player off Yoshi for this routine.
+</li></ul>
+<p>What the random states had to be kept to, and why, is in the test's setups: real level modes and screens, Map16 pointers into ROM at <code>$0FBE</code>, a short stripe buffer, a data bank below <code>$10</code>. Outside those, SMW's own pointers lead into low RAM, where each routine's own stack sits, and the two differ by construction.</p>
+<h3 id="pixi-1-40-new-routines">PIXI 1.40: new routines</h3>
+<p>Clean-room interface contracts for the 23 shared routines that PIXI 1.40 has and 1.2.x does not. Same rules as the rest of this file: behaviour only, no PIXI code, no paraphrase of its instructions, no PIXI comments, no PIXI data tables (a table is cited only when it is SMW's own or equal to SMW's own, by address).</p>
+<ul>
+<li>Date: 2026-10-20
+</li>
+<li>Source read: <code>D:\SMW\Projects\Secret\tools\pixi\routines\**\*.asm</code> (PIXI 1.40, 50 files). The macro name is the path with the folders run together: <code>Bounce/SetSpeed.asm</code> is <code>%BounceSetSpeed()</code>. Defines resolved through <code>D:\SMW\Projects\Secret\tools\pixi\asm\sa1def.asm</code>. Intended use read from the <code>_header.asm</code> files of <code>cluster</code>, <code>extended</code>, <code>shooters</code>, <code>sprites</code> and <code>misc_sprites\*</code>. The PIXI folder has no README.
+</li>
+<li>SMW addresses checked against <code>D:\SMW\Projects\.resources\SMW.smc</code> with the PipeDream disassembler.
+</li></ul>
+<h4 id="conventions-for-this-section">Conventions for this section</h4>
+<p>Everything under "Conventions that apply to every routine" above still holds (LoROM, D = 0, <code>JSL</code>/<code>RTL</code>, 8/8 on entry, by-product flags). In addition:</p>
+<ul>
+<li><b>X = the slot of the calling sprite's own kind</b> (bounce slot, score slot, ...), 8-bit. No routine range-checks it. Every sprite table is read with absolute addressing, so <b>DB must map WRAM</b> for every routine in this section. ROM tables (<code>$02xxxx</code>) are read long and do not depend on DB.
+</li>
+<li><b>RAM per sprite kind</b> (LoROM; the SA-1 build ORs <code>$6000</code> into each, as <code>define_base2_address</code> does):
+</li></ul>
+<p>| kind | slots | number | X lo/hi | Y lo/hi | X speed | Y speed | X frac | Y frac | other | |---|---|---|---|---|---|---|---|---|---| | bounce | 4 | <code>$1699</code> | <code>$16A5</code>/<code>$16AD</code> | <code>$16A1</code>/<code>$16A9</code> | <code>$16B5</code> | <code>$16B1</code> | <code>$16B9</code> | <code>$16BD</code> | <code>$16C9</code> direction (bits 0-1), <code>$1901</code> properties | | score | 6 | <code>$16E1</code> | <code>$16ED</code>/<code>$16F3</code> | <code>$16E7</code>/<code>$16F9</code> | — | <code>$16FF</code> | — | — | <code>$1705</code> layer | | smoke | 4 | <code>$17C0</code> | <code>$17C8</code>/— | <code>$17C4</code>/— | — | — | — | — | <code>$17CC</code> timer | | spinning coin | 4 | <code>$17D0</code> | <code>$17E0</code>/<code>$17EC</code> | <code>$17D4</code>/<code>$17E8</code> | — | <code>$17D8</code> | — | <code>$17DC</code> | <code>$17E4</code> layer | | minor extended | 12 | <code>$17F0</code> | <code>$1808</code>/<code>$18EA</code> | <code>$17FC</code>/<code>$1814</code> | <code>$182C</code> | <code>$1820</code> | <code>$1844</code> | <code>$1838</code> | <code>$1850</code> timer | | cluster | 20 | <code>$1892</code> | <code>$1E16</code>/<code>$1E3E</code> | <code>$1E02</code>/<code>$1E2A</code> | — | — | — | — | | | extended | 8 (+2 fireball) | <code>$170B</code> | <code>$171F</code>/<code>$1733</code> | <code>$1715</code>/<code>$1729</code> | <code>$1747</code> | <code>$173D</code> | <code>$175B</code> | <code>$1751</code> | |</p>
+<p>The bounce fractions: PIXI's names put the <b>X</b> fraction at <code>$16B9</code> and the <b>Y</b> fraction at <code>$16BD</code>. SMW's own bounce code uses them the other way round (see BounceUpdatePos).</p>
+<ul>
+<li><b>The 4.4 position update <code>U(s, f, p)</code></b>, used by several routines. <code>s</code> = 8-bit speed (signed, 1/16 px per frame), <code>f</code> = the 8-bit fraction byte, <code>p</code> = the 16-bit position (two bytes):
+<ol>
+<li><code>f ← (f + ((s &amp; $0F) &lt;&lt; 4)) mod 256</code>; <code>c</code> = 1 if that sum was ≥ 256.
+</li>
+<li><code>p ← (p + q + c) mod $10000</code>, where <code>q</code> = <code>floor(sext8(s) / 16)</code> (a value −8..7) as 16 bits.
+</li>
+<li>On exit: <b>Y = <code>$00</code> if <code>s</code> &lt; <code>$80</code>, else <code>$FF</code></b>. A = the new high byte of <code>p</code>. N, Z, V and C are those of the high-byte add (<code>hi(q) + hi(p) + carry from the low byte</code>); C = carry out of the 16-bit sum.
+</li></ol>
+</li></ul>
+<p>This is exactly SMW's <code><a href="02.html#B526">$02B526</a></code> (bounce Y), <code><a href="02.html#B560">$02B560</a></code> (extended Y) and <code><a href="02.html#B58E">$02B58E</a></code> (spinning coin Y).</p>
+<ul>
+<li><b>The spawn routines take the number in B, not A.</b> Every <code>Spawn/*Generic</code> routine stores the high byte of the accumulator (B) as the new sprite's number; the low byte of A on entry is ignored. The callers' macros in every <code>_header.asm</code> do <code>XBA</code> and then fill <code>$04-$07</code> with their own position, so the number travels in B. A reimplementation must take it from B.
+</li></ul>
+<h4 id="bouncegetdrawinfo">BounceGetDrawInfo</h4>
+<p>Finds the OAM slot and screen position of bounce sprite X. Handles the X high bit and layer 2.</p>
+<ul>
+<li><b>Called with:</b> 8/8, X = bounce slot (0..3). DB must map WRAM (the camera is read absolute, <code>$001A+i</code>).
+</li>
+<li><b>Behaviour:</b>
+<ol>
+<li><code>$03</code> = <code>$02</code> (16×16 size bit).
+</li>
+<li>Camera: layer 1 (<code>camX</code> = <code>$1A/$1B</code>, <code>camY</code> = <code>$1C/$1D</code>, <code>i</code> = 0) when <code>$1901,x</code> bit 7 is clear; layer 2 (<code>$1E/$1F</code>, <code>$20/$21</code>, <code>i</code> = 4) when it is set.
+</li>
+<li><code>$00</code> = low byte of <code>X16 − camX</code>. If the high byte of the 16-bit <code>X16 − camX</code> is non-zero, <code>$03</code> = <code>$03</code> (size bit plus X high bit). The sprite is <b>not</b> rejected for being off screen horizontally.
+</li>
+<li><code>$01</code> = low byte of <code>Y16 − camY</code>. <code>hy</code> = high byte of the 16-bit <code>Y16 − camY</code>.
+</li></ol>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li><code>hy</code> ≠ 0 (not drawable): C=0, A = <code>hy</code>, Z=0, N = bit 7 of <code>hy</code>, <b>Y = <code>i</code></b> (0 or 4).
+</li>
+<li><code>hy</code> = 0: C=1, Y = A = SMW's OAM index byte at <code><a href="02.html#91ED">$0291ED</a> + x</code> (<code>$10,$14,$18,$1C</code>), N=0, Z=0.
+</li>
+<li>X preserved. <code>$00</code>, <code>$01</code> and <code>$03</code> are written on both paths; <code>$02</code> and <code>$04-$0F</code> are untouched.
+</li></ul>
+</li>
+<li><b>Equivalent SMW code:</b> the bounce-sprite draw prologue <code><a href="02.html#91F8">$0291F8</a>-<a href="02.html#922D">$02922D</a></code>, same OAM table. Differences:
+<ul>
+<li>SMW takes the layer from <code>$16C9,x</code> bit 7; PIXI from <code>$1901,x</code> bit 7.
+</li>
+<li>SMW rejects the sprite when the X high byte is non-zero; PIXI keeps it and sets the X high bit in <code>$03</code>.
+</li>
+<li>SMW leaves the camera bytes in <code>$02-$05</code>; PIXI writes only <code>$00</code>, <code>$01</code>, <code>$03</code>.
+</li></ul>
+</li>
+<li><b>Calls:</b> none.
+</li>
+<li><b>Edge cases:</b> X ≥ 4 reads past SMW's 4-byte OAM table (into code at <code>$0291F1</code>).
+</li></ul>
+<h4 id="bouncegenericdraw">BounceGenericDraw</h4>
+<p>Draws bounce sprite X as one 16×16 tile.</p>
+<ul>
+<li><b>Called with:</b> 8/8, X = bounce slot, A = tile number. DB must map WRAM.
+</li>
+<li><b>Behaviour:</b> <code>$02</code> = A. Then BounceGetDrawInfo. If that reports C=0, return at once with its exit state (<code>$02</code> = tile is the only extra write). Otherwise, with <code>o</code> = the OAM index it returned:
+<ul>
+<li><code>$0200+o</code> = <code>$00</code>, <code>$0201+o</code> = <code>$01</code>, <code>$0202+o</code> = <code>$02</code>, <code>$0203+o</code> = <code>$1901,x OR $64</code>.
+</li>
+<li><code>$0420 + o/4</code> = <code>$03</code>.
+</li></ul>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>Drawn: Y = <code>o/4</code>, A = <code>$03</code> (<code>$02</code> or <code>$03</code>), N=0, Z=0, <b>C=0</b>. The routine gives no draw status: C is 0 on both paths (for slots 0..3).
+</li>
+<li>Not drawn: BounceGetDrawInfo's C=0 exit.
+</li>
+<li>X preserved.
+</li></ul>
+</li>
+<li><b>Equivalent SMW code:</b> the rest of SMW's bounce draw from <code><a href="02.html#922D">$02922D</a></code> writes the same OAM bytes (position, tile, <code>$1901,x | $64</code>, size into <code>$0420</code>) with SMW's own tile choice and off-screen rule.
+</li>
+<li><b>Calls:</b> BounceGetDrawInfo.
+</li></ul>
+<h4 id="bouncesetmariospeed">BounceSetMarioSpeed</h4>
+<p>Gives the player the push of a bounce block.</p>
+<ul>
+<li><b>Called with:</b> 8/8, X = bounce slot. DB must map WRAM.
+</li>
+<li><b>Behaviour:</b> <code>d</code> = <code>$16C9,x &amp; 3</code>.
+<ul>
+<li><code>v</code> = SMW's <code><a href="02.html#90D6">$0290D6</a>[d]</code> (<code>$80,$80,$80,$00</code>). If <code>v</code> ≠ <code>$80</code>, <code>$7D</code> = <code>v</code>.
+</li>
+<li><code>w</code> = SMW's <code><a href="02.html#90DA">$0290DA</a>[d]</code> (<code>$80,$E0,$20,$80</code>). If <code>w</code> ≠ <code>$80</code>, <code>$7B</code> = <code>w</code>.
+</li>
+<li>So: <code>d</code>=0 nothing; 1: <code>$7B</code> = <code>$E0</code>; 2: <code>$7B</code> = <code>$20</code>; 3: <code>$7D</code> = 0. PIXI carries its own copy of these 8 bytes; the values equal SMW's.
+</li></ul>
+</li>
+<li><b>Returns:</b> X preserved. <b>Y = X</b> (the slot). A = <code>w</code>. Flags from comparing <code>w</code> with <code>$80</code>: <code>d</code>=0 or 3: Z=1, C=1, N=0; <code>d</code>=1: Z=0, C=1, N=0; <code>d</code>=2: Z=0, C=0, N=1.
+</li>
+<li><b>Equivalent SMW code:</b> <code><a href="02.html#90F3">$0290F3</a>-$02910A</code> exactly (same tables, <code>$80</code> = "leave alone").
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h4 id="bouncesetspritespeed">BounceSetSpriteSpeed</h4>
+<p>Gives a normal sprite the push of a bounce block.</p>
+<ul>
+<li><b>Called with:</b> 8/8, X = bounce slot, <code>$0F</code> = the normal sprite's slot. DB must map WRAM.
+</li>
+<li><b>Behaviour:</b> <code>d</code> = <code>$16C9,x &amp; 3</code>. <code>v</code> = SMW <code><a href="02.html#90D6">$0290D6</a>[d]</code>; if <code>v</code> ≠ <code>$80</code>, <code>$AA</code> of slot <code>[$0F]</code> = <code>v</code>. <code>w</code> = SMW <code><a href="02.html#90DA">$0290DA</a>[d]</code>; if <code>w</code> ≠ <code>$80</code>, <code>$B6</code> of slot <code>[$0F]</code> = <code>w</code>. The same values as BounceSetMarioSpeed.
+</li>
+<li><b>Returns:</b> X preserved, Y = X, A = <code>w</code>, flags as BounceSetMarioSpeed. <code>$0F</code> unchanged.
+</li>
+<li><b>Equivalent SMW code:</b> none for sprites; SMW applies these tables only to the player (<code><a href="02.html#90F3">$0290F3</a></code>).
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h4 id="bouncesetspeed">BounceSetSpeed</h4>
+<p>Accelerates a bounce sprite as SMW's bounce blocks are accelerated.</p>
+<ul>
+<li><b>Called with:</b> 8/8, X = bounce slot. DB must map WRAM.
+</li>
+<li><b>Behaviour:</b> <code>d</code> = <code>$16C9,x &amp; 3</code>. <code>$16B1,x</code> (Y speed) += SMW <code><a href="02.html#90CE">$0290CE</a>[d]</code> (<code>$10,$00,$00,$F0</code>); then <code>$16B5,x</code> (X speed) += SMW <code><a href="02.html#90D2">$0290D2</a>[d]</code> (<code>$00,$F0,$10,$00</code>). 8-bit, wrapping. PIXI's copy of the tables equals SMW's.
+</li>
+<li><b>Returns:</b> X preserved, Y = X, A = the new <code>$16B5,x</code>. N, Z, V, C from that last add.
+</li>
+<li><b>Equivalent SMW code:</b> <code><a href="02.html#9111">$029111</a>-$02912A</code> exactly.
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h4 id="bouncesetupmap16">BounceSetupMap16</h4>
+<p>Sets <code>$98-$9B</code> and <code>$1933</code> to the block under bounce sprite X, ready for SMW's <code><a href="00.html#BEB0">$00BEB0</a></code>.</p>
+<ul>
+<li><b>Called with:</b> 8/8, X = bounce slot. DB must map WRAM (<code>$1933</code> absolute).
+</li>
+<li><b>Behaviour:</b>
+<ul>
+<li><code>$98</code> = <code>(Ylo + 8) &amp; $F0</code>, <code>$99</code> = <code>Yhi</code> + carry of <code>Ylo + 8</code>.
+</li>
+<li><code>$9A</code> = <code>(Xlo + 8) &amp; $F0</code>, <code>$9B</code> = <code>Xhi</code> + carry of <code>Xlo + 8</code>.
+</li>
+<li><code>$1933</code> = bit 7 of <code>$1901,x</code> (0 or 1).
+</li></ul>
+</li>
+<li><b>Returns:</b> A = the <code>$1933</code> value, Z = (A = 0), N=0, <b>C = bit 6 of <code>$1901,x</code></b>. X and Y preserved. <code>$9C</code> is not touched (the <code>_header.asm</code> macros set it before calling).
+</li>
+<li><b>Equivalent SMW code:</b> <code><a href="02.html#91BC">$0291BC</a>-<a href="02.html#91E5">$0291E5</a></code> (inside <code><a href="02.html#91BA">$0291BA</a></code>) computes the same four bytes (X first) and the layer. Difference: SMW takes the layer from <code>$16C9,x</code> bit 7, PIXI from <code>$1901,x</code> bit 7. SMW then calls <code><a href="00.html#BEB0">$00BEB0</a></code> itself.
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h4 id="bounceupdatepos">BounceUpdatePos</h4>
+<p>Moves bounce sprite X by its speeds.</p>
+<ul>
+<li><b>Called with:</b> 8/8, X = bounce slot. DB must map WRAM.
+</li>
+<li><b>Behaviour:</b> <code>U($16B1,x, $16BD,x, $16A9:$16A1,x)</code> (Y), then <code>U($16B5,x, $16B9,x, $16AD:$16A5,x)</code> (X).
+</li>
+<li><b>Returns:</b> as <code>U</code> for the X update: Y = sign byte of <code>$16B5,x</code>, A = new <code>$16AD,x</code>, N/Z/V/C of its high-byte add. X preserved.
+</li>
+<li><b>Equivalent SMW code:</b> <code><a href="02.html#B526">$02B526</a></code> (Y) then <code><a href="02.html#B51A">$02B51A</a></code> (X), as SMW calls them at <code><a href="02.html#910B">$02910B</a></code>. Differences:
+<ul>
+<li><b>The fraction bytes are swapped:</b> SMW's Y update uses <code>$16B9,x</code> and its X update <code>$16BD,x</code>. PIXI uses <code>$16BD,x</code> for Y and <code>$16B9,x</code> for X.
+</li>
+<li>SMW's X update leaves X = <code>$1698</code>; PIXI preserves X.
+</li></ul>
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h4 id="scoregetdrawinfo">ScoreGetDrawInfo</h4>
+<p>Finds the OAM slot and screen position of score sprite X.</p>
+<ul>
+<li><b>Called with:</b> 8/8, X = score slot (0..5). DB must map WRAM (camera read absolute).
+</li>
+<li><b>Behaviour:</b>
+<ol>
+<li><code>i</code> = <code>(4 · $1705,x) mod 256</code>. <code>$02-$03</code> = the 16-bit word at <code>$001C+i</code>, <code>$04-$05</code> = the word at <code>$001A+i</code> (layer 0: <code>$1C</code>/<code>$1A</code>; layer 1: <code>$20</code>/<code>$1E</code>). Written on every path; M=0 only for these two copies.
+</li>
+<li><code>rx</code> = <code>(X16 − [$04-$05]) mod $10000</code>, <code>ry</code> = <code>(Y16 − [$02-$03]) mod $10000</code>.
+</li>
+<li>Drawable when <code>rx</code> ≤ <code>$F3</code> and the high byte of <code>ry</code> is 0. Tested in this order, each failure returning at once: (a) high byte of <code>(X16 + $0C − camX) mod $10000</code> ≠ 0; (b) high byte of <code>rx</code> ≠ 0; (c) high byte of <code>ry</code> ≠ 0.
+</li></ol>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>Drawable: <code>$00</code> = low byte of <code>rx</code>, <code>$01</code> = low byte of <code>ry</code>, Y = A = SMW <code><a href="02.html#AD9E">$02AD9E</a> + x</code> (<code>$B0,$B8,$C0,$C8,$D0,$D8</code>), C=1, N=1, Z=0.
+</li>
+<li>Rejected: C=0, A = the non-zero high byte that failed, Z=0, N = its bit 7, Y = <code>i</code>. <code>$00/$01</code> not written.
+</li>
+<li>X preserved. M=1.
+</li></ul>
+</li>
+<li><b>Equivalent SMW code:</b> <code><a href="02.html#AE5B">$02AE5B</a>-<a href="02.html#AEA9">$02AEA9</a></code> (score-sprite draw): the same tests in the same order and the same OAM table. Difference: SMW uses OAM index 4 instead of the table while <code>$0D9B</code> bit 6 is set (boss battles); PIXI has no such case.
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h4 id="scoregenericdraw">ScoreGenericDraw</h4>
+<p>Draws score sprite X as two 8×8 tiles side by side, in front of all layers.</p>
+<ul>
+<li><b>Called with:</b> 8/8, X = score slot. <code>$07</code> = left tile, <code>$08</code> = right tile, <code>$09</code> = left properties, <code>$0A</code> = right properties. DB must map WRAM.
+</li>
+<li><b>Behaviour:</b> ScoreGetDrawInfo. If C=0, return with its exit state. Else, with <code>o</code> = its OAM index:
+<ul>
+<li><code>$0200+o</code> = <code>$00</code>, <code>$0204+o</code> = <code>($00 + 8) mod 256</code>; <code>$0201+o</code> = <code>$0205+o</code> = <code>$01</code>.
+</li>
+<li><code>$0202+o</code> = <code>$07</code>, <code>$0206+o</code> = <code>$08</code>; <code>$0203+o</code> = <code>$09 | $30</code>, <code>$0207+o</code> = <code>$0A | $30</code>.
+</li>
+<li><code>$0420 + o/4</code> = 0 and <code>$0421 + o/4</code> = 0.
+</li></ul>
+</li>
+<li><b>Returns:</b> drawn: C=1, A=0, Z=1, N=0, Y = <code>o/4</code>. Not drawn: ScoreGetDrawInfo's C=0 exit. X preserved. <code>$07-$0A</code> unchanged.
+</li>
+<li><b>Equivalent SMW code:</b> <code><a href="02.html#AEA5">$02AEA5</a>-<a href="02.html#AEF1">$02AEF1</a></code> writes the same eight OAM bytes and two size bytes, with SMW's own tiles and properties.
+</li>
+<li><b>Calls:</b> ScoreGetDrawInfo.
+</li></ul>
+<h4 id="scoreupdateypos">ScoreUpdateYPos</h4>
+<p>Lets score sprite X rise one pixel at a time, stopping near the top of the screen.</p>
+<ul>
+<li><b>Called with:</b> 8/8, X = score slot.
+<ul>
+<li>C=0: the limit is <code>$04</code> (SMW's). A is ignored.
+</li>
+<li>C=1: the limit is A.
+</li>
+<li>The routine sets DB to its own bank for its body, so that bank must map WRAM (every LoROM bank <code>$00-$3F</code>/<code>$80-$BF</code> does). DB is restored on exit.
+</li></ul>
+</li>
+<li><b>Behaviour:</b>
+<ol>
+<li><code>$00</code> = limit.
+</li>
+<li><code>t</code> = <code>$16FF,x &gt;&gt; 4</code>. Mask <code>k</code> = SMW's <code><a href="02.html#AD9A">$02AD9A</a>[t]</code> for <code>t</code> 0..3 (<code>$03,$01,$00,$00</code>): speed <code>$00-$0F</code> moves every 4th frame, <code>$10-$1F</code> every 2nd, <code>$20-$3F</code> every frame. PIXI keeps its own 4-byte copy of these values; <b>for <code>t</code> ≥ 4 (speed ≥ <code>$40</code>) it reads whatever PIXI assembled after that copy, which is not defined.</b> Callers keep the speed below <code>$40</code> (SpawnScoreGeneric uses <code>$30</code>); a differential test must too.
+</li>
+<li>If <code>$13 &amp; k</code> ≠ 0, stop.
+</li>
+<li>If <code>($16E7,x − $1C) mod 256</code> &lt; <code>$00</code>, stop (low bytes and layer 1 only, whatever <code>$1705,x</code> says).
+</li>
+<li>Otherwise decrement the 16-bit <code>$16F9:$16E7,x</code> by 1.
+</li></ol>
+</li>
+<li><b>Returns:</b> X preserved. N and Z reflect the caller's DB byte (restored last). By path:
+<ul>
+<li>Stopped at 3: Y = <code>t</code>, A = <code>$13 &amp; k</code>, C = bit 3 of <code>$16FF,x</code>.
+</li>
+<li>Stopped at 4: Y = old <code>$16E7,x</code>, A = <code>($16E7,x − $1C) mod 256</code>, C=0.
+</li>
+<li>Moved: Y = A = old <code>$16E7,x</code>, C=1.
+</li></ul>
+</li>
+<li><b>Equivalent SMW code:</b> <code><a href="02.html#AE38">$02AE38</a>-$02AE5A</code> with the limit fixed at 4 (C=0 gives exactly that). SMW indexes <code><a href="02.html#AD9A">$02AD9A</a></code> directly, so its <code>t</code> ≥ 4 reads the next SMW table (<code><a href="02.html#AD9E">$02AD9E</a></code>).
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h4 id="smokegetdrawinfo">SmokeGetDrawInfo</h4>
+<p>Finds the OAM slot and screen position of smoke sprite X.</p>
+<ul>
+<li><b>Called with:</b> 8/8, X = smoke slot (0..3). DB must map WRAM.
+</li>
+<li><b>Behaviour:</b> <code>d</code> = <code>($17C8,x − $1A) mod 256</code>. Low bytes only: no high byte or layer is considered.
+</li>
+<li><b>Returns:</b>
+<ul>
+<li><code>d</code> ≥ <code>$F0</code>: C=0, A = <code>d</code>, Y unchanged, Z = (<code>d</code> = <code>$F0</code>), N = bit 7 of <code>d − $F0</code>. Nothing written.
+</li>
+<li>Otherwise: <code>$00</code> = <code>d</code>, <code>$01</code> = <code>($17C4,x − $1C) mod 256</code>, Y = A = SMW <code><a href="02.html#96B8">$0296B8</a> + x</code> (<code>$20,$24,$28,$2C</code>), C=1, N=0, Z=0.
+</li>
+<li>X preserved. The smoke sprite is never erased.
+</li></ul>
+</li>
+<li><b>Equivalent SMW code:</b> none exact. SMW's smoke draw at <code><a href="02.html#974A">$02974A</a></code> uses the same OAM table but rejects at <code>d</code> ≥ <code>$F4</code> and also at a relative Y ≥ <code>$E0</code>.
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h4 id="smokegenericdraw">SmokeGenericDraw</h4>
+<p>Draws smoke sprite X as one tile.</p>
+<ul>
+<li><b>Called with:</b> 8/8, X = smoke slot. <code>$02</code> = tile, <code>$03</code> = properties (YXPPCCCT), <code>$04</code> = the <code>$0420</code> byte (size and X high bit). DB must map WRAM.
+</li>
+<li><b>Behaviour:</b> SmokeGetDrawInfo; if C=0, return with its exit state. Else <code>$0200+o</code> = <code>$00</code>, <code>$0201+o</code> = <code>$01</code>, <code>$0202+o</code> = <code>$02</code>, <code>$0203+o</code> = <code>$03</code>, <code>$0420 + o/4</code> = <code>$04</code>.
+</li>
+<li><b>Returns:</b> drawn: C=1, Y = <code>o/4</code>, A = <code>$04</code>, N/Z from <code>$04</code>. X preserved. <code>$02-$04</code> unchanged.
+</li>
+<li><b>Equivalent SMW code:</b> none as a routine.
+</li>
+<li><b>Calls:</b> SmokeGetDrawInfo.
+</li></ul>
+<h4 id="spinningcoingetdrawinfo">SpinningCoinGetDrawInfo</h4>
+<p>Meant to find the OAM slot and screen position of spinning-coin sprite X, erasing it when off the side of the screen. <b>As shipped it compares the wrong camera bytes</b> (see Behaviour). The contract describes what it does, not what it was meant to do.</p>
+<ul>
+<li><b>Called with:</b> 8/8, X = spinning-coin slot (0..3). DB must map WRAM.
+</li>
+<li><b>Behaviour:</b>
+<ol>
+<li><code>i</code> = <code>(4 · $17E4,x) mod 256</code>. <code>$02-$03</code> = word at <code>$001C+i</code> (camera <b>Y</b>), <code>$04-$05</code> = word at <code>$001A+i</code> (camera <b>X</b>). For layer 1: <code>$02</code>=<code>$1C</code>, <code>$03</code>=<code>$1D</code>, <code>$04</code>=<code>$1A</code>, <code>$05</code>=<code>$1B</code>.
+</li>
+<li><code>b</code> = 1 if <code>$17D4,x</code> &lt; <code>$02</code>, else 0. <code>h</code> = <code>($17E8,x − $04 − b) mod 256</code>: the coin's Y high byte minus the camera's <b>X low</b> byte. <code>c</code> = 1 if <code>$17E8,x</code> ≥ <code>$04 + b</code> (no borrow), else 0. If <code>h</code> ≠ 0: return, not drawn and not erased.
+</li>
+<li><code>d</code> = <code>($17E0,x − $03 − (1 − c)) mod 256</code>: the coin's X low byte minus the camera's <b>Y high</b> byte, minus a borrow that is 0 unless <code>$17E8,x</code> = 0, <code>$04</code> = <code>$FF</code> and <code>b</code> = 1. If <code>d</code> ≥ <code>$F8</code>: <code>$17D0,x</code> = 0 (erase) and return, not drawn.
+</li>
+<li>Otherwise drawable.
+</li></ol>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>Not drawn at step 2: C=0, A = <code>h</code>, Z=0, N = bit 7 of <code>h</code>, Y = <code>i</code>.
+</li>
+<li>Erased at step 3: C=0, A = <code>d</code>, Y = <code>i</code>, N/Z from comparing <code>d</code> with <code>$F8</code>.
+</li>
+<li>Drawable: <code>$00</code> = <code>d</code>, <code>$01</code> = <code>($17D4,x − $02) mod 256</code>, Y = A = SMW <code><a href="02.html#99E9">$0299E9</a> + x</code> (<code>$30,$38,$40,$48</code>), C=1, N=0, Z=0.
+</li>
+<li><code>$02-$05</code> are written on every path. X preserved. The X high byte <code>$17EC,x</code> is never read.
+</li></ul>
+</li>
+<li><b>Equivalent SMW code:</b> <code><a href="02.html#9A08">$029A08</a>-<a href="02.html#9A3D">$029A3D</a></code>. SMW stores the camera bytes as <code>$02</code> = Y lo, <code>$03</code> = X lo, <code>$04</code> = Y hi and compares against those; PIXI stores two words (<code>$02-$03</code> = Y, <code>$04-$05</code> = X) but compares against the same offsets, hence the mix-up. SMW also starts the X subtraction with no borrow, and erases through its own path at <code><a href="02.html#99E3">$0299E3</a></code>.
+</li>
+<li><b>Calls:</b> none.
+</li>
+<li><b>For the differential test:</b> with real camera values <code>h</code> is almost never 0, so the routine almost always returns "not drawn". Random states are needed to reach steps 3 and 4.
+</li></ul>
+<h4 id="spinningcoinupdateypos">SpinningCoinUpdateYPos</h4>
+<ul>
+<li><b>Called with:</b> 8/8, X = spinning-coin slot. DB must map WRAM.
+</li>
+<li><b>Behaviour:</b> <code>U($17D8,x, $17DC,x, $17E8:$17D4,x)</code>.
+</li>
+<li><b>Returns:</b> as <code>U</code>. X preserved.
+</li>
+<li><b>Equivalent SMW code:</b> <code><a href="02.html#B58E">$02B58E</a></code> exactly (<code>RTL</code> for <code>RTS</code>).
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h4 id="minorextendedgetdrawinfo">MinorExtendedGetDrawInfo</h4>
+<p>Finds the OAM slot and screen position of minor extended sprite X; erases it when well off screen.</p>
+<ul>
+<li><b>Called with:</b> 8/8, X = minor extended slot (0..11). DB must map WRAM.
+</li>
+<li><b>Behaviour:</b>
+<ol>
+<li><code>$01</code> = <code>ry</code> = <code>($17FC,x − $1C) mod 256</code>. If <code>ry</code> is in <code>$E0..$EF</code>: erase. Only the low bytes are used; the Y high bytes are never read.
+</li>
+<li><code>$02</code> = 0. <code>$00</code> = low byte of <code>X16 − camX</code> (<code>X16</code> = <code>$18EA:$1808,x</code>, <code>camX</code> = <code>$1B:$1A</code>). If the high byte of that 16-bit difference is non-zero: when <code>($00 + $38) mod 256</code> ≥ <code>$70</code>, erase; otherwise <code>$02</code> = 1 and carry on. Any non-zero high byte counts, not only ±1 screen.
+</li>
+<li>Drawable.
+</li>
+<li>Erase means <code>$17F0,x</code> = 0 and return, not drawn.
+</li></ol>
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>Erased at step 1: C=0, A = <code>(ry + $10) mod 256</code> (<code>$F0..$FF</code>), Y unchanged. <code>$00</code> and <code>$02</code> not written.
+</li>
+<li>Erased at step 2: C=0, A = <code>($00 + $38) mod 256</code>, Y unchanged. <code>$00</code>, <code>$01</code> and <code>$02</code> (= 0) written.
+</li>
+<li>Drawable: C=1, Y = A = <b>the byte at <code><a href="02.html#8B77">$028B77</a> + x</code></b>, N/Z from it. <code>$00</code>, <code>$01</code>, <code>$02</code> written.
+</li>
+<li>X preserved.
+</li></ul>
+</li>
+<li><b>Tables/data:</b> SMW's minor-extended OAM table is at <b><code><a href="02.html#8B78">$028B78</a></code></b> (12 bytes, <code>$50,$54,…,$78,$7C</code>; SMW reads it at <code><a href="02.html#8C6E">$028C6E</a></code> and seven other places, never at <code><a href="02.html#8B77">$028B77</a></code>). PIXI reads one byte earlier, so slot <code>n</code> gets SMW's index for slot <code>n−1</code>, and slot 0 gets <code>$60</code> (the byte before the table), the same index as slot 5. In a vanilla or PIXI-patched ROM the bytes <code><a href="02.html#8B77">$028B77</a>-$028B82</code> are <code>$60,$50,$54,$58,$5C,$60,$64,$68,$6C,$70,$74,$78</code>. To match PIXI, read <code><a href="02.html#8B77">$028B77</a> + x</code>.
+</li>
+<li><b>Equivalent SMW code:</b> none as a routine; SMW's minor extended sprites each have their own draw code.
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h4 id="clustergetdrawinfo">ClusterGetDrawInfo</h4>
+<p>The same contract as MinorExtendedGetDrawInfo, on the cluster tables:</p>
+<ul>
+<li>Number <code>$1892,x</code>, Y low <code>$1E02,x</code>, X <code>$1E3E:$1E16,x</code>. X = cluster slot (0..19).
+</li>
+<li>Drawable: Y = A = SMW's byte at <code><a href="02.html#FF50">$02FF50</a> + x</code> (20 bytes: <code>$E0,$E4,…,$FC,$5C,$58,…,$30</code>), the table SMW's cluster code reads at <code><a href="02.html#FCD9">$02FCD9</a></code> and elsewhere. Here the address is SMW's own (no offset).
+</li>
+<li>Erase means <code>$1892,x</code> = 0.
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h4 id="minorextendedspeed">MinorExtendedSpeed</h4>
+<p>Moves minor extended sprite X along one axis.</p>
+<ul>
+<li><b>Called with:</b> 8/8, X = minor extended slot, A = mode. Only bits 0-1 count: bit 0 = fast, bit 1 = Y axis. DB must map WRAM.
+<ul>
+<li>0: slow X: <code>U($182C,x, $1844,x, $18EA:$1808,x)</code>.
+</li>
+<li>1: fast X: <code>$18EA:$1808,x</code> += <code>sext8($182C,x)</code> (whole pixels, no fraction).
+</li>
+<li>2: slow Y: <code>U($1820,x, $1838,x, $1814:$17FC,x)</code>.
+</li>
+<li>3: fast Y: <code>$1814:$17FC,x</code> += <code>sext8($1820,x)</code>.
+</li></ul>
+</li>
+<li><b>Returns:</b> every mode: Y = <code>$00</code> if the speed used is &lt; <code>$80</code>, else <code>$FF</code>; A = the new position high byte; N, Z, V, C from the high-byte add (C = carry out of the 16-bit sum). X preserved.
+</li>
+<li><b>Equivalent SMW code:</b> the slow modes are SMW's 4.4 update (as <code><a href="02.html#B560">$02B560</a></code>) on the minor extended tables. SMW has no routine for it; its minor extended sprites update inline.
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h4 id="spawnclustergeneric-spawn-clustergeneric-asm">SpawnClusterGeneric (<code>Spawn/ClusterGeneric.asm</code>)</h4>
+<p>Spawns a cluster sprite at an origin plus an offset.</p>
+<ul>
+<li><b>Called with:</b> 8/8. <b>B = cluster number.</b> <code>$00</code> = X offset, <code>$01</code> = Y offset (both signed). <b><code>$02-$03</code> = origin X, <code>$04-$05</code> = origin Y</b> (16-bit). DB must map WRAM.
+</li>
+<li><b>Search:</b> slots 19 down to 0, taking the first with <code>$1892,y</code> = 0.
+</li>
+<li><b>Writes (slot <code>n</code>):</b> <code>$1892,n</code> = B; <code>$1E3E:$1E16,n</code> = <code>[$02-$03] + sext($00)</code>; <code>$1E2A:$1E02,n</code> = <code>[$04-$05] + sext($01)</code>. Nothing else: no misc tables are cleared.
+</li>
+<li><b>Returns:</b>
+<ul>
+<li>Success: C=0, Y = <code>n</code>, A = the new <code>$1E2A,n</code>, N/Z/V from its add, <b>B = 0</b>.
+</li>
+<li>No free slot: C=1, Y = <code>$FF</code>, A = <code>$1892</code> (slot 0's number, non-zero), N=1, Z=0, B = entry B. Nothing written.
+</li>
+<li>X untouched. <code>$00-$07</code> unchanged.
+</li></ul>
+</li>
+<li><b>Equivalent SMW code:</b> none (SMW spawns cluster sprites inline).
+</li>
+<li><b>Calls:</b> none.
+</li>
+<li><b>Edge case: the callers disagree.</b> Every <code>_header.asm</code> <code>%SpawnCluster()</code> macro puts the caller's position in <code>$04-$07</code>, as for the other <code>*Generic</code> spawns. With this routine's layout, that gives the new cluster sprite X = whatever is in <code>$02-$03</code> and Y = the caller's <b>X</b>. Implement the routine's layout (<code>$02</code>/<code>$04</code>); what the header macros should pass is a separate matter.
+</li></ul>
+<h4 id="spawnextendedgeneric-spawn-extendedgeneric-asm">SpawnExtendedGeneric (<code>Spawn/ExtendedGeneric.asm</code>)</h4>
+<ul>
+<li><b>Called with:</b> 8/8. B = extended number. <code>$00</code>/<code>$01</code> = X/Y offset (signed), <code>$02</code> = X speed, <code>$03</code> = Y speed, <code>$04-$05</code> = origin X, <code>$06-$07</code> = origin Y. DB must map WRAM.
+</li>
+<li><b>Search:</b> slots 7 down to 0, first with <code>$170B,y</code> = 0. The fireball slots 8 and 9 are never used.
+</li>
+<li><b>Writes:</b> <code>$170B,n</code> = B; <code>$1733:$171F,n</code> = origin X + sext(<code>$00</code>); <code>$1729:$1715,n</code> = origin Y + sext(<code>$01</code>); <code>$1747,n</code> = <code>$02</code>; <code>$173D,n</code> = <code>$03</code>. Fractions, <code>$1765</code>, <code>$176F</code> and <code>$1779</code> are not touched.
+</li>
+<li><b>Returns:</b> success: C=0, Y = <code>n</code>, A = <code>$03</code>, N/Z from <code>$03</code>, B = 0. No free slot: as SpawnClusterGeneric (A = <code>$170B</code>). X untouched; <code>$00-$07</code> unchanged.
+</li>
+<li><b>Equivalent SMW code:</b> none. Unlike SpawnExtended there is no parent off-screen test.
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h4 id="spawngeneric-spawn-generic-asm-the-minor-extended-spawner">SpawnGeneric (<code>Spawn/Generic.asm</code>), the minor extended spawner</h4>
+<ul>
+<li><b>Called with:</b> as SpawnExtendedGeneric, with B = minor extended number.
+</li>
+<li><b>Search:</b> slots 11 down to 0, first with <code>$17F0,y</code> = 0.
+</li>
+<li><b>Writes:</b> <code>$17F0,n</code> = B; <code>$18EA:$1808,n</code> = origin X + sext(<code>$00</code>); <code>$1814:$17FC,n</code> = origin Y + sext(<code>$01</code>); <code>$182C,n</code> = <code>$02</code>; <code>$1820,n</code> = <code>$03</code>. Fractions and <code>$1850</code> (timer) are not touched.
+</li>
+<li><b>Returns:</b> as SpawnExtendedGeneric (failure A = <code>$17F0</code>).
+</li>
+<li><b>Calls:</b> none.
+</li>
+<li><b>The name:</b> by the path rule its macro is <code>%SpawnGeneric()</code>, but every <code>_header.asm</code> calls <code>%SpawnMinorExtendedGeneric()</code>, which no file in <code>routines\</code> provides. A PIXI-compatible set needs at least the name the headers use.
+</li></ul>
+<h4 id="spawnscoregeneric-spawn-scoregeneric-asm">SpawnScoreGeneric (<code>Spawn/ScoreGeneric.asm</code>)</h4>
+<ul>
+<li><b>Called with:</b> 8/8. B = score number. <code>$00</code>/<code>$01</code> = X/Y offset, <code>$04-$05</code> = origin X, <code>$06-$07</code> = origin Y. DB must map WRAM (<code>$18F7</code> absolute).
+</li>
+<li><b>Search, which never fails:</b> slots 5 down to 0, first with <code>$16E1,y</code> = 0. If none is free: decrement <code>$18F7</code>; if the result has bit 7 set, <code>$18F7</code> = 5; use slot <code>$18F7</code>.
+</li>
+<li><b>Writes:</b> <code>$16E1,n</code> = B; <code>$16F3:$16ED,n</code> = origin X + sext(<code>$00</code>); <code>$16F9:$16E7,n</code> = origin Y + sext(<code>$01</code>); <code>$16FF,n</code> = <code>$30</code>. <code>$1705</code> (layer) is not touched.
+</li>
+<li><b>Returns:</b> Y = <code>n</code>, A = <code>$30</code>, N=0, Z=0. C = carry out of the Y high-byte add (by-product: the routine reports no status). B = 0 if a free slot was found; otherwise B = <code>$16E1</code> (slot 0's number, as the search last read it), or <code>$05</code> when <code>$18F7</code> wrapped. X untouched.
+</li>
+<li><b>Equivalent SMW code:</b> the slot choice is SMW's <code><a href="02.html#AD34">$02AD34</a></code> exactly (same search, same <code>$18F7</code> round-robin). SMW's <code><a href="02.html#ACEF">$02ACEF</a></code> then places the score at the sprite's position − 8, nudged down when above the screen; PIXI uses origin + offset.
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h4 id="spawnsmokegeneric-spawn-smokegeneric-asm">SpawnSmokeGeneric (<code>Spawn/SmokeGeneric.asm</code>)</h4>
+<ul>
+<li><b>Called with:</b> 8/8. B = smoke number. <code>$00</code>/<code>$01</code> = X/Y offset, <code>$02</code> = timer, <code>$04</code> = origin X low, <code>$06</code> = origin Y low (<code>$05</code> and <code>$07</code> are ignored). DB must map WRAM.
+</li>
+<li><b>Search:</b> slots 3 down to 0, first with <code>$17C0,y</code> = 0.
+</li>
+<li><b>Writes:</b> <code>$17C0,n</code> = B; <code>$17C8,n</code> = <code>($04 + $00) mod 256</code>; <code>$17C4,n</code> = <code>($06 + $01) mod 256</code>; <code>$17CC,n</code> = <code>$02</code>. 8-bit positions only: the high bytes <code>$1964</code>/<code>$1960</code> are not written.
+</li>
+<li><b>Returns:</b> success: C=0, Y = <code>n</code>, A = <code>$02</code>, N/Z from <code>$02</code>, B = 0. No free slot: as SpawnClusterGeneric (A = <code>$17C0</code>); slot 0 is not reused, unlike SMW's inline smoke spawns. X untouched.
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h4 id="spawnspinningcoingeneric-spawn-spinningcoingeneric-asm">SpawnSpinningCoinGeneric (<code>Spawn/SpinningCoinGeneric.asm</code>)</h4>
+<ul>
+<li><b>Called with:</b> 8/8. B = number. <code>$00</code>/<code>$01</code> = X/Y offset, <code>$03</code> = Y speed, <code>$04-$05</code> = origin X, <code>$06-$07</code> = origin Y. <code>$02</code> is ignored. DB must map WRAM.
+</li>
+<li><b>Search:</b> slots 3 down to 0, first with <code>$17D0,y</code> = 0.
+</li>
+<li><b>Writes:</b> <code>$17D0,n</code> = B; <code>$17EC:$17E0,n</code> = origin X + sext(<code>$00</code>); <code>$17E8:$17D4,n</code> = origin Y + sext(<code>$01</code>); <code>$17D8,n</code> = <code>$03</code>. <code>$17DC</code> (fraction) and <code>$17E4</code> (layer) are not touched.
+</li>
+<li><b>Returns:</b> success: C=0, Y = <code>n</code>, A = <code>$03</code>, N/Z from <code>$03</code>, B = 0. No free slot: as SpawnClusterGeneric (A = <code>$17D0</code>).
+</li>
+<li><b>Calls:</b> none.
+</li></ul>
+<h4 id="edge-cases-common-to-the-generic-spawns">Edge cases common to the <code>*Generic</code> spawns</h4>
+<ul>
+<li>B = 0 "succeeds" but leaves the slot marked free.
+</li>
+<li>No on-screen test is made. The <code>sprites\_header.asm</code> version of <code>%SpawnMinorExtended()</code> makes its own (<code>$15A0 | $186C | $15D0</code> of the parent) before calling; the other macros do not.
+</li>
+<li>Positions are 16-bit adds of a sign-extended 8-bit offset, carry included; they wrap at <code>$10000</code>.
+</li></ul>
+<h3 id="pixi-1-40-changes-to-the-1-2-x-routines">PIXI 1.40: changes to the 1.2.x routines</h3>
+<ul>
+<li>Date: 2026-10-20
+</li>
+<li>Compared: <code>D:\SMW\Projects\BigEye\Sprites\routines\*.asm</code> (1.2.x, the source of the contracts above) with the 1.40 files of the same macro name in <code>D:\SMW\Projects\Secret\tools\pixi\routines\</code> (<code>ExtendedX</code> → <code>Extended/X.asm</code>, <code>SpawnX</code> → <code>Spawn/X.asm</code>). Both were reduced to their instructions (comments, label spelling and 1.40's local-label syntax removed, defines resolved) and compared. The two <code>sa1def.asm</code> files give the same values for every define these routines use.
+</li></ul>
+<p><b>Changed in behaviour: 1 of 27 (ExtendedGetDrawInfo).</b></p>
+<h4 id="extendedgetdrawinfo-changed">ExtendedGetDrawInfo: changed</h4>
+<ul>
+<li><b>Vertical rule.</b> The 1.2.x rule (<code>t</code> formed by addition) is gone. 1.40 uses the true high byte of the 16-bit <code>Y16 − camY16</code>. With <code>d</code> = <code>(Ylo − camYlo) mod 256</code> and <code>h</code> = that high byte:
+<ul>
+<li><code>h</code> = 0: erase if <code>d</code> ≥ <code>$F0</code>, otherwise visible.
+</li>
+<li><code>h</code> = <code>$FF</code> (up to one screen above): erase if <code>d</code> &lt; <code>$C0</code>; hide (<code>$02</code> = <code>$F0</code>, not erased) if <code>d</code> &lt; <code>$E0</code>; otherwise visible.
+</li>
+<li>any other <code>h</code>: erase.
+</li></ul>
+</li></ul>
+<p>Registers on return keep the same shape: visible with <code>h</code> = 0: A = <code>d</code>, C=0; visible with <code>h</code> = <code>$FF</code>: A = <code>d</code>, C=1; hidden or erased: A = <code>$F0</code>, N=1, Z=0. The X-axis rule, <code>$00</code>, <code>$01</code> and the erase (<code>$170B,x</code> = 0) are unchanged.</p>
+<ul>
+<li><b>OAM index table.</b> 1.40 reads SMW's <code><a href="02.html#A153">$02A153</a></code> directly instead of its own copy. Slots 0..7 get the same values. Slots 8 and 9 now get SMW's next bytes, <code>$2C</code> and <code>$2D</code> (defined, but not usable OAM indexes), instead of whatever followed PIXI's copy. Callers still must not use those slots.
+</li></ul>
+<h4 id="same-behaviour-different-code">Same behaviour, different code</h4>
+<ul>
+<li><b>Star:</b> the player-side test is now a <code>JSL</code> to the shared SubHorzPos instead of a private copy reached by <code>JSR</code>. Same writes (<code>$0E-$0F</code>, Y) and results; it uses one more byte of stack, and a 1.40 Star needs SubHorzPos inserted too.
+</li>
+<li><b>SpawnExtended:</b> the search start is written as <code>!ExtendedSize − 1</code>, which is 7, as before.
+</li>
+<li><b>ExtendedHurt:</b> the bank-2 <code>RTL</code> address is written as <code>$B888</code> instead of <code>$B889 − 1</code>. Same value.
+</li>
+<li><b>ChangeMap16, GetMap16, SubOffScreen, Aiming:</b> the <code>!EXLEVEL</code> / <code>!SA1</code> conditionals are written as comparisons. Both defines are only ever 0 or 1, so the same branch is assembled.
+</li></ul>
+<h4 id="identical">Identical</h4>
+<p>Aiming, CapeContact, ChangeMap16, CheckForContactAlternate, CircleX, CircleY, ExtendedCapeClipping, ExtendedHurt, ExtendedSpeed, FinishOAMWrite, FireballContact, GetDrawInfo, GetMap16, LoseYoshi, Random, SetPlayerClippingAlternate, SetSpriteClippingAlternate, ShooterMain, SpawnExtended, SpawnSmoke, SpawnSprite, SpawnSpriteSafe, Star, SubHorzPos, SubOffScreen and SubVertPos behave the same (only labels, comments, layout and the spellings noted above differ). The corrections under "Measured against PIXI's" apply to the 1.40 versions unchanged.</p>
+<h3 id="measured-against-pixi-1-40-s-2026-10-20">Measured against PIXI 1.40's (2026-10-20)</h3>
+<p><code>PixiRoutineTests</code> runs ours against each PIXI version on the machine that has the routine: 1.2.x (BigEye's copy) and 1.40 (Secret's). Ours match 1.2.x for 26 routines and 1.40 for all 50 but the deliberate differences below. Corrections to the 1.40 contracts above, found that way and measured black-box:</p>
+<ul>
+<li><b>BounceGenericDraw:</b> the property byte is <code>$1901,x</code> ORed with the byte at direct page <code>$64</code> (SMW's sprite priority), not with the value <code>$64</code>. With RAM cleared it is <code>$1901,x</code> exactly.
+</li>
+<li><b>BounceSetMarioSpeed, BounceSetSpriteSpeed:</b> C is from comparing the X speed with <code>$80</code>, but N and Z are from X (the slot is restored last), not from that compare.
+</li>
+<li><b>BounceSetSpeed:</b> N and Z are from X likewise; C and V from the add.
+</li>
+<li><b>MinorExtendedGetDrawInfo, ClusterGetDrawInfo, erasing:</b> just above the screen, N and Z come from A (the <code>$F0-$FF</code> returned); off a side, from the test against <code>$70</code>.
+</li>
+<li><b>ExtendedGetDrawInfo:</b> erased for being more than a screen above or below, C = 0.
+</li></ul>
+<p>Where ours is deliberately not PIXI 1.40's (each has a test of its own):</p>
+<ul>
+<li><b>ExtendedGetDrawInfo</b> is 1.40's, so it is not 1.2.x's (whose vertical test adds the camera's high byte).
+</li>
+<li><b>MinorExtendedGetDrawInfo</b> gives each slot SMW's OAM index (<code><a href="02.html#8B78">$028B78</a> + x</code>); PIXI's reads one byte early, so its slot 0 shares slot 5's. Everything else in it matches PIXI's.
+</li>
+<li><b>SpinningCoinGetDrawInfo</b> compares the coin with the camera as SMW's own coins do (<code><a href="02.html#9A08">$029A08</a></code>): tested against SMW's coin code itself, which it matches in every trial (drawn, erased or left, and where it is drawn, the same place and OAM index). PIXI's compares the wrong camera bytes and almost never draws.
+</li>
+<li><b>SpawnMinorExtendedGeneric</b> exists: PIXI 1.40's <code>_header.asm</code> files call it, but PIXI ships it only as <code>Spawn/Generic.asm</code> (<code>%SpawnGeneric()</code>). Ours has both names.
+</li></ul>
+<p>Found on the way, in Pipe Dream's build: routines called only from a <code>_header.asm</code> were never inserted (the build scanned only the sprites), and our <code>defines.asm</code> defined <code>%LDE()</code>, which PIXI 1.40's headers define themselves. Both fixed; a sprite using PIXI 1.40's <code>sprites/_header.asm</code> spawn macros now builds against our routines.</p></div></body></html>

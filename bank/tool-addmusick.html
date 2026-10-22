@@ -1,0 +1,228 @@
+<!DOCTYPE html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width"><title>AddmusicK</title><link rel=stylesheet href="bank.css"><script defer src="bank.js"></script></head><body>
+<div id=header><a href=".">Index</a> &mdash; <a href="ram.html">RAM map</a> &mdash; <a href="graph.html">Call graph</a> &mdash; Notes: <a href="notes-system.html">system</a> &middot; <a href="notes-snes-hardware.html">SNES hardware</a> &middot; <a href="notes-level-pipeline.html">level pipeline</a> &middot; <a href="notes-sprite-engine.html">sprite engine</a> &mdash; Lunar Magic: <a href="lm-hooks.html">hooks</a> &middot; <a href="lm-contract.html">ROM format contract</a> &middot; <a href="lm-parity.html">what LM writes</a> &middot; <a href="lm-exanimation.html">ExAnimation</a> &middot; <a href="lm-overworld.html">overworld</a> &middot; <a href="lm-file-formats.html">file formats</a> &mdash; Tools: <a href="tool-pixi.html">PIXI</a> &middot; <a href="tool-addmusick.html">AddmusicK</a> &middot; <a href="tool-gps.html">GPS</a> &mdash; <a href="#" onclick="toggleDark();return false;">Toggle dark mode</a></div>
+<div class="page notes"><h1 id="addmusick">AddmusicK</h1>
+<h2 id="what-addmusick-puts-in-the-rom">What AddmusicK puts in the ROM</h2>
+<table><tr><th>you want</th><th>look at</th></tr><tr><td>the MML language</td><td><code>doc/readme_files/syntax_reference.html</code></td></tr><tr><td>every <code>$xx</code> hex command and DSP register</td><td><code>doc/readme_files/hex_command_reference.html</code> (the densest doc in any of these repos)</td></tr><tr><td>the insertion workflow and CLI</td><td><code>doc/readme_files/general_basic_use.html</code>, <code>general_advanced_use.html</code></td></tr><tr><td>the SFX system</td><td><code>doc/readme_files/sound_effects.html</code></td></tr><tr><td>real minimal SFX sources</td><td><code>test/1DF9/</code>, <code>test/1DFC/</code> — 93 tiny MML files</td></tr><tr><td>the manifest formats</td><td><code>test/Addmusic_list.txt</code>, <code>Addmusic_sample groups.txt</code>, <code>Addmusic_sound effects.txt</code></td></tr><tr><td>the compiler</td><td><code>AddmusicK/</code> — <code>AMKd::MML</code> (parsing), <code>AMKd::Music</code>, <code>AMKd::Binary</code> (output)</td></tr></table>
+<ul>
+<li><b>The two SFX banks are <code>1DF9</code> and <code>1DFC</code></b> — SMW's two sound-effect ports. Per AMK's docs the <i>only</i> difference between them is the SPC channel used (#6 vs #7). <code>$1DFA</code> is echo control and <code>$1DFB</code> is song upload.
+</li>
+<li><code>Addmusic_sound effects.txt</code> declares SFX as <code>&lt;hex slot&gt; [flag] TAB &lt;filename&gt;</code>, resolved against the same-named folder. <code>*</code> = emit the slot as a pointer to an already-inserted effect (saves ARAM); <code>?</code> = suppress AMK's auto-appended <code>$00</code> terminator.
+</li>
+<li><b>The real SFX sources are pure <code>$xx</code> hex</b> — not a single note letter across all 93 files. Grammar is: length byte, optional volume, optional second volume (= L/R pan), then a note byte ≥ <code>$80</code>; bare notes inherit the previous header.
+</li>
+<li><b>ARAM is the binding constraint</b> on everything audio. Global songs never transfer but cost ARAM permanently; the echo buffer must be reserved up front (<code>$FA $04</code>) or you get "Echo buffer exceeded total space in ARAM"; echo delay is capped <code>$00-$0F</code> by ARAM cost. The docs warn a rogue echo buffer "can cause irreparable damage".
+</li>
+<li><b><code>&lt;ROMNAME&gt;.msc</code> is the Lunar Magic handoff</b> — AMK writes it so LM knows the song list. That is a file pipe-dream will have to read or write if it ever manages music.
+</li>
+<li>Prefers <b><code>asar.dll</code> over <code>asar.exe</code></b>, both expected in the program directory. Backs the ROM up as <code>ROMNAME~</code>.
+</li>
+<li>Also worth knowing: <b>channels 6-7 are shared with sound effects and get cut</b>, channel 0 can't be pitch-modulated, and loops cannot nest (<code>[[ ]]</code> is layer two, remote event 4 is an effective third).
+</li>
+<li><b>Dead data found in the shipped test corpus</b>: <code>test/1DFC/0E L + R scroll.txt</code> and <code>1DFC/1D Time low 2.txt</code> each hold a mid-stream <code>$00</code> followed by a verbatim copy of a 1DF9 effect. A zero length byte ends the effect, so those trailing blocks are unreachable. Flagged AMBIGUOUS in the graph — verify against <code>SoundEffect.cpp</code> before citing it.
+</li></ul>
+<h2 id="music-bringing-addmusick-into-pipe-dream">Music: bringing AddmusicK into Pipe Dream</h2>
+<p>Plan for doing AddmusicK's job (MML songs, samples, sound effects, inserted into the ROM) inside Pipe Dream, with a library window like Custom blocks, Patches and Custom sprites and a song editor. Started 2026-10-21. Modelled on <code><a href="tool-pixi.html">PIXI_PORT.md</a></code> (custom sprites), <code><a href="tool-gps.html">GPS_PORT.md</a></code> (blocks) and <code>PATCHES.md</code>. Background on the tool is in <code>ROM_TOOLING.md</code> § "AddmusicK — what to look at"; this file is the plan and its decision log. Nothing here is built yet.</p>
+<h3 id="decisions-2026-10-21">Decisions (2026-10-21)</h3>
+<table><tr><th>question</th><th>answer</th><th>consequence</th></tr><tr><td>Whose compiler and engine?</td><td><b>Our own, clean room, MIT</b>, as the sprite driver and routines were</td><td>The HertzDevil/AddmusicK repo declares <b>no licence</b> (GitHub reports <code>null</code>; the readme credits only Asar). So none of AMK's C++ or SPC700 ASM ships or is copied. It works with no AMK folder installed. Songs written for AMK must still compile and sound the same, so the target is AMK's <i>documented behaviour</i>, below.</td></tr><tr><td>What is the source of truth for behaviour?</td><td><b>AMK's documentation</b> (<code>doc/readme_files/*.html</code>: syntax, hex commands, sound effects, basic and advanced use), <b>SMW's own N-SPC behaviour</b> (the disassembly notes in this repo), the SPC700/DSP hardware docs, and <b>AMK's output as a black-box oracle</b></td><td>The oracle is <code>addmusick</code> run on a song and its compiled bytes, ARAM image and <code>.spc</code> compared with ours. Running AMK is allowed; <b>nobody writing the compiler or engine opens AMK's <code>.cpp</code> or its <code>asm/*.asm</code></b> (see "Clean-room boundary").</td></tr><tr><td>Where do songs live?</td><td><b>In project.pdp</b>: songs (name → MML text), samples (name → BRR bytes), sample groups, sound effects (1DF9 and 1DFC lists), and the global/local song list</td><td>Per <code>pdp-is-the-whole-project</code>: nothing is written to disk to build, and sharing the .pdp shares the music. Samples and songs use AMK's own file names inside the project so an AMK folder imports and exports one to one.</td></tr><tr><td>What is the song format?</td><td><b>AMK's MML, unchanged</b> (<code>.txt</code>/<code>.mml</code> with <code>#samples</code>, <code>#instruments</code>, <code>#option</code>, remote code, superloops, hex commands)</td><td>The existing library of AMK songs imports as is. Our editor adds no dialect.</td></tr><tr><td>How is it assembled?</td><td><b>Our SPC700 engine is written in Asar's <code>spc700</code> mode</b> and assembled at build, like every other ASM feature, with the SNES-side hooks in a second Asar patch</td><td>One toolchain. Needs the bundled Quasar to assemble <code>spc700</code> (open question 3).</td></tr><tr><td>How do we test it without hearing it?</td><td><b>A small SPC700 interpreter in C#</b>, as <code>Cpu65816</code> is for the 65816, to run our engine against the oracle's output; <b>Mesen</b> for the real game</td><td>The ARAM image and register writes can be compared exactly. Whether it sounds right is checked by ear in Mesen and by comparing against AMK's <code>.spc</code>.</td></tr><tr><td>Preview inside the app?</td><td><b>Later phase, optional</b>: an SPC700 + DSP player</td><td>Until then: build and Run in Mesen, or export <code>.spc</code>. A DSP (BRR, ADSR/GAIN, echo, FIR) is a project of its own and is not on the path to inserting music.</td></tr><tr><td>SA-1?</td><td><b>Same rule as everything else</b>: LoROM first, SA-1 with <code>SA1_PORT.md</code></td><td>AMK detects <code>$23</code> at <code><a href="00.html#FFD5">$00FFD5</a></code> and switches its generated addressing; our SNES patch is written the same way from the start, but unproven until <code>SA1_PORT.md</code> phase 0.</td></tr><tr><td>Lunar Magic handoff</td><td><b>Write <code>&lt;ROM&gt;.msc</code></b> beside the ROM on every build, as AMK does</td><td>LM lists song names from it (one line per song per <code>0</code>/<code>1</code> variant).</td></tr></table>
+<h3 id="what-amk-does-the-facts-we-work-from">What AMK does (the facts we work from)</h3>
+<p>From the documentation, not the source.</p>
+<ul>
+<li><b>A song</b> is a text file of up to 8 channels (<code>#0</code>-<code>#7</code>; 6 and 7 are shared with sound effects and cut when one plays). Notes <code>cdefgab r ^</code> with <code>+</code>/<code>-</code>, lengths as note values, <code>l</code> default length, <code>o &lt; &gt;</code> octave (1-6), <code>h</code> tuning, <code>{ }</code> triplets, <code>@</code> instrument (0-18, 21-29, 30+ custom), <code>v</code>/<code>w</code> channel and global volume, <code>y</code> pan (0-20, optional surround flags), <code>q</code> quantisation, <code>t</code> tempo, <code>p</code> vibrato, <code>n</code> noise, <code>&amp;</code> pitch slide, <code>?</code> no loop, <code>/</code> intro marker, <code>(&quot;x.brr&quot;,$tt)</code> sample load.
+</li>
+<li><b>Loops:</b> <code>[ ]n</code>, labelled <code>(n)[ ]m</code> and <code>(n)k</code> calls, <code>*</code> recall; none nest, but <code>[[ ]]n</code> superloops nest around them and a remote-code event type 4 is an effective third level.
+</li>
+<li><b>Remote code:</b> <code>(!n)[...]</code> defines hex commands with no notes; <code>(!n, type, arg)</code> attaches one to an event (note on, N ticks into a note, before a note ends, key off, run now, disable).
+</li>
+<li><b><code>=</code> replacements</b> (greedy, recursive, only for text after them), and <b>preprocessing</b> (<code>#define #undef #ifdef #ifndef #if #endif #error</code>) that runs before everything else.
+</li>
+<li><b>Hex commands:</b> 106 rows in <code>hex_command_reference.html</code> (<code>$DA</code> instrument ... <code>$E0-$E4</code> volume, tempo, transpose, <code>$E5</code> tremolo, <code>$E6</code> subloops, and AMK's <code>$FA</code> family). They are validated unless <code>-h</code> is given; validation turning off also turns echo bounds checking and AM4/AMM conversion off.
+</li>
+<li><b>Directives:</b> <code>#samples { #group &quot;x.brr&quot; ... }</code>, <code>#instruments { &quot;x.brr&quot; $aa $bb $cc $dd $ee }</code> (ADSR1 ≥ <code>$80</code> selects ADSR else GAIN; <code>dd.ee</code> tuning), <code>#path</code>, <code>#pad</code>, <code>#halvetempo</code>, <code>#option tempoimmunity | dividetempo n | smwvtable | noloop</code>, <code>#spc { #author ... #length }</code>, <code>#amk n</code> (parser version, appended when absent; <code>#am4</code> and <code>#amm</code> override it).
+</li>
+<li><b>Samples:</b> BRR files, grouped in <code>Addmusic_sample groups.txt</code>. <code>#default</code> is every stock SMW sample, <code>#optimized</code> only those global songs and sound effects need. A trailing <code>!</code> marks a sample "important" (always resident). Unused samples are dropped per song unless <code>-u</code>; duplicates are shared unless <code>-d</code>.
+</li>
+<li><b>Global and local songs</b> in <code>Addmusic_list.txt</code>: globals never transfer and cost ARAM permanently; locals upload on a song change, with their samples unless <code>$1DFB</code>'s caller keeps the old set.
+</li>
+<li><b>Sound effects:</b> two folders, <code>1DF9</code> (SPC channel 6) and <code>1DFC</code> (channel 7), listed in <code>Addmusic_sound effects.txt</code> with <code>*</code> (pointer to another effect) and <code>?</code> (no auto <code>$00</code>). Commands are the note subset plus <code>@x</code>, <code>@x,y</code> noise, <code>v x,y</code>, raw <code>$xx</code>, and <code>#asm</code>/<code>#jsr</code> inline SPC700.
+</li>
+<li><b>The SMW side:</b> writing <code>$1DFB</code> uploads a song (<code>$FF</code> or a missing song fades out); <code>$1DFA</code> <code>#$06</code> turns sound-effect echo on, <code>#$05</code> off (default off); echo is disabled on upload and the echo buffer must be reserved or the build stops with "Echo buffer exceeded total space in ARAM".
+</li>
+<li><b>ROM side:</b> data goes in RATS-tagged free space beyond SMW's own, preferring banks <code>$40+</code> on a 4 MB ROM (<code>-b</code> turns that off); <code>-a</code> takes untagged space too; <code>-p</code> writes the patch and files without touching the ROM; <code>-norom</code> makes <code>.spc</code> files alone. A <code>Addmusic_options.txt</code> replaces the arguments.
+</li>
+<li><b>Conversion:</b> AddmusicM songs need an <code>#amm</code> header and an <code>sXX_..</code> line rewritten as a <code>#samples</code> list; Addmusic 4.05 songs need <code>#am4</code>; <code>.bnk</code> sample banks are named in <code>#samples</code>.
+</li></ul>
+<h3 id="clean-room-boundary">Clean-room boundary</h3>
+<p>The compiler and the engine are written from the section above and from the hex command reference, not from AMK's source. Anyone writing them should not have <code>AddmusicK/*.cpp</code>, <code>Music/</code>, <code>MML/</code>, <code>Binary/</code> or <code>test/asm/*.asm</code> open; gaps go to the oracle (compile and compare), Mesen, or the SMW disassembly's own sound notes. Disclosure: the author of this plan read <code>AddmusicK.cpp</code>'s function list, its command-line option parsing, <code>generateMSC</code>, the two short functions that assemble the SNES patch and the SPC program (they only name files and scan them for a few labels), and the docs above, and nothing deeper. The shipped docs and the CLI flags are public behaviour, so that is within the rule, but a later reader should still start from this file and not from that source.</p>
+<h3 id="phases">Phases</h3>
+<p>Each phase ends shippable.</p>
+<h4 id="0-fixtures-the-oracle-and-the-spc700-interpreter">0. Fixtures, the oracle and the SPC700 interpreter</h4>
+<p><b>Status (2026-10-21): done.</b> <code>tests/AmkOracle.cs</code> runs <code>addmusick -norom -noblock &lt;songs&gt;</code> in a copy of the folder <code>PIPEDREAM_AMK</code> names and reads back each <code>.spc</code> with <code>rom/SpcFile.cs</code>; <code>AmkFact</code> skips without it. <code>rom/Spc700.cs</code> is the interpreter: all 256 opcodes with the documented cycle counts, the ports, three timers, and a DSP register file that logs every write with its cycle. It runs AMK's own engine from its own snapshot (ports reloaded from <code>$F4-$F7</code> of the dump) and keys voice 0 on in time. The corpus is 13 of AMK's 16 <code>test/music</code> songs (<code>ww</code>, <code>ww2</code>, <code>ww3</code> name a sample the folder lacks); the 93 effects ride along in every compile. Our own minimal song per command comes with phases 2 and 3. The tests are <code>AmkOracleTests</code>, <code>Spc700Tests</code> (programs assembled by Asar) and <code>Spc700AsarTests</code>.</p>
+<ul>
+<li>An oracle harness: run a user-supplied <code>addmusick</code> (one is built at <code>~/projects/romhacking/AddmusicK/test/addmusick</code>, with <code>libasar</code>) on a song with <code>-norom</code>, collect its compiled data and <code>.spc</code>. Tests that need it read <code>PIPEDREAM_AMK</code> and <b>skip without it</b>, like the Asar and SMW-ROM tests; CI has none.
+</li>
+<li><code>rom/Spc700.cs</code>: an SPC700 interpreter (64 KB ARAM, the four I/O ports, timers) with a DSP register file that records writes. Enough to run an engine and compare, not to make sound.
+</li>
+<li>A corpus: <code>test/music/*.mml</code> (16 songs), <code>test/1DF9</code>, <code>test/1DFC</code> (93 effects) and a few minimal songs written for each command.
+</li></ul>
+<h4 id="1-model-import-session-api-no-insertion">1. Model, import, session API: no insertion</h4>
+<p><b>Status (2026-10-21): done.</b> <code>data/MusicState.cs</code> is the model (<code>ProjectFile.Music</code>, so an older .pdp loads empty), <code>data/AmkImport.cs</code> reads and writes the three manifests, the options file and an AMK folder (every <code>.txt</code>/<code>.mml</code> under <code>music/</code>, every file under <code>samples/</code>, <code>1DF9/</code>, <code>1DFC/</code>, not only the ones the manifests name; a name with no file is a problem in the status), and <code>services/EditorSession.Music.cs</code> is the API: list, new, import a song (with the samples it names from beside it), set text, number a song global or local, delete, import a sample, delete a sample, import and export an AMK folder. Tests are <code>MusicTests</code>; the oracle one compiles five corpus songs from our export and from AMK's own folder and compares the ARAM and DSP state byte for byte. Not done here: the stock <code>#default</code> and <code>#optimized</code> samples are AMK's files (SMW's own samples); a project should take them from the user's ROM instead of shipping them (phase 4).</p>
+<ul>
+<li><code>ProjectFile.Music</code>: songs (name → MML), samples (name → BRR), groups (name → ordered samples with the important flag), sound effects (1DF9/1DFC lists with the <code>*</code>/<code>?</code> flags), the song list (global/local, number → song), options (AMK's flags as fields).
+</li>
+<li>Import an AMK folder: <code>Addmusic_list.txt</code>, <code>Addmusic_sample groups.txt</code>, <code>Addmusic_sound effects.txt</code>, the songs, samples, banks and effects they name, and <code>Addmusic_options.txt</code>. Export the same.
+</li>
+<li><code>services/EditorSession.Music…</code>: list, new, import, set text, delete, slot a song, add a sample, each returning a status string.
+</li>
+<li>Tests: songs, samples and effects come back byte for byte; the manifests are rewritten in AMK's own layout (CRLF, tab before the effect file name, <code>!</code>, <code>*</code>, <code>?</code>), so they match where AMK's are canonical and read the same where they are not. The real check is AMK's: given the folder we export instead of its own, <code>addmusick</code> makes the same ARAM and DSP state.
+</li></ul>
+<h4 id="2-the-mml-front-end">2. The MML front end</h4>
+<p><b>Status (2026-10-21): done</b>, with phase 3 (they were developed together against the oracle). <code>music/MmlParser.cs</code> reads the preprocessor, every directive, replacements and the whole channel language into the tree in <code>music/MmlSong.cs</code>; errors carry line and column. Remote code (<code>(!n)[...]</code>, <code>(!n, type, arg)</code>) is parsed and compiled from the documentation only: AddmusicK 1.0.5 cannot compile its own documented syntax, so there is nothing to check it against.</p>
+<ul>
+<li>Preprocessor, lexer and parser for everything in "What AMK does", to a syntax tree with line and column on every node. Errors read as AMK's do and point at the text.
+</li>
+<li>Tests: the whole corpus parses; each documented command has a case; each documented error (nested loop, bad hex, unknown sample) fails the way the docs say.
+</li></ul>
+<h4 id="3-the-back-end-songs-to-n-spc-data">3. The back end: songs to N-SPC data</h4>
+<p><b>Status (2026-10-21): done.</b> <code>music/MmlCompiler.cs</code>. All 13 corpus songs compile to AddmusicK's exact bytes (up to 33 KB), 65+36 golden vectors run without the oracle, and <code>tools/amk/fuzz.py</code> (random songs from the whole command set, compared with the oracle) agrees on about 99.5% of songs. What the oracle taught, none of it in its documentation: the layout (phase list, pointer tables, instrument table, channels, then every subroutine after every channel), <code>[ ]</code> loops compiled as subroutines called with <code>$E9</code>, the duration/quantisation bytes written only when they changed and forgotten after loops, intro markers and channel re-selection, how a long note splits (halves up to 254 ticks, else 127s), a slide (<code>&amp;</code>) splitting differently and emitting <code>$DD</code> before the next note, the loop-versus-text rules for <code>h</code> and <code>@</code>, empty channels, the option bytes living in channel 0, <code>$EF</code>'s rotated parameters, tempo division of every duration field, and the hex validations. Known gaps: percussion after a pitch-envelope hex command in a superloop (one fuzz case), and anything only a later AMK version does.</p>
+<ul>
+<li>Tree to bytes: note and rest durations, ties, triplets, quantisation, loops, superloops, remote code, replacements, hex commands, intro and <code>?</code>, tempo and <code>#halvetempo</code>/<code>dividetempo</code>.
+</li>
+<li>A per-channel size report (what <code>-v</code> prints).
+</li>
+<li>Tests: <b>compiled bytes equal the oracle's</b> for every corpus song, command by command. This is the phase that decides whether existing songs work.
+</li></ul>
+<h4 id="4-samples-instruments-and-aram-layout">4. Samples, instruments and ARAM layout</h4>
+<p><b>Status (2026-10-22): done.</b> <code>music/MusicLayout.cs</code> lays one song out: engine at <code>$0400</code>, song info at <code>$03F0</code> (song, instrument table, directory page), the sample directory on the next page, the song, its samples (groups' then its own, the compiler's numbering), and the echo buffer at the top for the song's longest delay, refusing a song that runs into it with AMK's error. <code>music/SmwSound.cs</code> reads SMW's 20 samples from the ROM's own upload at <code><a href="0F.html#8000">$0F8000</a></code> (byte for byte AMK's <code>samples/default/*.brr</code>), so no AMK folder is needed for them. <code>MusicLayoutTests</code> checks every custom instrument's sample in dv, ek and ct against AMK's ARAM. A group's sample that is not important (no <code>!</code>) and that nothing in the song names (an instrument set or defined, <code>$F3</code>) is not uploaded, as AMK leaves it out (measured); important ones stay in ARAM from power-on.</p>
+<ul>
+<li>BRR validation, <code>#instruments</code> tables, sample groups, per-song dropping of unused samples, duplicate sharing, global songs, the ARAM map (engine, songs, sample table aligned <code>$100</code>, samples, sound effects, echo buffer) and the echo-bounds check, with AMK's error.
+</li>
+<li>Tests: layout equals the oracle's <code>.spc</code> ARAM for the corpus, byte for byte where the layout is specified and by region where it is ours to choose.
+</li></ul>
+<h4 id="5-our-engine-and-the-snes-side">5. Our engine and the SNES side</h4>
+<p><b>Status (2026-10-22): done; Mesen check outstanding.</b> <code>data/musicdriver/main.asm</code> plays every music command and matches AddmusicK's engine, register by register, on every corpus song (<code>MusicEngineTests</code>, <code><a href="tool-addmusick.html">reference/AMK_ENGINE.md</a></code> for what was measured and where AddmusicK is not followed: its lag under load, two hangs, and the remote-code syntax its 1.0.5 build cannot compile). <code>data/musicdriver/snes.asm</code> is the main CPU's side, written from SMW's disassembly and the boot ROM's protocol: power-on uploads the engine, effects, global songs and the resident samples; the NMI uploads a local song when <code>$1DFB</code> asks for one not in ARAM, then hands songs and effects to the ports. <code>data/MusicInsert.cs</code> builds the block lists and runs from <code>RomBuilder</code> after the patches. <code>$1DFB</code> <code>$FF</code> or a song the ROM lacks fades out over 240 ticks; <code>$1DF9</code> <code>$FF</code> (hurry up) adds 10 to the tempo and plays SMW's jingle, until a level entered from the map uploads its song again (all measured against AddmusicK and SMW's own engine). SMW's song numbers are rewritten as AddmusicK's at every <code>$1DFB</code> site and table (<code>MusicInsert.SongSites</code>, matched by playing SMW's songs against AddmusicK's originals); a site another patch changed is left with a warning, and a ROM whose sound code is not SMW's is refused. <code>MusicSnesTests</code> runs SMW's 65816 code and ours against the SPC interpreter with the boot ROM modelled. Not done: a <code>.msc</code> for Lunar Magic (Pipe Dream names the songs itself), and the check in Mesen.</p>
+<ul>
+<li>The SPC700 engine in <code>data/musicdriver/</code> (Asar <code>spc700</code>): the N-SPC command set and AMK's hex commands per the reference, the song and sound-effect channels, volume, pan, pitch, vibrato, tremolo, echo, the <code>$1DFA</code>/<code>$1DFB</code> protocol, and <code>#asm</code>/<code>#jsr</code> slots.
+</li>
+<li>The SNES patch: hook SMW's upload routines and its music and sound-effect tables to the library's, RATS-tag the data, write <code>&lt;ROM&gt;.msc</code>. Prep's <code>RomPrep.StampedRanges</code> lists the hooks so overlap warnings keep working.
+</li>
+<li>Tests: our engine and AMK's, fed the same song, leave the DSP register writes the same in the interpreter; in Mesen a level plays its song, a song change uploads, the P-switch and star songs play from the global set, a sound effect plays and cuts a channel.
+</li></ul>
+<h4 id="6-the-window-and-the-editor">6. The window and the editor</h4>
+<p><b>Status (2026-10-22): done.</b> ASM ▸ Music… lists songs, sound effects and samples. Effects are imported into a slot of <code>$1DF9</code> or <code>$1DFC</code>, edited in the song editor (checked by <code>SfxCompiler</code>) and emptied; a slot the project fills replaces SMW's effect there and the others stay SMW's. The song editor shows each channel's bytes and an ARAM bar (the room a local song has, as the build lays it out). The overworld has no music picker to name.</p>
+<ul>
+<li>ASM ▸ Music… lists the project's songs, samples and effects to add, import, slot, edit and remove.
+</li>
+<li>A song editor: the MML text with colouring, the error list with jump to line, the per-channel sizes, an ARAM usage bar, and Open in your editor, as blocks and sprites have.
+</li>
+<li>Music names in the level header and the overworld pickers come from the list instead of numbers. (Done for the level header; the overworld has no music picker yet.)
+</li>
+<li>Build runs music after patches and blocks, before sprites; its status and warnings show in the build panel.
+</li></ul>
+<h4 id="7-sound-effects">7. Sound effects</h4>
+<p><b>Status (2026-10-22): done.</b> All 93 of AddmusicK's effects play as in its engine (<code>SfxTests</code>); <code>music/SfxCompiler.cs</code> compiles the note syntax as AddmusicK 1.0.5 does (measured, not as its readme says); <code>#jsr</code> to pause and unpause become the engine's own.</p>
+<ul>
+<li>1DF9 and 1DFC effects through the same compiler (the note subset, noise, stereo volume, raw hex, repeat) and inline <code>#asm</code>/<code>#jsr</code>.
+</li>
+<li>Tests: the 93 effects compile to the oracle's bytes.
+</li></ul>
+<h4 id="8-preview">8. Preview</h4>
+<p><b>Status (2026-10-22): export done.</b> The song editor's Export .spc… writes the song as it stands, laid out with our engine and the project's samples and effects, with ID666 tags from <code>#SPC</code> and <code>#length</code>; libgme plays the files. <b>The in-app player is done too:</b> <code>rom/SpcDsp.cs</code> is the S-DSP written from fullsnes (sample by sample, not cycle-exact), and its audio matches libgme's (correlation ≥ 0.99 on our songs and on AddmusicK's own .spc files, echo included: <code>SpcDspTests</code>). The song editor's Play renders the song's <code>#length</code> (two minutes without one) at about 100× real time and hands the .wav to the system's player (afplay, paplay or aplay, PowerShell); no audio library, so no streaming.</p>
+<ul>
+<li>Export <code>.spc</code> from any song (the format is public and the oracle gives us files to compare).
+</li>
+<li>Optional: an in-app SPC700 + DSP player so a song plays from the editor with no emulator.
+</li></ul>
+<h4 id="9-compatibility">9. Compatibility</h4>
+<p><b>Status (2026-10-22): done but for <code>.bnk</code>.</b> <code>#am4</code> and <code>#amm</code> songs are converted as AMK converts them (measured): the header's echo-buffer writes dropped, <code>$ED $80</code>/<code>$81</code> (Addmusic 4's own), stray bytes under <code>$80</code>, notes before the first channel. Five real Addmusic 4 songs compile to AMK's bytes, and so do AMK 1.0.6's 39 originals that 1.0.5 can compile. <code>.bnk</code> banks (exactly <code>$8000</code> bytes, ARAM <code>$8000-$FFFF</code>) are not read: the oracle build crashes loading one, so there is nothing to measure against.</p>
+<ul>
+<li>AM4 and AMM conversion (<code>-c</code>), <code>.bnk</code> banks, <code>#amk</code> versions, the options that change how a song is read, as far as the docs describe them.
+</li></ul>
+<h3 id="open-questions">Open questions</h3>
+<ol>
+<li><b>Which AMK?</b> The docs here describe the HertzDevil fork of 1.0.5. Later releases (1.0.9, 1.0.10, 1.1) added hex commands and options. Do we target 1.0.5 as the floor and add later features when a song needs them, or pick a newer version's documentation first?
+</li>
+<li><b>The oracle's version.</b> Output differs between releases. The oracle is the local 1.0.5 build; a song that relies on a later feature will not compile there and has no oracle.
+</li>
+<li><b>Does the bundled Quasar assemble <code>spc700</code>? Yes (2026-10-21).</b> <code>norom</code> + <code>arch spc700</code> + <code>org $0000</code> + <code>base $0200</code> gives flat bytes at file offset 0 and labels at their ARAM addresses, through <code>Asar.Patch</code> on an in-memory buffer (<code>Spc700AsarTests</code>). Syntax notes for the engine's author: no <code>!</code> absolute prefix (the operand's size picks direct page or absolute; <code>.b</code>/<code>.w</code> force it), and <code>immediate,dp</code> stores are written <code>mov $f2,#$6c</code>, <code>tset</code>/<code>tclr</code> take the accumulator (<code>tset $0030,a</code>), and <code>adc a,x</code> is not an instruction (<code>adc a,(x)</code> is).
+</li>
+<li><b>Engine compatibility without AMK's engine.</b> Songs depend on AMK's engine details (timing of fades, slides, the velocity table, how <code>q</code> and ties interact). The hex reference and the oracle pin most of it; some will only show up as songs that sound different. How much divergence is acceptable, and is "same DSP writes in the interpreter" the bar?
+</li>
+<li><b>ARAM layout.</b> Songs that fit AMK might not fit ours, or the reverse, if our engine is bigger or smaller. The echo-bounds check will report that honestly, but it can change which songs build.
+</li>
+<li><b>ROM space.</b> AMK writes into RATS-tagged free space and prefers <code>$40+</code> on 4 MB ROMs. How does that sit with <code>RatsWriter</code> and the sprite driver's data?
+</li>
+<li><b>Existing music on the base.</b> A base already carrying AMK's data (any ROM made with AMK) must be refused or cleaned, as a PIXI-patched base is by the sprite driver (<code>STSD</code> check). What marks AMK's insertion, and does cleaning it need the tool's own undo?
+</li>
+<li><b>Preview scope.</b> Is an in-app player worth its cost, or is Mesen plus <code>.spc</code> export enough?
+</li>
+<li><b>Sample sources.</b> BRR is the only format. Do we want WAV import (resample and encode to BRR) later? AMK itself has none.
+</li></ol>
+<h2 id="the-music-engine-what-addmusick-s-does-as-measured-and-what-ours-must-do">The music engine: what AddmusicK's does, as measured, and what ours must do</h2>
+<p>Working notes for <a href="tool-addmusick.html">AMK_PORT.md</a> phase 5. Everything here was read off AddmusicK's <i>behaviour</i> (its songs run in <code>rom/Spc700.cs</code>, the DSP writes read back by <code>rom/SpcTrace.cs</code>, <code>tools/amk/amk_events.py</code>, <code>amk_voice.py</code> and the ad-hoc comparison in <code>tests/MusicEngineTests.cs</code>), or taken from its documentation (<code>doc/readme_files/*.html</code>), never from its engine source. Our engine is <code>data/musicdriver/main.asm</code>, SPC700 code of our own assembled by Asar's <code>spc700</code> mode, tested by playing the same song in both engines and comparing what each tells the DSP.</p>
+<h3 id="how-the-two-engines-are-compared">How the two engines are compared</h3>
+<p><code>MusicEngineTests.Differences</code>: for each voice, the key-ons in order (pitch, sample, ADSR, GAIN exact; volume within 1), the gap from each key-on and key-off to the one before (within 1.5 ticks + 6%), volume and pitch at fixed points into each note (against theirs over a quarter tick either side; pitch within 1/128 of itself), and each song-wide DSP register's sequence of values. <code>corpus_report</code> (PIPEDREAM_ENGINE_REPORT=1) runs the whole oracle corpus; <code>adhoc</code> (tools/amk/adhoc.sh FILE) any song; <code>load</code> (PIPEDREAM_MML) profiles our engine's time.</p>
+<p>The interpreter's instruction and timer timing were checked against blargg's snes_spc in libgme (<code>tools/amk/cycle_check.py</code>): every instruction group and the timer counter's overflow agree to the cycle.</p>
+<h4 id="where-addmusick-s-engine-is-not-the-reference">Where AddmusicK's engine is not the reference</h4>
+<ul>
+<li><b>It falls behind.</b> With many channels running effects it cannot finish a tick inside a timer tick and loses some: about 1% with six vibrato channels, 5% on dv.mml, 23% on ek.mml (t192, eight channels). snes_spc agrees, so hardware would too. Ours keeps time (effects run once per main-loop pass, unchanged pitches are not resent), so the comparison times each event from the one before, not from the start.
+</li>
+<li><b><code>$DD</code> straight after a loop's end, or before any note, stops the song for good</b> (exp2.mml). Not copied.
+</li>
+<li><b><code>$E5</code> with depth <code>$FF</code> after a note hangs it.</b> Not copied.
+</li></ul>
+<h3 id="timing">Timing</h3>
+<ul>
+<li>Timer 0 runs at 500 Hz (target 16). Each timer tick adds <code>tempo + 1</code> to a one-byte accumulator; a carry is a song tick: <b>ticks per second = 500/256 × (T+1)</b>. A quarter note is 48 ticks. With no <code>t</code>, the tempo is <b>53</b>.
+</li>
+<li>Effects (vibrato, bends, pan fades, tremolo) move every <i>timer</i> tick, the time into the note being song ticks plus the accumulator's fraction. Bends, tremolo and pan fades run one timer tick (or tick) ahead, as measured.
+</li>
+<li>The first channel to reach the end of its data ends the phrase for every channel; notes others started that tick are dropped, and the next phrase starts on the same tick. A new phrase keeps each channel's instrument, volume, pan and <code>q</code>.
+</li></ul>
+<h3 id="notes">Notes</h3>
+<ul>
+<li><b>Quantisation:</b> a note is released at tick <code>max(len × T[q] &gt;&gt; 8, 1)</code> and again at <code>len − 2</code>, T = <code>33 66 80 99 B3 CC E6 FF</code>. Rests are released at their start and get the same two. A release is skipped when a tie follows (durations, <code>q</code> bytes and commands stepped over; a call, loop, arpeggio or the end of data counts as no tie).
+</li>
+<li><b>Pitch:</b> the top octave from a 12-entry table (<code>085F ... 0FCD</code>, then <code>10BE</code>), a fraction of a semitone interpolating between neighbours there (truncated), each octave below half the one above, then × the instrument's tuning (<code>P × whole + (P × fraction &gt;&gt; 8)</code>).
+</li>
+<li><b>Transposition:</b> <code>$FA $02</code> (channel) and <code>$E4</code> (all) add semitones; the sum wraps in <b>seven</b> bits (<code>$85</code> is +5, <code>$7B</code> is −5), and a result past the top note plays at pitch 0. Percussion is transposed too.
+</li>
+<li><b><code>$EE f</code>:</b> f/256 of a semitone on every note.
+</li>
+<li><b>Instruments:</b> @0-@18 SMW's; <b>@19 and @20 leave the instrument as it is</b>; @21-@29 are percussion: each plays a fixed note (<code>A8 A4 A1 A4 A4 9C A6 A6 A1</code>) on its own instrument (tuning <code>3 7 7 7 8 2 8 8 3</code>), and the channel keeps that instrument for later notes. No <code>@</code> at all plays @0.
+</li>
+<li><b><code>$ED</code>:</b> <code>aa &lt; $80</code>: ADSR1 = aa | $80, ADSR2; <code>$80 gg</code>: ADSR1 = 0 and GAIN = gg. <b><code>$FA $01 gg</code>:</b> ADSR1 &amp;= $7F, GAIN = gg. <b><code>$F4 $09</code></b> or a new <code>@</code> undoes both.
+</li></ul>
+<h3 id="volume">Volume</h3>
+<ul>
+<li><code>P = ((((v × vel) &gt;&gt; 8) × w) &gt;&gt; 8)² &gt;&gt; 9</code>; <code>$FA $03 a</code> makes it <code>P + (P × a &gt;&gt; 8)</code>; then left = <code>P × pan[y] &gt;&gt; 7</code>, right = <code>P × pan[20 − y] &gt;&gt; 7</code>, pan = <code>00 01 03 07 0D 15 1E 29 34 42 51 5E 67 6E 73 77 7A 7C 7D 7E 7F</code> (interpolated, truncated, while a pan fades). A surround bit flips that side's sign. Defaults: <code>w</code> 192, <code>v</code> 255, <code>y</code> 10, velocity table N-SPC's.
+</li>
+<li>A <code>v</code>, <code>y</code>, <code>w</code> or <code>$FA $03</code> change is sent on its tick, mid-note too.
+</li></ul>
+<h3 id="effects">Effects</h3>
+<ul>
+<li><b>Vibrato <code>$DE d r a</code>:</b> after d ticks, phase = (t − d) × r; a triangle, +a/256 semitone at a quarter, −a/256 at three quarters. <b><code>$EA n</code></b>: the depth grows from 0 at key-on over n ticks. <b><code>$DF</code></b> returns the note to its pitch.
+</li>
+<li><b>Bend <code>$DD d l n</code></b> (read with the note just before it): from the note to n, starting d ticks in, over l ticks, linear in semitones; then held at n.
+</li>
+<li><b><code>$EB d l s</code> / <code>$EC d l s</code>:</b> every later note bends by s semitones (release), or starts at note − s and bends back (attack). A length of 0 turns them off.
+</li>
+<li><b>Tremolo <code>$E5 d r a</code>:</b> volume × (1 − a/256 × u), u a triangle from 0 up to 1 at half a period; phase (t + 1 − d) × r. It applies at key-on too. Depth 0 turns it off.
+</li>
+<li><b>Fades</b> <code>$E8</code> volume, <code>$DC</code> pan, <code>$E1</code> global volume, <code>$E3</code> tempo: a signed 8.8 step a tick, the first on the tick the command is read, landing on the target. <b>A length of 0 does nothing.</b> Volume steps per tick; a pan fade also glides between ticks.
+</li></ul>
+<h3 id="echo">Echo</h3>
+<ul>
+<li>At song start and <b>every time the phrase list loops</b>: FLG <code>$60</code>, ESA <code>$FF</code>, EDL 0, FLG <code>$40</code>, FLG <code>$00</code>; the buffer reserved is forgotten.
+</li>
+<li><b><code>$EF</code></b> (as compiled: channels, left, right become EON, EVOL L, EVOL R in the byte order AddmusicK stores them).
+</li>
+<li><b><code>$F1 d f n</code>:</b> if d is beyond the buffer already made: FLG <code>$60</code>, ESA = <code>$100 − 8d</code> (<code>$FF</code> for 0), EDL = d, then the whole song stands still for 13 × d timer ticks, FLG <code>$40</code>, another 13 × d, FLG <code>$00</code>. Otherwise just EDL. Then EFB = f, the eight FIR coefficients from filter n (0: <code>FF 08 17 24 24 17 08 FF</code>, 1: <code>7F 00 ...</code>, 2: <code>5F 08 DE 08 65 09 F4 09</code>), and the echo volumes again.
+</li>
+<li><b><code>$FA $04 n</code></b> makes the buffer for delay n up front (with the same wait) so later <code>$F1</code>s up to n do not pause.
+</li>
+<li><b><code>$F0</code></b>: EON, EVOL 0, FLG <code>$20</code>. <b><code>$F2 l L R</code>:</b> echo volume fade, one step fewer than l, not landing on the target. <b><code>$F5</code></b>: the eight FIR coefficients. <b><code>$F4 $03</code></b>: this channel's echo bit toggled.
+</li>
+<li>PMON, NON and EON are written every song tick.
+</li></ul>
+<h3 id="still-to-do">Still to do</h3>
+<p><code>$F4 $01</code> legato, <code>$02</code> light staccato, <code>$08</code> velocity table, <code>$00</code>/<code>$06</code> Yoshi drums, <code>$05</code> sync, <code>$07</code> tempo hike; <code>$F6</code> DSP write; <code>$F8</code> noise; <code>$FA $00</code> pitch modulation; <code>$FB</code> arpeggio, trill, glissando; <code>$FC</code> remote commands; <code>$F3</code> sample load; <code>$F9</code> data send; sound effects on channels 6 and 7; the port protocol.</p></div></body></html>

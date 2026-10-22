@@ -254,20 +254,43 @@ def load_annotations():
 NOTES = {"SYSTEM_NOTES": "system", "SNES_HARDWARE_NOTES": "SNES hardware",
          "LEVEL_PIPELINE_NOTES": "level pipeline", "SPRITE_ENGINE_NOTES": "sprite engine"}
 notes_page = lambda stem: "notes-" + stem[:-len("_NOTES")].lower().replace("_", "-") + ".html"
+# Lunar Magic write-ups: the hooks catalog lives here (bank/docs); the rest are pipe-dream's reference/ docs.
+LM_DOCS = {"LM_HOOKS": "hooks", "CONTRACT": "ROM format contract", "LM_PARITY": "what LM writes",
+           "EXANIMATION": "ExAnimation", "OVERWORLD": "overworld", "LM_FILE_FORMATS": "file formats"}
+lm_page = lambda stem: "lm-" + stem.lower().replace("lm_", "").replace("_", "-") + ".html"
+# Tool pages: each is that tool's section of ROM_TOOLING.md followed by its own write-ups, one page per tool.
+TOOLS = {"pixi": ("PIXI", "PIXI", ["PIXI_PORT", "PIXI_ROUTINES"]),
+         "addmusick": ("AddmusicK", "AddmusicK", ["AMK_PORT", "AMK_ENGINE"]),
+         "gps": ("GPS", "GPS", ["GPS_PORT"])}
+tool_of = {stem: key for key, (_, _, stems) in TOOLS.items() for stem in stems}
+
+
+def doc_page(stem):
+    if stem in tool_of:
+        return f"tool-{tool_of[stem]}.html"
+    return notes_page(stem) if stem in NOTES else lm_page(stem)
+
+
+def md_demote(text):
+    """One heading level down (outside code fences), so a doc can sit under a page's own title."""
+    out, fence = [], False
+    for l in text.splitlines():
+        fence ^= l.startswith("```")
+        out.append("#" + l if not fence and re.match(r"^#{1,5} ", l) else l)
+    return "\n".join(out)
 
 
 def md_inline(t, post):
     """Inline markdown: `code`, **bold**, *italic*. post() adds links to the escaped text."""
-    out = []
-    for i, part in enumerate(t.split("`")):
-        if i % 2:
-            out.append(f"<code>{post(html.escape(part))}</code>")
-        else:
-            part = html.escape(part, quote=False)
-            part = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", part)
-            part = re.sub(r"(?<![*\w])\*(?![\s*])(.+?)(?<![\s*])\*(?![*\w])", r"<i>\1</i>", part)
-            out.append(post(part))
-    return "".join(out)
+    codes = []  # code spans are set aside first, so **bold** and *italic* can wrap them
+
+    def stash(m):
+        codes.append(f"<code>{post(html.escape(m.group(1)))}</code>")
+        return f"\0{len(codes) - 1}\0"
+    t = html.escape(re.sub(r"`([^`]*)`", stash, t), quote=False)
+    t = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", t)
+    t = re.sub(r"(?<![*\w])\*(?![\s*])(.+?)(?<![\s*])\*(?![*\w])", r"<i>\1</i>", t)
+    return re.sub(r"\0(\d+)\0", lambda m: codes[int(m.group(1))], post(t))
 
 
 def md_to_html(text, post=lambda s: s):
@@ -298,7 +321,7 @@ def md_to_html(text, post=lambda s: s):
             i += 1
         elif ln.startswith("|") and i + 1 < len(lines) and re.match(r"^\|[\s:|-]+\|\s*$", lines[i + 1]):
             flush()
-            cells = lambda r: [c.strip() for c in r.strip().strip("|").split("|")]
+            cells = lambda r: [c.strip() for c in re.split(r"\|(?=(?:[^`]*`[^`]*`)*[^`]*$)", r.strip().strip("|"))]  # not in `code`
             rows = [f"<tr>{''.join(f'<th>{inl(c)}</th>' for c in cells(ln))}</tr>"]
             i += 2
             while i < len(lines) and lines[i].startswith("|"):
@@ -338,6 +361,8 @@ def _md_check():
     assert '<h1 id="t">T</h1>' in h and "<i>b</i>" in h and "<b>c</b>" in h and "<code>d*</code>" in h, h
     assert "<ol><li>one more</li><li>two<ul><li>sub</li></ul></li><li>three</li></ol>" in h.replace("\n", ""), h
     assert "<td>2</td>" in h and "<pre class=md>x &lt; y</pre>" in h, h
+    assert md_inline("**`a` b** `c*` *d*", lambda x: x) == "<b><code>a</code> b</b> <code>c*</code> <i>d</i>"
+    assert "<td><code>a | b</code></td><td>c</td>" in md_to_html("| x | y |\n|---|---|\n| `a | b` | c |")
 
 
 def main():
@@ -663,29 +688,42 @@ registers show their name on hover. {nsec} sections across {len(parsed)} banks, 
 <li><a href="ram.html">RAM map</a> &ndash; what every RAM address does, with the instructions that touch it</li>
 <li><a href="graph.html">Call graph</a> &ndash; interactive graph of the named routines (735 nodes, 53 communities)</li>
 <li>Notes: {", ".join(f'<a href="{notes_page(k)}">{v}</a>' for k, v in NOTES.items())} &ndash; how the game runs, traced from the code</li>
+<li>Lunar Magic: {", ".join(f'<a href="{lm_page(k)}">{v}</a>' for k, v in LM_DOCS.items())} &ndash; every place LM hooks into SMW, and the formats it writes</li>
+<li>Tools: {", ".join(f'<a href="tool-{k}.html">{name}</a>' for k, (name, _, _) in TOOLS.items())} &ndash; what each tool puts in the ROM, and how Pipe Dream does the same job</li>
 </ul>
 <h2>Credits</h2>
 <p>SMWDisC was written on etherpad by Smallhacker, 1024, lolcats439, Roy, YoshiCookieZeus, Imamelia, Nicol Bolas, Buster Beetle,
-Gekko, Kernigh, Maxx, Edit1754, Alcaro and others; all.log by MikeyK250. English routine names, summaries and rewritten comments
-were produced with Claude and reviewed against the code. Super Mario World is &copy; Nintendo.</p>
+Gekko, Kernigh, Maxx, Edit1754, Alcaro and others; all.log by MikeyK250. Super Mario World is &copy; Nintendo.</p>
 </div></body></html>""", encoding="utf-8")
 
-    # Notes: the markdown write-ups next to the disassembly, as pages here. $BBAAAA addresses link to their
-    # line, and a mention of another notes file links to its page.
+    # Notes and Lunar Magic docs: markdown write-ups as pages here. $BBAAAA addresses link to their line,
+    # and a mention of another of these files (FOO.md) links to its page.
     def note_links(t):
         t = re.sub(r"\$([0-9A-F]{2})([0-9A-F]{4})\b", lambda m: f'<a href="{m.group(1)}.html#{m.group(2)}">{m.group(0)}</a>'
                    if m.group(1) in parsed and int(m.group(2), 16) in addrs[m.group(1)] else m.group(0), t)
-        return re.sub(r"\b(\w+_NOTES)\.md\b", lambda m: f'<a href="{notes_page(m.group(1))}">{m.group(0)}</a>'
-                      if m.group(1) in NOTES else m.group(0), t)
+        return re.sub(r"\b(?:reference/)?(\w+)\.md\b", lambda m: f'<a href="{doc_page(m.group(1))}">{m.group(0)}</a>'
+                      if m.group(1) in NOTES or m.group(1) in LM_DOCS or m.group(1) in tool_of else m.group(0), t)
     notes_nav = ('<div id=header><a href=".">Index</a> &mdash; <a href="ram.html">RAM map</a> &mdash; <a href="graph.html">Call graph</a>'
                  ' &mdash; Notes: ' + " &middot; ".join(f'<a href="{notes_page(k)}">{v}</a>' for k, v in NOTES.items())
+                 + ' &mdash; Lunar Magic: ' + " &middot; ".join(f'<a href="{lm_page(k)}">{v}</a>' for k, v in LM_DOCS.items())
+                 + ' &mdash; Tools: ' + " &middot; ".join(f'<a href="tool-{k}.html">{name}</a>' for k, (name, _, _) in TOOLS.items())
                  + ' &mdash; <a href="#" onclick="toggleDark();return false;">Toggle dark mode</a></div>')
-    for stem in NOTES:
-        md_src = (SRC / f"{stem}.md").read_text(encoding="utf-8")
+    sources = {**{k: SRC / f"{k}.md" for k in NOTES},
+               **{k: HERE / "docs" / f"{k}.md" if k == "LM_HOOKS" else SRC.parent / f"{k}.md" for k in LM_DOCS}}
+    for stem, path in sources.items():
+        md_src = path.read_text(encoding="utf-8")
         title = next((l[2:].strip() for l in md_src.splitlines() if l.startswith("# ")), stem)
-        (HERE / notes_page(stem)).write_text(f"""{head(html.escape(title))}
+        (HERE / doc_page(stem)).write_text(f"""{head(html.escape(title))}
 {notes_nav}
 <div class="page notes">{md_to_html(md_src, note_links)}</div></body></html>""", encoding="utf-8")
+    tooling = (SRC.parent / "ROM_TOOLING.md").read_text(encoding="utf-8")
+    for key, (name, section, stems) in TOOLS.items():
+        m = re.search(rf"^## {re.escape(section)} — what to look at\n(.*?)(?=^## |\Z)", tooling, re.M | re.S)
+        parts = [f"# {name}", f"## What {name} puts in the ROM", m.group(1).strip()]
+        parts += [md_demote((SRC.parent / f"{st}.md").read_text(encoding="utf-8")) for st in stems]
+        (HERE / f"tool-{key}.html").write_text(f"""{head(html.escape(name))}
+{notes_nav}
+<div class="page notes">{md_to_html(chr(10).join(p + chr(10) for p in parts), note_links)}</div></body></html>""", encoding="utf-8")
 
     g = SRC / "graph" / "graph.html"
     if g.exists():
