@@ -72,10 +72,8 @@ nav .dc svg{width:16px;height:16px;fill:#fff}
 .hero-copy{text-align:center;max-width:760px;margin:0 auto}
 .cta{margin-top:32px;display:flex;flex-direction:column;align-items:center;gap:12px}
 .cta .mono{color:rgba(136,136,144,.75)}
-.tile{position:absolute;width:48px;height:48px;border-radius:10px;background:var(--panel);
-  border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 8px 24px rgba(0,0,0,.5);pointer-events:none}
-.tile svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:1.6}
+.tile{position:absolute;width:48px;height:48px;pointer-events:none}
+.tile img{width:48px;height:48px;image-rendering:pixelated;display:block}
 .t1{top:8px;left:32px;transform:rotate(-6deg)}.t2{top:170px;left:-8px;transform:rotate(4deg)}
 .t3{top:330px;left:64px;transform:rotate(-3deg)}.t4{top:24px;right:40px;transform:rotate(5deg)}
 .t5{top:190px;right:-8px;transform:rotate(-4deg)}.t6{top:330px;right:56px;transform:rotate(3deg)}
@@ -203,13 +201,13 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
 </div></nav>
 
 <header class="hero"><div class="wrap">
-  <!-- tiles are decorative: mushroom, pipe, coin, ? block, star, feather -->
-  <div class="tile t1"><svg viewBox="0 0 24 24"><path d="M4 13c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4v-1z"/><path d="M8 14v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-4"/><circle cx="9" cy="9.5" r="1.5" fill="#fff"/><circle cx="15" cy="9.5" r="1.5" fill="#fff"/></svg></div>
-  <div class="tile t2"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="4" rx="1"/><path d="M7 8v12h10V8"/></svg></div>
-  <div class="tile t3"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><rect x="10.5" y="8" width="3" height="8" rx="1.5"/></svg></div>
-  <div class="tile t4"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M10 9a2 2 0 1 1 3 1.7c-.7.5-1 1-1 1.8v.5"/><circle cx="12" cy="16.5" r=".75" fill="#fff"/></svg></div>
-  <div class="tile t5"><svg viewBox="0 0 24 24"><polygon points="12 3 14.8 8.8 21 9.7 16.5 14.1 17.6 20.3 12 17.3 6.4 20.3 7.5 14.1 3 9.7 9.2 8.8"/></svg></div>
-  <div class="tile t6"><svg viewBox="0 0 24 24"><path d="M20 4c-5 0-9 4-10 9l-1 5 5-1c5-1 9-5 9-10V4z"/><path d="M9 18l7-7"/></svg></div>
+  <!-- decorative: item sprites and blocks rendered from Super Mario World -->
+  <div class="tile t1"><img src="/icons/mushroom.png" width="16" height="16" alt=""></div>
+  <div class="tile t2"><img src="/icons/fire-flower.png" width="16" height="16" alt=""></div>
+  <div class="tile t3"><img src="/icons/feather.png" width="16" height="16" alt=""></div>
+  <div class="tile t4"><img src="/icons/question-block.png" width="16" height="16" alt=""></div>
+  <div class="tile t5"><img src="/icons/red-switch-block.png" width="16" height="16" alt=""></div>
+  <div class="tile t6"><img src="/icons/on-off-block.png" width="16" height="16" alt=""></div>
 
   <div class="hero-copy">
     <h1>The open-source<br>level editor<br>for Mario hacks.</h1>
@@ -429,7 +427,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
 </div></section>
 
 <footer><div class="wrap">
-  <span>Pipe Dream &middot; MIT licensed. Not affiliated with Nintendo. Super Mario World is a trademark of Nintendo. No game data is distributed here.</span>
+  <span>Pipe Dream &middot; MIT licensed. Not affiliated with Nintendo. Super Mario World is a trademark of Nintendo. The six item sprites in the header are from the game; Pipe Dream itself ships no game data.</span>
   <nav>
     <a href="https://github.com/john-sparwasser/pipe-dream">GitHub</a>
     <a href="https://discord.gg/xwS9Ngp6CD">Discord</a>
