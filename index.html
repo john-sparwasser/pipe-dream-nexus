@@ -176,6 +176,8 @@ nav .dc svg{width:16px;height:16px;fill:#fff}
 .dl-meta a,.dl-mac a,.prose a{color:var(--text)}
 .prose{max-width:68ch}
 .prose p{margin-top:16px}
+ul.prose{padding-left:20px}
+ul.prose li{margin-top:16px;color:var(--dim)}
 
 .final{text-align:center;padding:112px 0}
 .final h2{font-size:clamp(2.2rem,5vw,3rem)}
@@ -401,20 +403,20 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
 
 <section id="resources"><div class="wrap">
   <h2>Resources.</h2>
-  <div class="prose">
-    <p><a href="/bank/">Super Mario World bank logs</a> is the game's disassembly split by ROM bank
-       and written up as browsable pages, in the style of
+  <ul class="prose">
+    <li><a href="/bank/">SMW decomp</a>: the game's disassembly split by ROM bank and written up
+       as browsable pages, in the style of
        <a href="https://patrickjohnston.org/bank/index.html">Patrick Johnston's Super Metroid logs</a>.
        Every routine has a plain-English name, a short summary, a list of what calls it, and a
        comment on each instruction. Jumps and named tables are links, hardware registers show their
-       names on hover, and one search covers every bank. There is also a
-       <a href="/bank/ram.html">RAM map</a> and an interactive
-       <a href="/bank/graph.html">call graph</a>.</p>
-    <p>It builds on the community SMWDisC disassembly, with English names and comments added on top and
-       checked against the code. Where the guess was uncertain the comment says so, so
-       treat it as a reading aid and not gospel. Corrections are welcome on
-       <a href="https://discord.gg/xwS9Ngp6CD">the Discord</a>.</p>
-  </div>
+       names on hover, and one search covers every bank. It builds on the community SMWDisC
+       disassembly, with English names and comments checked against the code; where a guess was
+       uncertain the comment says so, so treat it as a reading aid and not gospel.</li>
+    <li><a href="/bank/ram.html">SMW RAM map</a>: what each RAM address holds, cross-linked to the
+       routines that touch it.</li>
+    <li><a href="/bank/graph.html">SMW call graph</a>: an interactive map of which routines call which.</li>
+    <li><a href="https://discord.gg/xwS9Ngp6CD">Discord</a>: questions, help, and corrections to any of the above.</li>
+  </ul>
 </div></section>
 
 <section class="final"><div class="wrap">

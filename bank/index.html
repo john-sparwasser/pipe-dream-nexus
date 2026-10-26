@@ -1,22 +1,124 @@
-<!DOCTYPE html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width"><title>SMW bank logs</title><link rel=stylesheet href="bank.css"><script defer src="bank.js"></script></head><body>
-<div id=header><a href="/">pipedream.nexus</a> &mdash; <a href="search.html">Search all banks</a> &mdash; <a href="#" onclick="toggleDark();return false;">Toggle dark mode</a></div>
-<div class=page>
-<h1>Super Mario World &ndash; choose a bank</h1>
-<p>The community <a href="https://www.smwcentral.net/?p=section&amp;a=details&amp;id=4352">SMWDisC</a> disassembly, split per bank and
-rendered as browsable logs in the style of <a href="https://patrickjohnston.org/bank/index.html">PJ's Super Metroid bank logs</a>.
-Every <code>JSR</code>/<code>JSL</code>/branch target and every named table is a link; each routine lists its callers; hardware
-registers show their name on hover. 3359 sections across 16 banks, 3359 with English names and summaries.</p>
-<p><code>$<a href="00.html">00</a></code> &ndash; Boot, main loop, NMI/IRQ, game-mode dispatch, DMA, SPC upload, controller, status bar, Mario state &amp; block interaction</p><p><code>$<a href="01.html">01</a></code> &ndash; Core sprite engine: main loop, status dispatch, init/main tables, shared sprite subroutines, most enemy mains</p><p><code>$<a href="02.html">02</a></code> &ndash; More sprite mains, generators, cluster/extended sprites, sprite spawning from level data</p><p><code>$<a href="03.html">03</a></code> &ndash; Sprite mains $A1&ndash;$C8, bosses (Reznor, Big Boo, Bowser), bank-local utility copies</p><p><code>$<a href="04.html">04</a></code> &ndash; Overworld engine: game mode 0E, player path movement, event/path reveal, level names, OW sprites</p><p><code>$<a href="05.html">05</a></code> &ndash; Level loading: header decode, object stream decode, layer 2/3, scroll commands, level pointer tables</p><p><code>$<a href="06.html">06</a></code> &ndash; Level Layer-1 object data (no code)</p><p><code>$<a href="07.html">07</a></code> &ndash; Overflow level data, sprite tweaker tables, InitSpriteTables, sine table, misc sprite support</p><p><code>$<a href="08.html">08</a></code> &ndash; Graphics (GFX00&ndash;GFX0F, 4bpp/3bpp tiles)</p><p><code>$<a href="09.html">09</a></code> &ndash; Graphics (GFX10&ndash;GFX1F)</p><p><code>$<a href="0A.html">0A</a></code> &ndash; Graphics (GFX20&ndash;GFX2F)</p><p><code>$<a href="0B.html">0B</a></code> &ndash; Graphics (GFX30&ndash;GFX31, Mario/Yoshi tiles)</p><p><code>$<a href="0C.html">0C</a></code> &ndash; OW Map16 definitions, cutscene/credits/enemy-parade engine, OW Layer-1 tilemaps</p><p><code>$<a href="0D.html">0D</a></code> &ndash; Map16 16&times;16 definitions, object draw-routine dispatch + tile-writing primitives, credits enemy names, freespace</p><p><code>$<a href="0E.html">0E</a></code> &ndash; Music data + SPC700 sound engine (uploaded to the APU at boot)</p><p><code>$<a href="0F.html">0F</a></code> &ndash; BRR sample data for the SPC700</p>
-<h2>Additional</h2>
-<ul>
-<li><a href="search.html">Search all banks</a> &ndash; one regex across every page</li>
-<li><a href="ram.html">RAM map</a> &ndash; what every RAM address does, with the instructions that touch it</li>
-<li><a href="graph.html">Call graph</a> &ndash; interactive graph of the named routines (735 nodes, 53 communities)</li>
-<li>Notes: <a href="notes-system.html">system</a>, <a href="notes-snes-hardware.html">SNES hardware</a>, <a href="notes-level-pipeline.html">level pipeline</a>, <a href="notes-sprite-engine.html">sprite engine</a> &ndash; how the game runs, traced from the code</li>
-<li>Lunar Magic: <a href="lm-hooks.html">hooks</a>, <a href="lm-contract.html">ROM format contract</a>, <a href="lm-parity.html">what LM writes</a>, <a href="lm-exanimation.html">ExAnimation</a>, <a href="lm-overworld.html">overworld</a>, <a href="lm-file-formats.html">file formats</a> &ndash; every place LM hooks into SMW, and the formats it writes</li>
-<li>Tools: <a href="tool-pixi.html">PIXI</a>, <a href="tool-addmusick.html">AddmusicK</a>, <a href="tool-gps.html">GPS</a> &ndash; what each tool puts in the ROM, and how Pipe Dream does the same job</li>
-</ul>
-<h2>Credits</h2>
-<p>SMWDisC was written on etherpad by Smallhacker, 1024, lolcats439, Roy, YoshiCookieZeus, Imamelia, Nicol Bolas, Buster Beetle,
-Gekko, Kernigh, Maxx, Edit1754, Alcaro and others; all.log by MikeyK250. Super Mario World is &copy; Nintendo.</p>
-</div></body></html>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SMW decomp: Super Mario World, bank by bank</title>
+<meta name="description" content="The Super Mario World disassembly split by ROM bank, with English names, summaries, callers and a comment on every instruction.">
+<link rel="icon" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#0b0b0c;--panel:#121214;--line:rgba(255,255,255,.08);--fg:#fff;--text:#e3e1ea;--dim:#888890;--ok:#34d399;
+  --sans:"Geist",ui-sans-serif,system-ui,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,Consolas,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 var(--sans);letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+p{color:var(--dim);margin:0}
+code{font-family:var(--mono);font-size:.88em;color:var(--fg)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+h1,h2{margin:0;color:var(--fg);font-weight:500;letter-spacing:-.04em;line-height:1.1}
+h2{font-size:clamp(1.9rem,4vw,2.5rem)}
+section{padding:88px 0;border-top:1px solid var(--line)}
+.sub{margin-top:12px;max-width:62ch}
+.btn{display:inline-block;background:#fff;color:#000;font-weight:500;font-size:.94rem;border-radius:99px;padding:10px 24px;text-decoration:none}
+.btn:hover{background:#e5e5e5}
+.btn.ghost{background:none;color:var(--fg);border:1px solid rgba(255,255,255,.14)}
+.btn.ghost:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.28)}
+nav{position:sticky;top:0;z-index:10;background:rgba(11,11,12,.8);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+nav .wrap{height:56px;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--fg);font-size:1.1rem}
+.brand img{width:22px;height:22px;image-rendering:pixelated}
+.brand b{font-weight:600}.brand span{color:var(--dim)}
+nav .right{display:flex;align-items:center;gap:22px}
+nav .link{color:var(--dim);text-decoration:none;font-size:.88rem}nav .link:hover{color:var(--fg)}
+nav .pill{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);border-radius:99px;padding:4px 14px;
+  font:500 .75rem var(--mono);color:var(--fg);text-decoration:none}
+nav .pill:hover{border-color:rgba(255,255,255,.3)}
+/* Pipe Dream's level desk, toned down: diamonds on #101010, tips touching every 32px */
+.hero{padding:88px 0 80px;text-align:center;
+  background:#101010 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cpath d='M16 0 32 16 16 32 0 16z' fill='%23161616'/%3E%3C/svg%3E") 0 0/32px 32px}
+.eyebrow{font:500 .75rem var(--mono);letter-spacing:.12em;color:var(--dim)}
+.hero h1{font-size:clamp(2.4rem,6vw,4rem);margin-top:14px}
+.hero .lede{font-size:1.1rem;margin:22px auto 0;max-width:60ch}
+.hero .lede a{color:var(--text)}
+.stats{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:28px}
+.stats span{border:1px solid var(--line);background:rgba(255,255,255,.03);border-radius:99px;padding:3px 12px;
+  font:500 .75rem var(--mono);color:var(--dim)}
+.stats b{color:var(--fg);font-weight:500}
+.acts{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:32px}
+.grid{display:grid;gap:12px;margin-top:40px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);transition:border-color .15s,transform .15s;text-decoration:none}
+.card:hover{border-color:rgba(255,255,255,.22)}
+a.card:hover{transform:translateY(-2px)}
+.card p{font-size:.88rem;line-height:1.5}
+.bank .addr{display:block;font:500 1.15rem var(--mono);color:var(--ok);margin-bottom:6px}
+.card h3{margin:0 0 6px;color:var(--fg);font-weight:500;font-size:1.05rem;letter-spacing:-.02em}
+.card .links{margin-top:10px;font-size:.88rem;color:var(--dim)}
+.card .links a{color:var(--text);text-decoration:none;border-bottom:1px solid rgba(255,255,255,.2)}
+.card .links a:hover{color:var(--fg);border-color:var(--fg)}
+.credits{padding:56px 0;font-size:.85rem}
+.credits p{max-width:80ch}
+@media(max-width:640px){nav .right .link{display:none}.hero{padding-top:56px}section{padding:64px 0}}
+</style></head><body>
+<nav><div class="wrap">
+  <a class="brand" href="/"><img src="/favicon.png" alt=""><b>Pipe</b><span>Dream</span></a>
+  <div class="right">
+    <a class="link" href="#banks">Banks</a>
+    <a class="link" href="ram.html">RAM map</a>
+    <a class="link" href="graph.html">Call graph</a>
+    <a class="pill" href="search.html">&#8981; Search</a>
+  </div>
+</div></nav>
+<header class="hero"><div class="wrap">
+  <div class="eyebrow">SMW DECOMP</div>
+  <h1>Super Mario World,<br>bank by bank.</h1>
+  <p class="lede">The community <a href="https://www.smwcentral.net/?p=section&amp;a=details&amp;id=4352">SMWDisC</a> disassembly,
+    split per bank and rendered as browsable logs in the style of
+    <a href="https://patrickjohnston.org/bank/index.html">PJ's Super Metroid bank logs</a>.
+    Every <code>JSR</code>/<code>JSL</code>/branch target and every named table is a link, each routine lists its callers,
+    and hardware registers show their name on hover.</p>
+  <div class="stats"><span><b>3359</b> sections</span><span><b>16</b> banks</span><span><b>3359</b> named &amp; summarised</span></div>
+  <div class="acts"><a class="btn" href="search.html">Search all banks</a><a class="btn ghost" href="ram.html">RAM map</a></div>
+</div></header>
+<section id="banks"><div class="wrap">
+  <h2>Choose a bank.</h2>
+  <p class="sub">Code, data and graphics, one page per 32&nbsp;KB ROM bank.</p>
+  <div class="grid">
+<a class="card bank" href="00.html"><span class="addr">$00</span><p>Boot, main loop, NMI/IRQ, game-mode dispatch, DMA, SPC upload, controller, status bar, Mario state &amp; block interaction</p></a>
+<a class="card bank" href="01.html"><span class="addr">$01</span><p>Core sprite engine: main loop, status dispatch, init/main tables, shared sprite subroutines, most enemy mains</p></a>
+<a class="card bank" href="02.html"><span class="addr">$02</span><p>More sprite mains, generators, cluster/extended sprites, sprite spawning from level data</p></a>
+<a class="card bank" href="03.html"><span class="addr">$03</span><p>Sprite mains $A1&ndash;$C8, bosses (Reznor, Big Boo, Bowser), bank-local utility copies</p></a>
+<a class="card bank" href="04.html"><span class="addr">$04</span><p>Overworld engine: game mode 0E, player path movement, event/path reveal, level names, OW sprites</p></a>
+<a class="card bank" href="05.html"><span class="addr">$05</span><p>Level loading: header decode, object stream decode, layer 2/3, scroll commands, level pointer tables</p></a>
+<a class="card bank" href="06.html"><span class="addr">$06</span><p>Level Layer-1 object data (no code)</p></a>
+<a class="card bank" href="07.html"><span class="addr">$07</span><p>Overflow level data, sprite tweaker tables, InitSpriteTables, sine table, misc sprite support</p></a>
+<a class="card bank" href="08.html"><span class="addr">$08</span><p>Graphics (GFX00&ndash;GFX0F, 4bpp/3bpp tiles)</p></a>
+<a class="card bank" href="09.html"><span class="addr">$09</span><p>Graphics (GFX10&ndash;GFX1F)</p></a>
+<a class="card bank" href="0A.html"><span class="addr">$0A</span><p>Graphics (GFX20&ndash;GFX2F)</p></a>
+<a class="card bank" href="0B.html"><span class="addr">$0B</span><p>Graphics (GFX30&ndash;GFX31, Mario/Yoshi tiles)</p></a>
+<a class="card bank" href="0C.html"><span class="addr">$0C</span><p>OW Map16 definitions, cutscene/credits/enemy-parade engine, OW Layer-1 tilemaps</p></a>
+<a class="card bank" href="0D.html"><span class="addr">$0D</span><p>Map16 16&times;16 definitions, object draw-routine dispatch + tile-writing primitives, credits enemy names, freespace</p></a>
+<a class="card bank" href="0E.html"><span class="addr">$0E</span><p>Music data + SPC700 sound engine (uploaded to the APU at boot)</p></a>
+<a class="card bank" href="0F.html"><span class="addr">$0F</span><p>BRR sample data for the SPC700</p></a>
+  </div>
+</div></section>
+<section><div class="wrap">
+  <h2>Also here.</h2>
+  <p class="sub">Cross-bank tools, and write-ups traced from the code.</p>
+  <div class="grid">
+    <a class="card" href="search.html"><h3>Search all banks</h3><p>One regex across every page.</p></a>
+    <a class="card" href="ram.html"><h3>RAM map</h3><p>What every RAM address does, with the instructions that touch it.</p></a>
+    <a class="card" href="graph.html"><h3>Call graph</h3><p>Interactive graph of the named routines (735 nodes, 53 communities).</p></a>
+    <div class="card"><h3>Notes</h3><p>How the game runs, traced from the code.</p>
+      <div class="links"><a href="notes-system.html">system</a> &middot; <a href="notes-snes-hardware.html">SNES hardware</a> &middot; <a href="notes-level-pipeline.html">level pipeline</a> &middot; <a href="notes-sprite-engine.html">sprite engine</a></div></div>
+    <div class="card"><h3>Lunar Magic</h3><p>Every place LM hooks into SMW, and the formats it writes.</p>
+      <div class="links"><a href="lm-hooks.html">hooks</a> &middot; <a href="lm-contract.html">ROM format contract</a> &middot; <a href="lm-parity.html">what LM writes</a> &middot; <a href="lm-exanimation.html">ExAnimation</a> &middot; <a href="lm-overworld.html">overworld</a> &middot; <a href="lm-file-formats.html">file formats</a></div></div>
+    <div class="card"><h3>Tools</h3><p>What each tool puts in the ROM, and how Pipe Dream does the same job.</p>
+      <div class="links"><a href="tool-pixi.html">PIXI</a> &middot; <a href="tool-addmusick.html">AddmusicK</a> &middot; <a href="tool-gps.html">GPS</a></div></div>
+  </div>
+</div></section>
+<section class="credits"><div class="wrap">
+  <p>SMWDisC was written on etherpad by Smallhacker, 1024, lolcats439, Roy, YoshiCookieZeus, Imamelia, Nicol Bolas, Buster Beetle,
+  Gekko, Kernigh, Maxx, Edit1754, Alcaro and others; all.log by MikeyK250. Super Mario World is &copy; Nintendo.
+  Corrections are welcome on <a href="https://discord.gg/xwS9Ngp6CD">the Discord</a>.</p>
+</div></section>
+</body></html>

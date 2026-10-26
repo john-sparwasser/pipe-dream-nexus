@@ -659,31 +659,121 @@ View: <label><input type=radio name=rview value=addr checked> by address</label>
 <script>const BANKS={bank_list};</script>
 </body></html>""", encoding="utf-8")
 
-    # Index
-    items = "".join(f'<p><code>$<a href="{b}.html">{b}</a></code> &ndash; {d}</p>' for b, d in sorted(all_banks.items()) if b in parsed)
+    # Index: standalone page styled like pipedream.nexus (not bank.css, whose dark mode inverts the page).
+    card = lambda b, d: f'<a class="card bank" href="{b}.html"><span class="addr">${b}</span><p>{d}</p></a>'
+    items = "\n".join(card(b, d) for b, d in sorted(all_banks.items()) if b in parsed)
     nsec = sum(len(s) for s in parsed.values())
-    (HERE / "index.html").write_text(f"""{head("SMW bank logs")}
-<div id=header><a href="/">pipedream.nexus</a> &mdash; <a href="search.html">Search all banks</a> &mdash; <a href="#" onclick="toggleDark();return false;">Toggle dark mode</a></div>
-<div class=page>
-<h1>Super Mario World &ndash; choose a bank</h1>
-<p>The community <a href="https://www.smwcentral.net/?p=section&amp;a=details&amp;id=4352">SMWDisC</a> disassembly, split per bank and
-rendered as browsable logs in the style of <a href="https://patrickjohnston.org/bank/index.html">PJ's Super Metroid bank logs</a>.
-Every <code>JSR</code>/<code>JSL</code>/branch target and every named table is a link; each routine lists its callers; hardware
-registers show their name on hover. {nsec} sections across {len(parsed)} banks, {named_count} with English names and summaries.</p>
+    links = lambda pairs: " &middot; ".join(f'<a href="{h}">{t}</a>' for h, t in pairs)
+    discord = "https://discord.gg/xwS9Ngp6CD"
+    (HERE / "index.html").write_text(f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SMW decomp: Super Mario World, bank by bank</title>
+<meta name="description" content="The Super Mario World disassembly split by ROM bank, with English names, summaries, callers and a comment on every instruction.">
+<link rel="icon" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{{--bg:#0b0b0c;--panel:#121214;--line:rgba(255,255,255,.08);--fg:#fff;--text:#e3e1ea;--dim:#888890;--ok:#34d399;
+  --sans:"Geist",ui-sans-serif,system-ui,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,Consolas,monospace}}
+*{{box-sizing:border-box}}
+body{{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 var(--sans);letter-spacing:-.01em;-webkit-font-smoothing:antialiased}}
+a{{color:inherit}}
+p{{color:var(--dim);margin:0}}
+code{{font-family:var(--mono);font-size:.88em;color:var(--fg)}}
+.wrap{{max-width:1120px;margin:0 auto;padding:0 24px}}
+h1,h2{{margin:0;color:var(--fg);font-weight:500;letter-spacing:-.04em;line-height:1.1}}
+h2{{font-size:clamp(1.9rem,4vw,2.5rem)}}
+section{{padding:88px 0;border-top:1px solid var(--line)}}
+.sub{{margin-top:12px;max-width:62ch}}
+.btn{{display:inline-block;background:#fff;color:#000;font-weight:500;font-size:.94rem;border-radius:99px;padding:10px 24px;text-decoration:none}}
+.btn:hover{{background:#e5e5e5}}
+.btn.ghost{{background:none;color:var(--fg);border:1px solid rgba(255,255,255,.14)}}
+.btn.ghost:hover{{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.28)}}
+nav{{position:sticky;top:0;z-index:10;background:rgba(11,11,12,.8);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}}
+nav .wrap{{height:56px;display:flex;align-items:center;justify-content:space-between}}
+.brand{{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--fg);font-size:1.1rem}}
+.brand img{{width:22px;height:22px;image-rendering:pixelated}}
+.brand b{{font-weight:600}}.brand span{{color:var(--dim)}}
+nav .right{{display:flex;align-items:center;gap:22px}}
+nav .link{{color:var(--dim);text-decoration:none;font-size:.88rem}}nav .link:hover{{color:var(--fg)}}
+nav .pill{{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);border-radius:99px;padding:4px 14px;
+  font:500 .75rem var(--mono);color:var(--fg);text-decoration:none}}
+nav .pill:hover{{border-color:rgba(255,255,255,.3)}}
+/* Pipe Dream's level desk, toned down: diamonds on #101010, tips touching every 32px */
+.hero{{padding:88px 0 80px;text-align:center;
+  background:#101010 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cpath d='M16 0 32 16 16 32 0 16z' fill='%23161616'/%3E%3C/svg%3E") 0 0/32px 32px}}
+.eyebrow{{font:500 .75rem var(--mono);letter-spacing:.12em;color:var(--dim)}}
+.hero h1{{font-size:clamp(2.4rem,6vw,4rem);margin-top:14px}}
+.hero .lede{{font-size:1.1rem;margin:22px auto 0;max-width:60ch}}
+.hero .lede a{{color:var(--text)}}
+.stats{{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:28px}}
+.stats span{{border:1px solid var(--line);background:rgba(255,255,255,.03);border-radius:99px;padding:3px 12px;
+  font:500 .75rem var(--mono);color:var(--dim)}}
+.stats b{{color:var(--fg);font-weight:500}}
+.acts{{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:32px}}
+.grid{{display:grid;gap:12px;margin-top:40px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}}
+.card{{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);transition:border-color .15s,transform .15s;text-decoration:none}}
+.card:hover{{border-color:rgba(255,255,255,.22)}}
+a.card:hover{{transform:translateY(-2px)}}
+.card p{{font-size:.88rem;line-height:1.5}}
+.bank .addr{{display:block;font:500 1.15rem var(--mono);color:var(--ok);margin-bottom:6px}}
+.card h3{{margin:0 0 6px;color:var(--fg);font-weight:500;font-size:1.05rem;letter-spacing:-.02em}}
+.card .links{{margin-top:10px;font-size:.88rem;color:var(--dim)}}
+.card .links a{{color:var(--text);text-decoration:none;border-bottom:1px solid rgba(255,255,255,.2)}}
+.card .links a:hover{{color:var(--fg);border-color:var(--fg)}}
+.credits{{padding:56px 0;font-size:.85rem}}
+.credits p{{max-width:80ch}}
+@media(max-width:640px){{nav .right .link{{display:none}}.hero{{padding-top:56px}}section{{padding:64px 0}}}}
+</style></head><body>
+<nav><div class="wrap">
+  <a class="brand" href="/"><img src="/favicon.png" alt=""><b>Pipe</b><span>Dream</span></a>
+  <div class="right">
+    <a class="link" href="#banks">Banks</a>
+    <a class="link" href="ram.html">RAM map</a>
+    <a class="link" href="graph.html">Call graph</a>
+    <a class="pill" href="search.html">&#8981; Search</a>
+  </div>
+</div></nav>
+<header class="hero"><div class="wrap">
+  <div class="eyebrow">SMW DECOMP</div>
+  <h1>Super Mario World,<br>bank by bank.</h1>
+  <p class="lede">The community <a href="https://www.smwcentral.net/?p=section&amp;a=details&amp;id=4352">SMWDisC</a> disassembly,
+    split per bank and rendered as browsable logs in the style of
+    <a href="https://patrickjohnston.org/bank/index.html">PJ's Super Metroid bank logs</a>.
+    Every <code>JSR</code>/<code>JSL</code>/branch target and every named table is a link, each routine lists its callers,
+    and hardware registers show their name on hover.</p>
+  <div class="stats"><span><b>{nsec}</b> sections</span><span><b>{len(parsed)}</b> banks</span><span><b>{named_count}</b> named &amp; summarised</span></div>
+  <div class="acts"><a class="btn" href="search.html">Search all banks</a><a class="btn ghost" href="ram.html">RAM map</a></div>
+</div></header>
+<section id="banks"><div class="wrap">
+  <h2>Choose a bank.</h2>
+  <p class="sub">Code, data and graphics, one page per 32&nbsp;KB ROM bank.</p>
+  <div class="grid">
 {items}
-<h2>Additional</h2>
-<ul>
-<li><a href="search.html">Search all banks</a> &ndash; one regex across every page</li>
-<li><a href="ram.html">RAM map</a> &ndash; what every RAM address does, with the instructions that touch it</li>
-<li><a href="graph.html">Call graph</a> &ndash; interactive graph of the named routines (735 nodes, 53 communities)</li>
-<li>Notes: {", ".join(f'<a href="{notes_page(k)}">{v}</a>' for k, v in NOTES.items())} &ndash; how the game runs, traced from the code</li>
-<li>Lunar Magic: {", ".join(f'<a href="{lm_page(k)}">{v}</a>' for k, v in LM_DOCS.items())} &ndash; every place LM hooks into SMW, and the formats it writes</li>
-<li>Tools: {", ".join(f'<a href="tool-{k.lower()}.html">{name}</a>' for k, name in TOOLS.items())} &ndash; what each tool puts in the ROM, and how Pipe Dream does the same job</li>
-</ul>
-<h2>Credits</h2>
-<p>SMWDisC was written on etherpad by Smallhacker, 1024, lolcats439, Roy, YoshiCookieZeus, Imamelia, Nicol Bolas, Buster Beetle,
-Gekko, Kernigh, Maxx, Edit1754, Alcaro and others; all.log by MikeyK250. Super Mario World is &copy; Nintendo.</p>
-</div></body></html>""", encoding="utf-8")
+  </div>
+</div></section>
+<section><div class="wrap">
+  <h2>Also here.</h2>
+  <p class="sub">Cross-bank tools, and write-ups traced from the code.</p>
+  <div class="grid">
+    <a class="card" href="search.html"><h3>Search all banks</h3><p>One regex across every page.</p></a>
+    <a class="card" href="ram.html"><h3>RAM map</h3><p>What every RAM address does, with the instructions that touch it.</p></a>
+    <a class="card" href="graph.html"><h3>Call graph</h3><p>Interactive graph of the named routines (735 nodes, 53 communities).</p></a>
+    <div class="card"><h3>Notes</h3><p>How the game runs, traced from the code.</p>
+      <div class="links">{links((notes_page(k), v) for k, v in NOTES.items())}</div></div>
+    <div class="card"><h3>Lunar Magic</h3><p>Every place LM hooks into SMW, and the formats it writes.</p>
+      <div class="links">{links((lm_page(k), v) for k, v in LM_DOCS.items())}</div></div>
+    <div class="card"><h3>Tools</h3><p>What each tool puts in the ROM, and how Pipe Dream does the same job.</p>
+      <div class="links">{links((f"tool-{k.lower()}.html", name) for k, name in TOOLS.items())}</div></div>
+  </div>
+</div></section>
+<section class="credits"><div class="wrap">
+  <p>SMWDisC was written on etherpad by Smallhacker, 1024, lolcats439, Roy, YoshiCookieZeus, Imamelia, Nicol Bolas, Buster Beetle,
+  Gekko, Kernigh, Maxx, Edit1754, Alcaro and others; all.log by MikeyK250. Super Mario World is &copy; Nintendo.
+  Corrections are welcome on <a href="{discord}">the Discord</a>.</p>
+</div></section>
+</body></html>""", encoding="utf-8")
 
     # Notes and Lunar Magic docs: markdown write-ups as pages here. $BBAAAA addresses link to their line,
     # and a mention of another of these files (FOO.md) links to its page.
