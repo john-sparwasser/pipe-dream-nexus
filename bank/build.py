@@ -473,12 +473,13 @@ def main():
                         callers[r[2]].append((b, ln.addr, s))
 
     head = lambda title: (f'<!DOCTYPE html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width">'
-                          f'<title>{title}</title><link rel=stylesheet href="bank.css"><script defer src="bank.js"></script></head><body>')
-    nav = ('<div id=header><a href=".">Index</a> &mdash; <a href="ram.html">RAM map</a> &mdash; <a href="graph.html">Call graph</a>'
-           ' &mdash; <a href="#" onclick="toggleDark();return false;">Toggle dark mode</a>'
-           ' &mdash; <button id=help-btn aria-pressed=false onclick="toggleHelp()">Instruction help</button>'
-           ' &mdash; <input id=q placeholder="Search regex (this bank)" size=26> <button onclick="clearSearch()">Clear</button>'
-           ' &mdash; <a href="search.html">Search all banks</a></div>')
+                          f'<title>{title}</title><link rel=icon href="/favicon.png"><link rel=stylesheet href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">'
+                          f'<link rel=stylesheet href="bank.css"><script defer src="bank.js"></script></head><body>')
+    brand = '<a class=brand href="/"><img src="/favicon.png" alt=""><b>Pipe</b><span>Dream</span></a><a href=".">SMW decomp</a>'
+    nav = (f'<div id=header>{brand}<a href="ram.html">RAM map</a><a href="graph.html">Call graph</a>'
+           '<button id=help-btn aria-pressed=false onclick="toggleHelp()">Instruction help</button>'
+           '<span class=grp><input id=q placeholder="Search regex (this bank)" size=26> <button onclick="clearSearch()">Clear</button></span>'
+           '<a href="search.html">Search all banks</a></div>')
 
     def render_line(ln, b):
         if ln.kind == "blank":
@@ -653,8 +654,7 @@ View: <label><input type=radio name=rview value=addr checked> by address</label>
     # Cross-bank search: fetches every bank page client-side and scans it.
     bank_list = json.dumps(sorted(parsed))
     (HERE / "search.html").write_text(f"""{head("SMW search")}
-<div id=header><a href=".">Index</a> &mdash; <a href="#" onclick="toggleDark();return false;">Toggle dark mode</a>
- &mdash; <input id=qa placeholder="Search regex, all banks" size=30> <button onclick="searchAll()">Search</button> <span id=status></span></div>
+<div id=header>{brand}<span class=grp><input id=qa placeholder="Search regex, all banks" size=30> <button onclick="searchAll()">Search</button> <span id=status></span></span></div>
 <div id=right><pre id=all></pre></div>
 <script>const BANKS={bank_list};</script>
 </body></html>""", encoding="utf-8")
@@ -782,11 +782,11 @@ a.card:hover{{transform:translateY(-2px)}}
                    if m.group(1) in parsed and int(m.group(2), 16) in addrs[m.group(1)] else m.group(0), t)
         return re.sub(r"\b(?:reference/)?(\w+)\.md\b", lambda m: f'<a href="{doc_page(m.group(1))}">{m.group(0)}</a>'
                       if m.group(1) in NOTES or m.group(1) in LM_DOCS or m.group(1) in tool_of else m.group(0), t)
-    notes_nav = ('<div id=header><a href=".">Index</a> &mdash; <a href="ram.html">RAM map</a> &mdash; <a href="graph.html">Call graph</a>'
-                 ' &mdash; Notes: ' + " &middot; ".join(f'<a href="{notes_page(k)}">{v}</a>' for k, v in NOTES.items())
-                 + ' &mdash; Lunar Magic: ' + " &middot; ".join(f'<a href="{lm_page(k)}">{v}</a>' for k, v in LM_DOCS.items())
-                 + ' &mdash; Tools: ' + " &middot; ".join(f'<a href="tool-{k.lower()}.html">{name}</a>' for k, name in TOOLS.items())
-                 + ' &mdash; <a href="#" onclick="toggleDark();return false;">Toggle dark mode</a></div>')
+    notes_nav = (f'<div id=header>{brand}<a href="ram.html">RAM map</a><a href="graph.html">Call graph</a>'
+                 '<span class=grp>Notes: ' + " &middot; ".join(f'<a href="{notes_page(k)}">{v}</a>' for k, v in NOTES.items())
+                 + '</span><span class=grp>Lunar Magic: ' + " &middot; ".join(f'<a href="{lm_page(k)}">{v}</a>' for k, v in LM_DOCS.items())
+                 + '</span><span class=grp>Tools: ' + " &middot; ".join(f'<a href="tool-{k.lower()}.html">{name}</a>' for k, name in TOOLS.items())
+                 + '</span></div>')
     for stem in [*NOTES, *LM_DOCS, *tool_of]:
         md_src = (HERE / "docs" / f"{stem}.md").read_text(encoding="utf-8")
         title = next((l[2:].strip() for l in md_src.splitlines() if l.startswith("# ")), stem)

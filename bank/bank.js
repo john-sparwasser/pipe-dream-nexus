@@ -1,7 +1,3 @@
-function toggleDark() {
-  document.documentElement.classList.toggle("inverted");
-}
-
 // Regex search over this bank's lines; results replace the TOC in the left pane.
 function searchLogs(pattern) {
   const toc = document.getElementById("toc"), out = document.getElementById("results");
