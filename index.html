@@ -71,11 +71,18 @@ nav .dc svg{width:16px;height:16px;fill:#fff}
 .hero-copy{text-align:center;max-width:760px;margin:0 auto}
 .cta{margin-top:32px;display:flex;flex-direction:column;align-items:center;gap:12px}
 .cta .mono{color:rgba(136,136,144,.75)}
-.tile{position:absolute;width:48px;height:48px;pointer-events:none}
-.tile img{width:48px;height:48px;image-rendering:pixelated;display:block}
-.t1{top:8px;left:32px;transform:rotate(-6deg)}.t2{top:170px;left:-8px;transform:rotate(4deg)}
-.t3{top:330px;left:64px;transform:rotate(-3deg)}.t4{top:24px;right:40px;transform:rotate(5deg)}
-.t5{top:190px;right:-8px;transform:rotate(-4deg)}.t6{top:330px;right:56px;transform:rotate(3deg)}
+.tile{position:absolute;width:48px;height:48px;pointer-events:none;
+  transform:translate(var(--x,0px),var(--y,0px)) rotate(var(--r));transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.tile img{width:48px;height:48px;image-rendering:pixelated;display:block;animation:bob 6s ease-in-out infinite alternate}
+.t1{top:8px;left:32px;--r:-6deg}.t2{top:170px;left:-8px;--r:4deg}
+.t3{top:330px;left:64px;--r:-3deg}.t4{top:24px;right:40px;--r:5deg}
+.t5{top:190px;right:-8px;--r:-4deg}.t6{top:330px;right:56px;--r:3deg}
+/* each tile drifts on its own clock so they never move in step */
+.t2 img{animation-duration:7.4s;animation-delay:-3s}.t3 img{animation-duration:5.6s;animation-delay:-1.5s}
+.t4 img{animation-duration:6.8s;animation-delay:-4s}.t5 img{animation-duration:8s;animation-delay:-2s}
+.t6 img{animation-duration:6.2s;animation-delay:-5s}
+@keyframes bob{from{transform:translate(-3px,-7px) rotate(-3deg)}to{transform:translate(3px,7px) rotate(3deg)}}
+@media(prefers-reduced-motion:reduce){.tile img{animation:none}.tile{transition:none}}
 @media(max-width:900px){.tile{display:none}}
 @media(max-width:640px){nav .right .link{display:none}.hero{padding-top:56px}section{padding:64px 0}}
 
@@ -442,6 +449,23 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
 
 <script src="/downloads.js" defer></script>
 <script>
+// Hero tiles lean toward the cursor a little and get nudged away when it comes close.
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const hero = document.querySelector('.hero'), tiles = [...hero.querySelectorAll('.tile')];
+  hero.addEventListener('pointermove', (e) => {
+    const h = hero.getBoundingClientRect();
+    const px = (e.clientX - h.left) / h.width - .5, py = (e.clientY - h.top) / h.height - .5;
+    for (const [i, t] of tiles.entries()) {
+      const w = t.offsetParent.getBoundingClientRect();   // untransformed position, so no feedback loop
+      const dx = w.left + t.offsetLeft + 24 - e.clientX, dy = w.top + t.offsetTop + 24 - e.clientY;
+      const d = Math.hypot(dx, dy) || 1, push = Math.max(0, 1 - d / 180) * 36, depth = 8 + (i % 3) * 6;
+      t.style.setProperty('--x', (dx / d * push + px * depth).toFixed(1) + 'px');
+      t.style.setProperty('--y', (dy / d * push + py * depth).toFixed(1) + 'px');
+    }
+  });
+  hero.addEventListener('pointerleave', () => tiles.forEach((t) => t.style.cssText = ''));
+}
+
 // ponytail: scroll-snap does the carousel; the buttons just nudge it one slide.
 const track = document.getElementById('track');
 const step = (d) => track.scrollBy({left: d * track.clientWidth});
