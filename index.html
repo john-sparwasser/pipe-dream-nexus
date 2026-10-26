@@ -82,7 +82,7 @@ nav .dc svg{width:16px;height:16px;fill:#fff}
 /* real screenshots, cropped by the fold */
 .shots{position:relative;max-width:1040px;margin:56px auto 0}
 .frame{border:1px solid var(--line);border-radius:16px;overflow:hidden;
-  background:var(--panel);box-shadow:0 -1px 0 rgba(255,255,255,.05) inset,0 24px 80px rgba(0,0,0,.6)}
+  background:var(--panel);box-shadow:0 -1px 0 rgba(255,255,255,.05) inset,0 10px 30px rgba(0,0,0,.7),0 40px 120px rgba(0,0,0,.9)}
 .track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none}
 .track::-webkit-scrollbar{display:none}
 .track img{flex:0 0 100%;width:100%;height:auto;scroll-snap-align:start;cursor:zoom-in;display:block}
@@ -257,8 +257,8 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
     <div class="card tool"><h3>Asar</h3><span class="mono">patches</span><span class="mono st live">&#9679; live</span></div>
     <div class="card tool"><h3>PIXI</h3><span class="mono">custom sprites</span><span class="mono st live">&#9679; live</span></div>
     <div class="card tool"><h3>GPS</h3><span class="mono">custom blocks</span><span class="mono st live">&#9679; live</span></div>
-    <div class="card tool"><h3>AddmusicK</h3><span class="mono">custom music</span><span class="mono st wip">&#9679; in progress</span></div>
-    <div class="card tool"><h3>UberASM</h3><span class="mono">custom code</span><span class="mono st">&#9675; planned</span></div>
+    <div class="card tool"><h3>AddmusicK</h3><span class="mono">custom music</span><span class="mono st live">&#9679; live</span></div>
+    <div class="card tool"><h3>UberASM</h3><span class="mono">custom code</span><span class="mono st live">&#9679; live</span></div>
   </div>
   <div class="prose" style="margin-top:40px">
     <p>ROMs already edited in <strong style="color:var(--fg);font-weight:500">Lunar Magic</strong> open,
@@ -324,8 +324,9 @@ footer a{text-decoration:none}footer a:hover{color:var(--fg)}
     <div class="row done"><div class="t"><span class="box">&#10003;</span><div><b>Updates that install themselves</b><small>Pipe Dream checks for a new release, downloads it, and replaces itself. Your projects and config stay put.</small></div></div><span class="pill">instead of re-downloading</span></div>
     <div class="row done"><div class="t"><span class="box">&#10003;</span><div><b>Feature parity with Lunar Magic</b><small>Everything LM edits, edited here, overworld included. You no longer need LM open beside it.</small></div></div><span class="pill">instead of keeping LM open</span></div>
     <div class="row done"><div class="t"><span class="box">&#10003;</span><div><b>Block manager</b><small>Install a custom block and get all of it: the code, its Map16 entry, its acts-like setting.</small></div></div><span class="pill">instead of GPS</span></div>
-    <div class="row"><div class="t"><span class="box"></span><div><b>UberASM manager</b><small>Attach custom ASM to a level, a gamemode, or the whole game, from the level you're looking at.</small></div></div><span class="pill">instead of UberASMTool</span></div>
-    <div class="row"><div class="t"><span class="box"></span><div><b>Music manager</b><small>Install songs and pick a level's music by name instead of by number. See sample group space before you run out of it.</small></div></div><span class="pill">instead of AddmusicK</span></div>
+    <div class="row done"><div class="t"><span class="box">&#10003;</span><div><b>UberASM manager</b><small>Attach custom ASM to a level, a gamemode, or the whole game, from the level you're looking at.</small></div></div><span class="pill">instead of UberASMTool</span></div>
+    <div class="row done"><div class="t"><span class="box">&#10003;</span><div><b>Music manager</b><small>Install songs and pick a level's music by name instead of by number. See sample group space before you run out of it.</small></div></div><span class="pill">instead of AddmusicK</span></div>
+    <div class="row done"><div class="t"><span class="box">&#10003;</span><div><b>SA-1 support</b><small>Open, edit and build SA-1 ROMs. Sprites, blocks and patches assemble against the SA-1 memory map for you.</small></div></div><span class="pill">instead of SA-1 Pack by hand</span></div>
     <div class="row"><div class="t"><span class="box"></span><div><b>Background manager</b><small>Install a background and get its ExGFX, palette and Map16 pages set up together.</small></div></div><span class="pill">instead of the ExGFX shuffle</span></div>
     <div class="row"><div class="t"><span class="box"></span><div><b>Shareable custom base ROMs</b><small>Package a prepared base (patches, ASM, resources) for someone else to build against. A <code>.pdp</code> already pins its base; this shares it.</small></div></div><span class="pill">instead of passing ROMs around</span></div>
   </div>
